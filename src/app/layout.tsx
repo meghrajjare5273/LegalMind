@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type React from "react";
 import type { Metadata } from "next";
-import { Inter, Lora, Poppins } from "next/font/google";
+import { Domine, Inter, JetBrains_Mono, Lora, Playfair_Display, Poppins, Roboto, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,9 +9,15 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const oswald = Domine({
+  variable: "--font-oswald",
+  subsets: ["latin"],
+  weight: ["400"]
+});
+
 const lora = Lora({
   variable: "--font-lora",
-  subsets: ["cyrillic"],
+  subsets: ["math"],
   weight: ["400", "500", "600", "700"],
 });
 
@@ -34,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${lora.className} antialiased font-inter`}>
+      <body className={`${oswald.className} antialiased font-inter`}>
         {children}
       </body>
     </html>
