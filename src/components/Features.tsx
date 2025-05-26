@@ -23,6 +23,7 @@ import {
 
 export default function Features() {
   const targetRef = useRef(null);
+
   const { scrollYProgress } = useScroll({
     target: targetRef,
     offset: ["start start", "end start"],
@@ -30,14 +31,13 @@ export default function Features() {
 
   const scrollVelocity = useVelocity(scrollYProgress);
 
-  // Remove the problematic skewX transform that causes diagonal movement
-  // Only keep horizontal movement for proper velocity scrolling
-  const xRaw = useTransform(scrollYProgress, [0, 1], [0, -5000]);
-  const x = useSpring(xRaw, { mass: 3, stiffness: 400, damping: 50 });
+  // Optional skew effect based on velocity (like your reference)
+  const skewXRaw = useTransform(scrollVelocity, [-0.5, 0.5], ["2deg", "-2deg"]);
+  const skewX = useSpring(skewXRaw, { mass: 3, stiffness: 400, damping: 50 });
 
-  // Optional: Add a subtle scale effect based on velocity instead of skew
-  const scaleRaw = useTransform(scrollVelocity, [-0.5, 0.5], [0.98, 1.02]);
-  const scale = useSpring(scaleRaw, { mass: 3, stiffness: 400, damping: 50 });
+  // Horizontal movement based on scroll progress
+  const xRaw = useTransform(scrollYProgress, [0, 1], [0, -4000]);
+  const x = useSpring(xRaw, { mass: 3, stiffness: 400, damping: 50 });
 
   const features = [
     {
@@ -123,7 +123,7 @@ export default function Features() {
               }}
               transition={{
                 duration: 20 + i * 3,
-                repeat: Infinity,
+                repeat: Number.POSITIVE_INFINITY,
                 delay: i * 2,
               }}
               className="absolute w-6 h-6 border border-[#DAF6F5]/20 rounded transform rotate-45"
@@ -142,7 +142,7 @@ export default function Features() {
             }}
             transition={{
               duration: 15,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
             }}
             className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-[#DAF6F5]/10 to-[#B8F2EF]/10 rounded-full blur-3xl"
           />
@@ -153,7 +153,7 @@ export default function Features() {
             }}
             transition={{
               duration: 18,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               delay: 5,
             }}
             className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-r from-[#B8F2EF]/10 to-[#DAF6F5]/10 rounded-full blur-3xl"
@@ -172,7 +172,7 @@ export default function Features() {
             Powered by Advanced AI
             <motion.div
               animate={{ scale: [1, 1.3, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
               className="w-2 h-2 bg-[#DAF6F5] rounded-full ml-2"
             />
           </div>
@@ -191,14 +191,14 @@ export default function Features() {
         </motion.div>
       </section>
 
-      {/* Velocity Scrolling Features Section */}
+      {/* Velocity Scrolling Features Section - Following your reference pattern */}
       <section
         ref={targetRef}
-        className="h-[200vh] bg-gradient-to-br from-[#0A2536] via-[#03366D] to-[#0A2536] relative"
+        className="h-[500vh] bg-gradient-to-br from-[#0A2536] via-[#03366D] to-[#0A2536]"
       >
         <div className="sticky top-0 flex h-screen items-center overflow-hidden">
           <motion.div
-            style={{ x, scale }}
+            style={{ skewX, x }}
             className="flex items-center whitespace-nowrap will-change-transform"
           >
             {extendedFeatures.map((feature, index) => (
@@ -245,7 +245,7 @@ export default function Features() {
                           animate={{ opacity: [0.3, 1, 0.3] }}
                           transition={{
                             duration: 2,
-                            repeat: Infinity,
+                            repeat: Number.POSITIVE_INFINITY,
                             delay: i * 0.3,
                           }}
                           className="w-1.5 h-1.5 bg-[#DAF6F5] rounded-full"
@@ -262,7 +262,7 @@ export default function Features() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
+                    repeat: Number.POSITIVE_INFINITY,
                     delay: index * 0.2,
                     ease: "easeInOut",
                   }}

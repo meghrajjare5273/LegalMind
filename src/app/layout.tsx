@@ -1,7 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type React from "react";
 import type { Metadata } from "next";
-import { Domine, Inter, JetBrains_Mono, Lora, Playfair_Display, Poppins, Roboto, Source_Sans_3 } from "next/font/google";
+import {
+  Domine,
+  Inter,
+  JetBrains_Mono,
+  Lora,
+  Playfair_Display,
+  Poppins,
+  Roboto,
+  Source_Sans_3,
+} from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,7 +21,7 @@ const inter = Inter({
 const oswald = Domine({
   variable: "--font-oswald",
   subsets: ["latin"],
-  weight: ["400"]
+  weight: ["400"],
 });
 
 const lora = Lora({
@@ -39,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en">
       <body className={`${oswald.className} antialiased font-inter`}>
         {children}
       </body>
