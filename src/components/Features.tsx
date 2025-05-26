@@ -7,7 +7,7 @@ import {
   useTransform,
   useSpring,
 } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   Brain,
   FileText,
@@ -23,6 +23,9 @@ import {
 
 export default function Features() {
   const targetRef = useRef(null);
+  useEffect(() => {
+    console.log("targetRef.current:", targetRef.current);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: targetRef,
@@ -31,12 +34,12 @@ export default function Features() {
 
   const scrollVelocity = useVelocity(scrollYProgress);
 
-  // Optional skew effect based on velocity (like your reference)
-  const skewXRaw = useTransform(scrollVelocity, [-0.5, 0.5], ["2deg", "-2deg"]);
+  // Optional skew effect based on velocity
+  const skewXRaw = useTransform(scrollVelocity, [-0.5, 0.5], ["1deg", "-1deg"]);
   const skewX = useSpring(skewXRaw, { mass: 3, stiffness: 400, damping: 50 });
 
-  // Horizontal movement based on scroll progress
-  const xRaw = useTransform(scrollYProgress, [0, 1], [0, -4000]);
+  // Horizontal movement based on scroll progress - adjusted for better performance
+  const xRaw = useTransform(scrollYProgress, [0, 1], [0, -3000]);
   const x = useSpring(xRaw, { mass: 3, stiffness: 400, damping: 50 });
 
   const features = [
@@ -194,7 +197,7 @@ export default function Features() {
       {/* Velocity Scrolling Features Section - Following your reference pattern */}
       <section
         ref={targetRef}
-        className="h-[500vh] bg-gradient-to-br from-[#0A2536] via-[#03366D] to-[#0A2536]"
+        className="h-[400vh] bg-gradient-to-br from-[#0A2536] via-[#03366D] to-[#0A2536]"
       >
         <div className="sticky top-0 flex h-screen items-center overflow-hidden">
           <motion.div

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -12,8 +13,6 @@ import {
 } from "lucide-react";
 import { useRef } from "react";
 import { Button } from "./ui/button";
-
-
 
 export default function Hero() {
   const ref = useRef(null);
@@ -113,7 +112,7 @@ export default function Hero() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
           <div className="text-center space-y-8">
             {/* Enhanced Badge with multiple elements */}
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -133,7 +132,7 @@ export default function Hero() {
                 <Zap className="w-3 h-3 mr-1" />
                 Instant Results
               </div>
-            </motion.div>
+            </motion.div> */}
 
             {/* Enhanced Main Heading with better typography */}
             <motion.h1
@@ -178,7 +177,7 @@ export default function Hero() {
               </p>
 
               {/* Key benefits */}
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
@@ -201,11 +200,11 @@ export default function Hero() {
                     {item}
                   </motion.div>
                 ))}
-              </motion.div>
+              </motion.div>*/}
             </motion.div>
 
             {/* Enhanced Rating Badge with more social proof */}
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
@@ -232,7 +231,7 @@ export default function Hero() {
                 <Award className="w-4 h-4 mr-2" />
                 #1 AI Legal Tool 2024
               </div>
-            </motion.div>
+            </motion.div> */}
 
             {/* Enhanced CTA Button with better effects */}
             <motion.div
