@@ -1,6 +1,12 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useVelocity,
+  useTransform,
+  useSpring,
+} from "framer-motion";
 import { useRef } from "react";
 import {
   Brain,
@@ -19,15 +25,19 @@ export default function Features() {
   const targetRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: targetRef,
-    offset: ["start end", "end start"],
+    offset: ["start start", "end start"],
   });
 
-  const x = useTransform(scrollYProgress, [0, 1], [300, -3200]);
-  const opacity = useTransform(
-    scrollYProgress,
-    [0, 0.1, 0.9, 1],
-    [0.3, 1, 1, 0.3]
-  );
+  const scrollVelocity = useVelocity(scrollYProgress);
+
+  // Remove the problematic skewX transform that causes diagonal movement
+  // Only keep horizontal movement for proper velocity scrolling
+  const xRaw = useTransform(scrollYProgress, [0, 1], [0, -5000]);
+  const x = useSpring(xRaw, { mass: 3, stiffness: 400, damping: 50 });
+
+  // Optional: Add a subtle scale effect based on velocity instead of skew
+  const scaleRaw = useTransform(scrollVelocity, [-0.5, 0.5], [0.98, 1.02]);
+  const scale = useSpring(scaleRaw, { mass: 3, stiffness: 400, damping: 50 });
 
   const features = [
     {
@@ -93,74 +103,71 @@ export default function Features() {
     },
   ];
 
+  // Create enough duplicates for seamless infinite scroll
+  const extendedFeatures = [...features, ...features, ...features];
+
   return (
-    <section
-      ref={targetRef}
-      className="h-[400vh] bg-gradient-to-br from-[#0A2536] via-[#03366D] to-[#0A2536] relative overflow-hidden"
-    >
-      {/* Background Elements */}
-      <div className="absolute inset-0">
-        {/* Floating geometric shapes */}
-        {[...Array(12)].map((_, i) => (
+    <>
+      {/* Header Section */}
+      <section className="min-h-screen bg-gradient-to-br from-[#0A2536] via-[#03366D] to-[#0A2536] relative overflow-hidden flex items-center justify-center">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          {/* Floating geometric shapes */}
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{
+                y: [-20, 20, -20],
+                rotate: [0, 180, 360],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 20 + i * 3,
+                repeat: Infinity,
+                delay: i * 2,
+              }}
+              className="absolute w-6 h-6 border border-[#DAF6F5]/20 rounded transform rotate-45"
+              style={{
+                top: `${10 + i * 8}%`,
+                left: `${5 + i * 7}%`,
+              }}
+            />
+          ))}
+
+          {/* Gradient orbs */}
           <motion.div
-            key={i}
             animate={{
-              y: [-20, 20, -20],
-              rotate: [0, 180, 360],
-              opacity: [0.1, 0.3, 0.1],
+              scale: [1, 1.2, 1],
+              opacity: [0.1, 0.2, 0.1],
             }}
             transition={{
-              duration: 20 + i * 3,
+              duration: 15,
               repeat: Infinity,
-              delay: i * 2,
             }}
-            className="absolute w-6 h-6 border border-[#DAF6F5]/20 rounded transform rotate-45"
-            style={{
-              top: `${10 + i * 8}%`,
-              left: `${5 + i * 7}%`,
-            }}
+            className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-[#DAF6F5]/10 to-[#B8F2EF]/10 rounded-full blur-3xl"
           />
-        ))}
+          <motion.div
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.1, 0.15, 0.1],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              delay: 5,
+            }}
+            className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-r from-[#B8F2EF]/10 to-[#DAF6F5]/10 rounded-full blur-3xl"
+          />
+        </div>
 
-        {/* Gradient orbs */}
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.2, 0.1],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-          }}
-          className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-[#DAF6F5]/10 to-[#B8F2EF]/10 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.1, 0.15, 0.1],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            delay: 5,
-          }}
-          className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-r from-[#B8F2EF]/10 to-[#DAF6F5]/10 rounded-full blur-3xl"
-        />
-      </div>
-
-      {/* Section Header */}
-      <div className="sticky top-0 z-10 pt-20 pb-10">
+        {/* Header Content */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center max-w-4xl mx-auto px-4"
+          className="text-center max-w-4xl mx-auto px-4 z-10"
         >
-          <motion.div
-            animate={{ rotate: [0, 360] }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="inline-flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-[#DAF6F5] text-sm font-medium mb-6"
-          >
+          <div className="inline-flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-[#DAF6F5] text-sm font-medium mb-6">
             <Brain className="w-4 h-4 mr-2" />
             Powered by Advanced AI
             <motion.div
@@ -168,7 +175,7 @@ export default function Features() {
               transition={{ duration: 2, repeat: Infinity }}
               className="w-2 h-2 bg-[#DAF6F5] rounded-full ml-2"
             />
-          </motion.div>
+          </div>
 
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
             Revolutionary{" "}
@@ -182,96 +189,102 @@ export default function Features() {
             AI-powered platform
           </p>
         </motion.div>
-      </div>
+      </section>
 
-      {/* Horizontal Scrolling Features */}
-      <div className="sticky top-1/2 -translate-y-1/2 flex items-center overflow-hidden">
-        <motion.div
-          style={{ x, opacity }}
-          className="flex items-center whitespace-nowrap will-change-transform"
-        >
-          {/* Duplicate features for seamless loop */}
-          {features.concat(features).map((feature, index) => (
-            <motion.div
-              key={index}
-              className="flex items-center group"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300, damping: 10 }}
-            >
-              {/* Feature Card */}
-              <div className="relative mx-8 md:mx-12">
-                {/* Glow effect */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-20 blur-2xl rounded-3xl scale-110 group-hover:opacity-30 transition-opacity`}
-                />
-
-                {/* Main card */}
-                <div className="relative bg-black/30 backdrop-blur-sm border border-white/20 rounded-3xl p-8 md:p-12 group-hover:border-white/40 transition-all duration-300 min-w-[400px] md:min-w-[500px]">
-                  {/* Icon */}
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                    className={`w-16 h-16 md:w-20 md:h-20 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}
-                  >
-                    <feature.icon className="w-8 h-8 md:w-10 md:h-10 text-[#0A2536]" />
-                  </motion.div>
-
-                  {/* Text content */}
-                  <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
-                    {feature.text}
-                  </h3>
-
-                  <p className="text-lg md:text-xl text-white/70 leading-relaxed max-w-md">
-                    {feature.description}
-                  </p>
-
-                  {/* Decorative elements */}
-                  <div className="absolute top-4 right-4 flex space-x-1">
-                    {[...Array(3)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        animate={{ opacity: [0.3, 1, 0.3] }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          delay: i * 0.3,
-                        }}
-                        className="w-2 h-2 bg-[#DAF6F5] rounded-full"
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Separator */}
-              <motion.div
-                animate={{
-                  rotate: [0, 360],
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  delay: index * 0.2,
-                }}
-                className="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#DAF6F5] to-[#B8F2EF] mx-8 md:mx-12"
+      {/* Velocity Scrolling Features Section */}
+      <section
+        ref={targetRef}
+        className="h-[200vh] bg-gradient-to-br from-[#0A2536] via-[#03366D] to-[#0A2536] relative"
+      >
+        <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+          <motion.div
+            style={{ x, scale }}
+            className="flex items-center whitespace-nowrap will-change-transform"
+          >
+            {extendedFeatures.map((feature, index) => (
+              <div
+                key={`${feature.text}-${index}`}
+                className="flex items-center group"
               >
-                ✦
-              </motion.div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
+                {/* Feature Card */}
+                <div className="relative mx-6 md:mx-8">
+                  {/* Glow effect */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-20 blur-xl rounded-3xl scale-105 group-hover:opacity-30 transition-opacity duration-300`}
+                  />
+
+                  {/* Main card */}
+                  <motion.div
+                    className="relative bg-black/40 backdrop-blur-sm border border-white/20 rounded-3xl p-6 md:p-8 group-hover:border-white/40 transition-all duration-300 min-w-[320px] md:min-w-[380px] shadow-2xl"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    {/* Icon */}
+                    <motion.div
+                      whileHover={{ rotate: 360, scale: 1.1 }}
+                      transition={{ duration: 0.6 }}
+                      className={`w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r ${feature.gradient} rounded-xl flex items-center justify-center mb-4 shadow-lg`}
+                    >
+                      <feature.icon className="w-6 h-6 md:w-8 md:h-8 text-[#0A2536]" />
+                    </motion.div>
+
+                    {/* Text content */}
+                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight">
+                      {feature.text}
+                    </h3>
+
+                    <p className="text-base md:text-lg text-white/70 leading-relaxed">
+                      {feature.description}
+                    </p>
+
+                    {/* Decorative elements */}
+                    <div className="absolute top-4 right-4 flex space-x-1">
+                      {[...Array(3)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: i * 0.3,
+                          }}
+                          className="w-1.5 h-1.5 bg-[#DAF6F5] rounded-full"
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Separator */}
+                <motion.div
+                  animate={{
+                    scale: [0.8, 1.2, 0.8],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    delay: index * 0.2,
+                    ease: "easeInOut",
+                  }}
+                  className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#DAF6F5] to-[#B8F2EF] mx-4 md:mx-6 select-none"
+                >
+                  ✦
+                </motion.div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
 
       {/* Bottom CTA Section */}
-      <div className="sticky bottom-0 z-10 pb-20 pt-10">
+      <section className="min-h-screen bg-gradient-to-br from-[#0A2536] via-[#03366D] to-[#0A2536] relative flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           className="text-center max-w-4xl mx-auto px-4"
         >
-          <div className="bg-black/20 backdrop-blur-sm border border-white/20 rounded-3xl p-8 md:p-12">
+          <div className="bg-black/30 backdrop-blur-sm border border-white/20 rounded-3xl p-8 md:p-12 shadow-2xl">
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
               Ready to revolutionize your legal workflow?
             </h3>
@@ -288,7 +301,7 @@ export default function Features() {
             </motion.button>
           </div>
         </motion.div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

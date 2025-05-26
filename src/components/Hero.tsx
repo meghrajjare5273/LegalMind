@@ -13,24 +13,7 @@ import {
 import { useRef } from "react";
 import { Button } from "./ui/button";
 
-// Button component
-// const Button = ({ children, size, className, ...props }) => {
-//   const sizeClasses = {
-//     sm: "px-3 py-1.5 text-sm",
-//     lg: "px-6 py-3 text-lg",
-//   // };
 
-  // return (
-  //   <Button
-  //     className={`inline-flex items-center justify-center rounded-md font-medium transition-colors ${
-  //       sizeClasses[size] || "px-4 py-2"
-  //     } ${className}`}
-  //     {...props}
-  //   >
-  //     {children}
-  //   </Button>
-  // );
-// };
 
 export default function Hero() {
   const ref = useRef(null);

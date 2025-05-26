@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export function CTA() {
@@ -79,7 +79,7 @@ export function CTA() {
             </Link>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
             {["No credit card required", "Instant access", "24/7 support"].map(
               (feature, index) => (
                 <motion.div
@@ -95,7 +95,7 @@ export function CTA() {
                 </motion.div>
               )
             )}
-          </div>
+          </div> */}
         </motion.div>
       </div>
     </section>
