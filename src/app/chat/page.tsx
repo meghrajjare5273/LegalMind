@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,7 @@ export default function ChatPage() {
       id: "1",
       role: "assistant",
       content:
-        "Hello! I'm your AI Legal Advisor. I can help you with various legal questions including contract review, business formation, employment law, real estate, and more. What legal issue would you like to discuss today?",
+        "Hello! I'm your AI Legal Advisor. I can help you with various legal questions based on the Indian Penal Code and other legal contexts. What legal issue would you like to discuss today?",
       timestamp: new Date(),
     },
   ]);
@@ -43,25 +42,47 @@ export default function ChatPage() {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/rag", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch response");
+      }
+
+      const data = await response.json();
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `Thank you for your question about "${input}". Based on the information provided, I can offer some preliminary guidance. However, please note that this is general information and not formal legal advice. For your specific situation, I recommend:\n\n1. Reviewing relevant statutes and regulations\n2. Consulting with a licensed attorney in your jurisdiction\n3. Gathering all relevant documentation\n\nWould you like me to elaborate on any specific aspect of this matter?`,
+        content: data.response,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error(error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Sorry, something went wrong. Please try again later.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const quickQuestions = [
-    "Help me understand a contract",
-    "Business formation advice",
-    "Employment law question",
-    "Real estate transaction",
-    "Intellectual property guidance",
+    "What is the punishment for theft?",
+    "Explain Section 302 of the IPC",
+    "What are my rights in a contract dispute?",
+    "How does bail work under IPC?",
+    "What is defamation under Indian law?",
   ];
 
   return (
