@@ -128,12 +128,12 @@ export function Footer() {
               </div>
               <div className="flex items-center text-gray-400">
                 <Phone className="w-4 h-4 mr-3 text-[#DAF6F5]" />
-                <span className="text-sm">+1 (555) 123-4567</span>
+                <span className="text-sm">+91 74991 36834</span>
               </div>
               <div className="flex items-start text-gray-400">
                 <MapPin className="w-4 h-4 mr-3 text-[#DAF6F5] mt-0.5" />
                 <span className="text-sm">
-                  123 Legal Street
+                  Pune, Maharashtra
                   <br />
                   San Francisco, CA 94102
                 </span>
