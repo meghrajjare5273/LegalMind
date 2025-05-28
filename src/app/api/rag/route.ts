@@ -40,7 +40,7 @@ async function getQueryVector(query: string): Promise<number[]> {
 // Function to retrieve context from Pinecone
 async function retrieveContext(
   query: string,
-  topK: number = 5
+  topK: number = 6
 ): Promise<string[]> {
   try {
     const queryVector = await getQueryVector(query);
@@ -75,13 +75,24 @@ async function generateResponseWithGemini(
   try {
     const contextStr = contexts.join("\n");
     const prompt = `
-You are a legal advisor to an user. Your role is to solve queries asked by the user regarding any legal issues he/she might be facing or provide information of how law works in India. Along with the user's query, you will be given a context which would be a extract from the Indian Penal Code and The Constitution of India. You can refer the text to generate your answers.
+You are a legal expert assistant specializing in Indian law, particularly the Indian Penal Code (IPC) and the Constitution of India. 
 
-Context:
+Based on the provided legal contexts, answer the user's question accurately and comprehensively.
+
+IMPORTANT GUIDELINES:
+1. Always cite specific sections, articles, or provisions when referencing the law
+2. If the context doesn't contain sufficient information, clearly state this
+3. Distinguish between Constitutional provisions and IPC provisions
+4. Provide practical interpretations where appropriate
+5. If multiple interpretations exist, mention them
+6. Use clear, accessible language while maintaining legal accuracy
+
+LEGAL CONTEXTS:
 ${contextStr}
 
-Question: ${query}
-Answer:`;
+USER QUESTION: ${query}
+
+RESPONSE: `;
 
     const response = await genai.models.generateContent({
       model: "gemini-2.0-flash",
@@ -90,6 +101,9 @@ Answer:`;
           parts: [{ text: prompt }],
         },
       ],
+      // config: {
+      //   temperature: 0.7,
+      // },
     });
 
     if (
@@ -132,6 +146,7 @@ export async function POST(request: NextRequest) {
     }
 
     const contexts = await retrieveContext(query);
+    console.log(contexts);
     const response = await generateResponseWithGemini(query, contexts);
 
     return NextResponse.json({
