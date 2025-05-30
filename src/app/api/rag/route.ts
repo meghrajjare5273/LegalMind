@@ -55,7 +55,7 @@ async function retrieveContext(
       topK,
       includeMetadata: true,
     });
-
+    console.log(queryResponse);
     return (
       queryResponse.matches?.map(
         (match) => (match.metadata?.content as string) || ""
@@ -95,15 +95,21 @@ USER QUESTION: ${query}
 RESPONSE: `;
 
     const response = await genai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-preview-05-20",
       contents: [
         {
           parts: [{ text: prompt }],
         },
       ],
-      // config: {
-      //   temperature: 0.7,
-      // },
+      config: {
+        temperature: 0.4,
+        thinkingConfig: {
+          // includeThoughts: true,
+          thinkingBudget: 8000,
+        },
+        // cachedContent: contextStr,
+        maxOutputTokens: 5000,
+      },
     });
 
     if (
