@@ -281,9 +281,11 @@ export default function ContractReviewPage() {
                     </div>
                     <Progress
                       value={
-                        (result.summary.high_risk_count /
-                          result.summary.total_risks) *
-                        100
+                        result.summary.total_risks > 0
+                          ? (result.summary.high_risk_count /
+                              result.summary.total_risks) *
+                            100
+                          : 0
                       }
                       className="h-2 bg-gray-800"
                     />
@@ -448,7 +450,7 @@ export default function ContractReviewPage() {
                                 </div>
                               </div>
 
-                              {risk.specific_concerns.length > 0 && (
+                              {risk.specific_concerns?.length > 0 && (
                                 <div className="mb-4">
                                   <h5 className="text-sm font-medium mb-2 opacity-90 flex items-center">
                                     <AlertTriangle className="w-3 h-3 mr-1" />
