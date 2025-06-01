@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Send, Bot, User, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { apiService } from "@/services/api"; // Import the new API service
 
 interface Message {
   id: string;
@@ -43,19 +44,7 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/rag", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query: input }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch response");
-      }
-
-      const data = await response.json();
+      const data = await apiService.queryRAG( input ); // Use the new API service with progress callback
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -64,7 +53,7 @@ export default function ChatPage() {
       };
       setMessages((prev) => [...prev, aiResponse]);
     } catch (error) {
-      console.error(error);
+      console.error("Chat error:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
