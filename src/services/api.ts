@@ -1,7 +1,7 @@
 // lib/api.ts
 import axios from "axios";
 
-const API_BASE = process.env.NEXT_PUBLIC_RENDER_API_URL; // || "http://127.0.0.1:8000";
+const API_BASE = "http://127.0.0.1:8000";
 
 // Create axios instance with default config
 const api = axios.create({
@@ -48,9 +48,16 @@ export const apiService = {
   },
 
   // Upload Documents
-  async extractAndAnalyze(file: File) {
+  async extractAndAnalyze(
+    file: File
+  ): Promise<EnhancedExtractAndAnalyzeResponse> {
     try {
-      // Validate file type
+      if (!API_BASE) {
+        throw new Error(
+          "API configuration is missing. Please check environment variables."
+        );
+      }
+
       if (file.type !== "application/pdf") {
         throw new Error("File must be a PDF");
       }
@@ -74,23 +81,43 @@ export const apiService = {
   },
 };
 
-// Types matching your FastAPI response
-export interface RiskAnalysis {
-  sentence: string;
-  risk: string;
-  explanation: string;
-  negotiation_tip: string;
-}
-
-export interface ExtractAndAnalyzeResponse {
-  filename: string;
-  extracted_text: string;
-  analysis: RiskAnalysis[];
-  risks_found: number;
-}
 // Types (optional - you can move these to a separate types file)
 export interface RAGResponse {
   response: string;
   contexts: string[];
   success: boolean;
+}
+
+export interface EnhancedRiskAnalysis {
+  sentence: string;
+  risk_category: string;
+  risk_level: "HIGH" | "MEDIUM" | "LOW";
+  risk_type: string;
+  description: string;
+  specific_concerns: string[];
+  negotiation_strategies: string[];
+  priority_score: number; // 1-10 scale
+}
+
+export interface ContractSection {
+  title: string;
+  content: string;
+  risk_count: number;
+}
+
+export interface RiskSummary {
+  total_risks: number;
+  high_risk_count: number;
+  medium_risk_count: number;
+  low_risk_count: number;
+  overall_risk_level: "HIGH" | "MEDIUM-HIGH" | "MEDIUM" | "LOW";
+}
+
+export interface EnhancedExtractAndAnalyzeResponse {
+  filename: string;
+  extracted_text: string;
+  analysis: EnhancedRiskAnalysis[];
+  summary: RiskSummary;
+  sections: ContractSection[];
+  recommendations: string[];
 }

@@ -1,4 +1,3 @@
- 
 "use client";
 
 import React, { useState } from "react";
@@ -8,27 +7,43 @@ import { Input } from "@/components/ui/input";
 import {
   ArrowLeft,
   Upload,
-  FileText,
   Loader2,
   AlertTriangle,
   CheckCircle,
   Lightbulb,
+  Shield,
+  TrendingUp,
+  Lock,
+  DollarSign,
+  Brain,
+  Target,
+  Eye,
+  BookOpen,
 } from "lucide-react";
 import Link from "next/link";
-import { apiService, ExtractAndAnalyzeResponse, RiskAnalysis } from "@/services/api";
+import {
+  apiService,
+  EnhancedExtractAndAnalyzeResponse,
+  EnhancedRiskAnalysis,
+} from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 export default function ContractReviewPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<ExtractAndAnalyzeResponse | null>(null);
+  const [result, setResult] =
+    useState<EnhancedExtractAndAnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"risks" | "sections" | "text">(
+    "risks"
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
 
-      // Validate file type
       if (selectedFile.type !== "application/pdf") {
         setError("Please upload a PDF file only.");
         return;
@@ -36,7 +51,7 @@ export default function ContractReviewPage() {
 
       setFile(selectedFile);
       setError(null);
-      setResult(null); // Clear previous results
+      setResult(null);
     }
   };
 
@@ -67,21 +82,48 @@ export default function ContractReviewPage() {
     }
   };
 
-  const getRiskColor = (risk: string) => {
-    const lowerRisk = risk.toLowerCase();
-    if (
-      lowerRisk.includes("liability") ||
-      lowerRisk.includes("penalty") ||
-      lowerRisk.includes("damages")
-    ) {
-      return "text-red-400 bg-red-900/20 border-red-800/30";
-    } else if (
-      lowerRisk.includes("termination") ||
-      lowerRisk.includes("breach")
-    ) {
-      return "text-orange-400 bg-orange-900/20 border-orange-800/30";
-    } else {
-      return "text-yellow-400 bg-yellow-900/20 border-yellow-800/30";
+  const getRiskLevelColor = (level: string) => {
+    switch (level) {
+      case "HIGH":
+        return "bg-red-900/20 border-red-800/30 text-red-400";
+      case "MEDIUM":
+        return "bg-orange-900/20 border-orange-800/30 text-orange-400";
+      case "LOW":
+        return "bg-yellow-900/20 border-yellow-800/30 text-yellow-400";
+      default:
+        return "bg-gray-900/20 border-gray-800/30 text-gray-400";
+    }
+  };
+
+  const getRiskCategoryIcon = (category: string) => {
+    switch (category) {
+      case "Financial Risk":
+        return <DollarSign className="w-4 h-4" />;
+      case "IP Risk":
+        return <Shield className="w-4 h-4" />;
+      case "Performance Risk":
+        return <TrendingUp className="w-4 h-4" />;
+      case "Contract Continuity":
+        return <Target className="w-4 h-4" />;
+      case "Information Security":
+        return <Lock className="w-4 h-4" />;
+      default:
+        return <AlertTriangle className="w-4 h-4" />;
+    }
+  };
+
+  const getOverallRiskColor = (level: string) => {
+    switch (level) {
+      case "HIGH":
+        return "text-red-400";
+      case "MEDIUM-HIGH":
+        return "text-orange-400";
+      case "MEDIUM":
+        return "text-yellow-400";
+      case "LOW":
+        return "text-green-400";
+      default:
+        return "text-gray-400";
     }
   };
 
@@ -89,7 +131,7 @@ export default function ContractReviewPage() {
     <div className="min-h-screen bg-black flex flex-col">
       {/* Header */}
       <header className="border-b border-white/10 bg-black/80 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link href="/">
@@ -103,12 +145,14 @@ export default function ContractReviewPage() {
               </Link>
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-[#03366D] to-[#0A2536] rounded-lg flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-white" />
+                  <Brain className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-white font-semibold">Contract Review</h1>
+                  <h1 className="text-white font-semibold">
+                    Smart Contract Review
+                  </h1>
                   <p className="text-xs text-gray-400">
-                    Analyze your legal contracts
+                    AI-powered legal contract analysis
                   </p>
                 </div>
               </div>
@@ -122,7 +166,7 @@ export default function ContractReviewPage() {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         <Card className="bg-gray-900/50 border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Upload PDF Contract</CardTitle>
@@ -161,7 +205,7 @@ export default function ContractReviewPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing Contract...
+                    Analyzing Contract...
                   </>
                 ) : (
                   <>
@@ -181,135 +225,370 @@ export default function ContractReviewPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 space-y-6"
           >
-            {/* Summary Card */}
+            {/* Enhanced Summary Card */}
             <Card className="bg-gray-900/50 border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
-                  <FileText className="w-5 h-5 mr-2" />
-                  Analysis Summary
+                  <Brain className="w-5 h-5 mr-2" />
+                  Contract Analysis Summary
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">
-                      {result.risks_found}
+                    <div
+                      className={`text-3xl font-bold ${getOverallRiskColor(
+                        result.summary.overall_risk_level
+                      )}`}
+                    >
+                      {result.summary.overall_risk_level}
                     </div>
-                    <div className="text-gray-400 text-sm">Risks Found</div>
+                    <div className="text-gray-400 text-sm">
+                      Overall Risk Level
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">
-                      {result.filename}
+                    <div className="text-3xl font-bold text-white">
+                      {result.summary.total_risks}
                     </div>
-                    <div className="text-gray-400 text-sm">File Analyzed</div>
+                    <div className="text-gray-400 text-sm">
+                      Total Risks Found
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">
-                      {result.extracted_text.length > 0 ? "Yes" : "No"}
+                    <div className="text-3xl font-bold text-red-400">
+                      {result.summary.high_risk_count}
                     </div>
-                    <div className="text-gray-400 text-sm">Text Extracted</div>
+                    <div className="text-gray-400 text-sm">High Priority</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-orange-400">
+                      {result.summary.medium_risk_count}
+                    </div>
+                    <div className="text-gray-400 text-sm">Medium Priority</div>
+                  </div>
+                </div>
+
+                {/* Risk Distribution */}
+                <div className="mt-6 space-y-3">
+                  <h4 className="text-white font-medium">Risk Distribution</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">High Risk</span>
+                      <span className="text-sm text-red-400">
+                        {result.summary.high_risk_count}
+                      </span>
+                    </div>
+                    <Progress
+                      value={
+                        (result.summary.high_risk_count /
+                          result.summary.total_risks) *
+                        100
+                      }
+                      className="h-2 bg-gray-800"
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Medium Risk</span>
+                      <span className="text-sm text-orange-400">
+                        {result.summary.medium_risk_count}
+                      </span>
+                    </div>
+                    <Progress
+                      value={
+                        (result.summary.medium_risk_count /
+                          result.summary.total_risks) *
+                        100
+                      }
+                      className="h-2 bg-gray-800"
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Low Risk</span>
+                      <span className="text-sm text-yellow-400">
+                        {result.summary.low_risk_count}
+                      </span>
+                    </div>
+                    <Progress
+                      value={
+                        (result.summary.low_risk_count /
+                          result.summary.total_risks) *
+                        100
+                      }
+                      className="h-2 bg-gray-800"
+                    />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Risk Analysis */}
-            {result.analysis.length > 0 ? (
-              <Card className="bg-gray-900/50 border-white/10">
+            {/* Recommendations Card */}
+            {result.recommendations && result.recommendations.length > 0 && (
+              <Card className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-blue-800/30">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
-                    <AlertTriangle className="w-5 h-5 mr-2 text-red-400" />
-                    Risk Analysis ({result.risks_found} risks found)
+                    <Lightbulb className="w-5 h-5 mr-2 text-yellow-400" />
+                    Key Recommendations
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {result.analysis.map(
-                      (risk: RiskAnalysis, index: number) => (
-                        <div
-                          key={index}
-                          className={`border rounded-lg p-4 ${getRiskColor(
-                            risk.risk
-                          )}`}
-                        >
-                          <div className="mb-3">
-                            <h4 className="font-semibold mb-1 flex items-center">
-                              <AlertTriangle className="w-4 h-4 mr-1" />
-                              {risk.risk}
-                            </h4>
-                          </div>
-
-                          <div className="mb-3">
-                            <h5 className="text-sm font-medium mb-1 text-gray-300">
-                              Relevant Text:
-                            </h5>
-                            <div className="bg-black/30 p-3 rounded text-sm">
-                              &quot;{risk.sentence}&quot;
-                            </div>
-                          </div>
-
-                          <div className="mb-3">
-                            <h5 className="text-sm font-medium mb-1 text-gray-300">
-                              Explanation:
-                            </h5>
-                            <p className="text-sm">{risk.explanation}</p>
-                          </div>
-
-                          <div>
-                            <h5 className="text-sm font-medium mb-1 text-gray-300 flex items-center">
-                              <Lightbulb className="w-3 h-3 mr-1" />
-                              Negotiation Tip:
-                            </h5>
-                            <p className="text-sm">{risk.negotiation_tip}</p>
-                          </div>
-                        </div>
-                      )
-                    )}
+                  <div className="space-y-3">
+                    {result.recommendations.map((rec, index) => (
+                      <div key={index} className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0" />
+                        <p className="text-gray-300 text-sm">{rec}</p>
+                      </div>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-gray-900/50 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center">
-                    <CheckCircle className="w-5 h-5 mr-2 text-green-400" />
-                    No Risks Detected
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-300">
-                    Great news! No specific risk keywords were detected in this
-                    contract. However, we recommend having any contract reviewed
-                    by a qualified legal professional.
-                  </p>
                 </CardContent>
               </Card>
             )}
 
-            {/* Extracted Text */}
-            <Card className="bg-gray-900/50 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Extracted Text</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="max-h-64 overflow-y-auto bg-gray-800/50 p-4 rounded border border-white/10">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-300">
-                    {result.extracted_text ||
-                      "No text could be extracted from the PDF."}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Navigation Tabs */}
+            <div className="flex space-x-1 bg-gray-900/50 p-1 rounded-lg">
+              <button
+                onClick={() => setActiveTab("risks")}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === "risks"
+                    ? "bg-[#03366D] text-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <AlertTriangle className="w-4 h-4 inline mr-2" />
+                Risk Analysis
+              </button>
+              <button
+                onClick={() => setActiveTab("sections")}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === "sections"
+                    ? "bg-[#03366D] text-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <BookOpen className="w-4 h-4 inline mr-2" />
+                Contract Sections
+              </button>
+              <button
+                onClick={() => setActiveTab("text")}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === "text"
+                    ? "bg-[#03366D] text-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <Eye className="w-4 h-4 inline mr-2" />
+                Extracted Text
+              </button>
+            </div>
+
+            {/* Risk Analysis Tab */}
+            {activeTab === "risks" && (
+              <>
+                {result.analysis.length > 0 ? (
+                  <Card className="bg-gray-900/50 border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center">
+                        <AlertTriangle className="w-5 h-5 mr-2 text-red-400" />
+                        Detailed Risk Analysis ({result.analysis.length} risks
+                        found)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {result.analysis.map(
+                          (risk: EnhancedRiskAnalysis, index: number) => (
+                            <div
+                              key={index}
+                              className={`border rounded-lg p-6 ${getRiskLevelColor(
+                                risk.risk_level
+                              )}`}
+                            >
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center space-x-3">
+                                  {getRiskCategoryIcon(risk.risk_category)}
+                                  <div>
+                                    <h4 className="font-semibold text-lg">
+                                      {risk.risk_type}
+                                    </h4>
+                                    <p className="text-sm opacity-80">
+                                      {risk.risk_category}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Badge
+                                    variant="outline"
+                                    className={`${getRiskLevelColor(
+                                      risk.risk_level
+                                    )} border-current`}
+                                  >
+                                    {risk.risk_level}
+                                  </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className="border-gray-500 text-gray-300"
+                                  >
+                                    Priority: {risk.priority_score}/10
+                                  </Badge>
+                                </div>
+                              </div>
+
+                              <div className="mb-4">
+                                <p className="text-sm mb-2 opacity-90">
+                                  {risk.description}
+                                </p>
+                              </div>
+
+                              <div className="mb-4">
+                                <h5 className="text-sm font-medium mb-2 opacity-90">
+                                  Relevant Contract Text:
+                                </h5>
+                                <div className="bg-black/30 p-4 rounded-md border border-current/20">
+                                  <p className="text-sm italic">
+                                    &quot;{risk.sentence}&quot;
+                                  </p>
+                                </div>
+                              </div>
+
+                              {risk.specific_concerns.length > 0 && (
+                                <div className="mb-4">
+                                  <h5 className="text-sm font-medium mb-2 opacity-90 flex items-center">
+                                    <AlertTriangle className="w-3 h-3 mr-1" />
+                                    Specific Concerns:
+                                  </h5>
+                                  <div className="space-y-1">
+                                    {risk.specific_concerns.map(
+                                      (concern, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="flex items-start space-x-2"
+                                        >
+                                          <div className="w-1.5 h-1.5 bg-current rounded-full mt-2 flex-shrink-0" />
+                                          <p className="text-sm">{concern}</p>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div>
+                                <h5 className="text-sm font-medium mb-2 opacity-90 flex items-center">
+                                  <Lightbulb className="w-3 h-3 mr-1" />
+                                  Negotiation Strategies:
+                                </h5>
+                                <div className="space-y-1">
+                                  {risk.negotiation_strategies.map(
+                                    (strategy, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex items-start space-x-2"
+                                      >
+                                        <div className="w-1.5 h-1.5 bg-current rounded-full mt-2 flex-shrink-0" />
+                                        <p className="text-sm">{strategy}</p>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="bg-gray-900/50 border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center">
+                        <CheckCircle className="w-5 h-5 mr-2 text-green-400" />
+                        No Significant Risks Detected
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-300">
+                        Great news! No significant risk patterns were detected
+                        in this contract. However, we recommend having any
+                        contract reviewed by a qualified legal professional
+                        before signing.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
+
+            {/* Contract Sections Tab */}
+            {activeTab === "sections" && (
+              <Card className="bg-gray-900/50 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <BookOpen className="w-5 h-5 mr-2" />
+                    Contract Sections Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {result.sections && result.sections.length > 0 ? (
+                    <div className="space-y-4">
+                      {result.sections.map((section, index) => (
+                        <div
+                          key={index}
+                          className="border border-white/10 rounded-lg p-4"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-white font-medium">
+                              {section.title}
+                            </h4>
+                            <Badge
+                              variant="outline"
+                              className="border-gray-500 text-gray-300"
+                            >
+                              {section.risk_count} risk(s)
+                            </Badge>
+                          </div>
+                          <div className="bg-gray-800/50 p-3 rounded text-sm text-gray-300">
+                            {section.content}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-400">
+                      No specific contract sections were identified.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Extracted Text Tab */}
+            {activeTab === "text" && (
+              <Card className="bg-gray-900/50 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Eye className="w-5 h-5 mr-2" />
+                    Extracted Contract Text
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-h-96 overflow-y-auto bg-gray-800/50 p-4 rounded border border-white/10">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-300">
+                      {result.extracted_text ||
+                        "No text could be extracted from the PDF."}
+                    </pre>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
         )}
       </div>
 
       {/* Footer Disclaimer */}
       <div className="border-t border-white/10 bg-black/80 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-xs text-gray-500 text-center">
             This AI provides general information only and is not a substitute
-            for professional legal advice.
+            for professional legal advice. Always consult with a qualified
+            attorney before making legal decisions.
           </p>
         </div>
       </div>
