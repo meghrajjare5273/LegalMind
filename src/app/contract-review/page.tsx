@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -28,7 +29,8 @@ import {
 } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Chart } from "react-chartjs-2";
+import "chart.js/auto";
 
 export default function ContractReviewPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -43,12 +45,10 @@ export default function ContractReviewPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-
       if (selectedFile.type !== "application/pdf") {
         setError("Please upload a PDF file only.");
         return;
       }
-
       setFile(selectedFile);
       setError(null);
       setResult(null);
@@ -57,12 +57,10 @@ export default function ContractReviewPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!file) {
       setError("Please upload a PDF file.");
       return;
     }
-
     setIsLoading(true);
     setError(null);
     setResult(null);
@@ -99,14 +97,10 @@ export default function ContractReviewPage() {
     switch (category) {
       case "Financial Risk":
         return <DollarSign className="w-4 h-4" />;
-      case "IP Risk":
+      case "Legal Risk":
         return <Shield className="w-4 h-4" />;
-      case "Performance Risk":
-        return <TrendingUp className="w-4 h-4" />;
       case "Contract Continuity":
         return <Target className="w-4 h-4" />;
-      case "Information Security":
-        return <Lock className="w-4 h-4" />;
       default:
         return <AlertTriangle className="w-4 h-4" />;
     }
@@ -116,8 +110,6 @@ export default function ContractReviewPage() {
     switch (level) {
       case "HIGH":
         return "text-red-400";
-      case "MEDIUM-HIGH":
-        return "text-orange-400";
       case "MEDIUM":
         return "text-yellow-400";
       case "LOW":
@@ -129,7 +121,6 @@ export default function ContractReviewPage() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
-      {/* Header */}
       <header className="border-b border-white/10 bg-black/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -165,7 +156,6 @@ export default function ContractReviewPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         <Card className="bg-gray-900/50 border-white/10">
           <CardHeader>
@@ -190,13 +180,11 @@ export default function ContractReviewPage() {
                   </p>
                 )}
               </div>
-
               {error && (
                 <div className="bg-red-900/20 border border-red-800/30 text-red-400 px-4 py-3 rounded">
                   {error}
                 </div>
               )}
-
               <Button
                 type="submit"
                 disabled={isLoading || !file}
@@ -218,14 +206,12 @@ export default function ContractReviewPage() {
           </CardContent>
         </Card>
 
-        {/* Analysis Results */}
         {result && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 space-y-6"
           >
-            {/* Enhanced Summary Card */}
             <Card className="bg-gray-900/50 border-white/10">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
@@ -268,83 +254,59 @@ export default function ContractReviewPage() {
                     <div className="text-gray-400 text-sm">Medium Priority</div>
                   </div>
                 </div>
-
-                {/* Risk Distribution */}
-                <div className="mt-6 space-y-3">
-                  <h4 className="text-white font-medium">Risk Distribution</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">High Risk</span>
-                      <span className="text-sm text-red-400">
-                        {result.summary.high_risk_count}
-                      </span>
-                    </div>
-                    <Progress
-                      value={
-                        result.summary.total_risks > 0
-                          ? (result.summary.high_risk_count /
-                              result.summary.total_risks) *
-                            100
-                          : 0
-                      }
-                      className="h-2 bg-gray-800"
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Medium Risk</span>
-                      <span className="text-sm text-orange-400">
-                        {result.summary.medium_risk_count}
-                      </span>
-                    </div>
-                    <Progress
-                      value={
-                        (result.summary.medium_risk_count /
-                          result.summary.total_risks) *
-                        100
-                      }
-                      className="h-2 bg-gray-800"
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Low Risk</span>
-                      <span className="text-sm text-yellow-400">
-                        {result.summary.low_risk_count}
-                      </span>
-                    </div>
-                    <Progress
-                      value={
-                        (result.summary.low_risk_count /
-                          result.summary.total_risks) *
-                        100
-                      }
-                      className="h-2 bg-gray-800"
+                <div className="mt-6">
+                  <h4 className="text-white font-medium mb-4">
+                    Risk Distribution
+                  </h4>
+                  <div className="h-64">
+                    <Chart
+                      type="pie"
+                      data={{
+                        labels: ["High", "Medium", "Low"],
+                        datasets: [
+                          {
+                            data: [
+                              result.summary.high_risk_count,
+                              result.summary.medium_risk_count,
+                              result.summary.low_risk_count,
+                            ],
+                            backgroundColor: ["#ff4444", "#ffbb33", "#33bb33"],
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { position: "top" },
+                          title: {
+                            display: true,
+                            text: "Risk Level Distribution",
+                          },
+                        },
+                      }}
                     />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Recommendations Card */}
-            {result.recommendations && result.recommendations.length > 0 && (
+            {result.overall_summary && (
               <Card className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-blue-800/30">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
                     <Lightbulb className="w-5 h-5 mr-2 text-yellow-400" />
-                    Key Recommendations
+                    Overall Summary
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {result.recommendations.map((rec, index) => (
-                      <div key={index} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0" />
-                        <p className="text-gray-300 text-sm">{rec}</p>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-gray-300 text-sm">
+                    {result.overall_summary}
+                  </p>
                 </CardContent>
               </Card>
             )}
 
-            {/* Navigation Tabs */}
             <div className="flex space-x-1 bg-gray-900/50 p-1 rounded-lg">
               <button
                 onClick={() => setActiveTab("risks")}
@@ -381,7 +343,6 @@ export default function ContractReviewPage() {
               </button>
             </div>
 
-            {/* Risk Analysis Tab */}
             {activeTab === "risks" && (
               <>
                 {result.analysis.length > 0 ? (
@@ -432,13 +393,11 @@ export default function ContractReviewPage() {
                                   </Badge>
                                 </div>
                               </div>
-
                               <div className="mb-4">
                                 <p className="text-sm mb-2 opacity-90">
                                   {risk.description}
                                 </p>
                               </div>
-
                               <div className="mb-4">
                                 <h5 className="text-sm font-medium mb-2 opacity-90">
                                   Relevant Contract Text:
@@ -449,7 +408,6 @@ export default function ContractReviewPage() {
                                   </p>
                                 </div>
                               </div>
-
                               {risk.specific_concerns?.length > 0 && (
                                 <div className="mb-4">
                                   <h5 className="text-sm font-medium mb-2 opacity-90 flex items-center">
@@ -471,7 +429,6 @@ export default function ContractReviewPage() {
                                   </div>
                                 </div>
                               )}
-
                               <div>
                                 <h5 className="text-sm font-medium mb-2 opacity-90 flex items-center">
                                   <Lightbulb className="w-3 h-3 mr-1" />
@@ -490,6 +447,18 @@ export default function ContractReviewPage() {
                                     )
                                   )}
                                 </div>
+                              </div>
+                              <div className="mt-4">
+                                <Button
+                                  onClick={() =>
+                                    (window.location.href = `/chat?query=Explain this clause: ${encodeURIComponent(
+                                      risk.sentence
+                                    )}`)
+                                  }
+                                  className="bg-[#03366D] text-white hover:bg-[#0A2536]"
+                                >
+                                  Ask for More Details
+                                </Button>
                               </div>
                             </div>
                           )
@@ -518,7 +487,6 @@ export default function ContractReviewPage() {
               </>
             )}
 
-            {/* Contract Sections Tab */}
             {activeTab === "sections" && (
               <Card className="bg-gray-900/50 border-white/10">
                 <CardHeader>
@@ -561,7 +529,6 @@ export default function ContractReviewPage() {
               </Card>
             )}
 
-            {/* Extracted Text Tab */}
             {activeTab === "text" && (
               <Card className="bg-gray-900/50 border-white/10">
                 <CardHeader>
@@ -584,7 +551,6 @@ export default function ContractReviewPage() {
         )}
       </div>
 
-      {/* Footer Disclaimer */}
       <div className="border-t border-white/10 bg-black/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-xs text-gray-500 text-center">

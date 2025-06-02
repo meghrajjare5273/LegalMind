@@ -120,4 +120,5 @@ export interface EnhancedExtractAndAnalyzeResponse {
   summary: RiskSummary;
   sections: ContractSection[];
   recommendations: string[];
+  overall_summary: string
 }
