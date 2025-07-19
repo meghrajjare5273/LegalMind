@@ -1,46 +1,20 @@
-import type React from "react";
-import type { Metadata } from "next";
-import { Domine } from "next/font/google";
-import "./globals.css";
+// app/layout.tsx
+import type { ReactNode } from "react";
+import { Inter } from "next/font/google";
+// import { ThemeProvider } from "@mui/material";
+// import { muiTheme } from "@/lib/theme";
+import "@/app/globals.css";
 
-// const inter = Inter({
-//   variable: "--font-inter",
-//   subsets: ["latin"],
-// });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-const domine = Domine({
-  variable: "--font-oswald",
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-// const lora = Lora({
-//   variable: "--font-lora",
-//   subsets: ["math"],
-//   weight: ["400", "500", "600", "700"],
-// });
-
-// const poppins = Poppins({
-//   variable: "--font-poppins",
-//   subsets: ["latin"],
-//   weight: ["300", "400", "500", "600", "700", "800", "900"],
-// });
-
-export const metadata: Metadata = {
-  title: "LegalMind - AI-Powered Legal Advisory Platform",
-  description:
-    "Get instant legal guidance with our advanced AI chatbot. Describe your legal issues and receive personalized suggestions on how to proceed.",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${domine.className} antialiased font-inter`}>
-        {children}
+    <html lang="en" className={inter.variable}>
+      <body>
+        {/* <ThemeProvider theme={muiTheme}> */}
+          {/* <CssBaseline /> */}
+          {children}
+        {/* </ThemeProvider> */}
       </body>
     </html>
   );
