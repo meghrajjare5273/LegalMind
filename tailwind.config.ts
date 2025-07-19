@@ -59,7 +59,9 @@ const config: Config = {
       },
       fontFamily: {
         inter: ["var(--font-inter)", "sans-serif"],
-        poppins: ["var(--font-poppins)", "sans-serif"],
+        playfair: ["var(--font-playfair)", "serif"],
+        sans: ["var(--font-inter)", "sans-serif"],
+        serif: ["var(--font-playfair)", "serif"],
       },
       animation: {
         float: "float 6s ease-in-out infinite",
