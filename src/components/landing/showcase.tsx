@@ -45,7 +45,29 @@ const solutions = [
 
 export default function SolutionsCarousel() {
   const [isDragging, setIsDragging] = useState(false);
+  const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0 });
   const constraintsRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateConstraints = () => {
+      if (constraintsRef.current && carouselRef.current) {
+        const containerWidth = constraintsRef.current.offsetWidth;
+        const carouselWidth = carouselRef.current.scrollWidth;
+        const difference = carouselWidth - containerWidth;
+
+        setDragConstraints({
+          left: -difference,
+          right: 0,
+        });
+      }
+    };
+
+    updateConstraints();
+    window.addEventListener("resize", updateConstraints);
+
+    return () => window.removeEventListener("resize", updateConstraints);
+  }, []);
 
   return (
     <Box
@@ -81,14 +103,17 @@ export default function SolutionsCarousel() {
         <Box
           ref={constraintsRef}
           sx={{
-            overflowX: "visible",
-            overflowY: "visible",
+            overflow: "hidden",
             cursor: isDragging ? "grabbing" : "grab",
+            width: "100%",
+            position: "relative",
           }}
         >
           <motion.div
+            ref={carouselRef}
             drag="x"
-            dragConstraints={constraintsRef}
+            dragConstraints={dragConstraints}
+            dragElastic={0.1}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={() => setIsDragging(false)}
             style={{
@@ -96,6 +121,7 @@ export default function SolutionsCarousel() {
               gap: "24px",
               paddingLeft: "20px",
               paddingRight: "20px",
+              width: "max-content",
             }}
             whileTap={{ cursor: "grabbing" }}
           >
@@ -112,12 +138,14 @@ export default function SolutionsCarousel() {
                   sx={{
                     backgroundColor: "rgba(255,255,255,0.05)",
                     backdropFilter: "blur(10px)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    border: "1px solid rgba(255,255,255,0.15)",
                     borderRadius: 4,
                     overflow: "visible",
+                    boxShadow: "0 0px 0px 0 rgba(255,68,68,0.15)",
+
                     "&:hover": {
                       transform: "translateY(-8px)",
-                      boxShadow: "0 25px 50px rgba(255, 68, 68, 0.3)",
+                      boxShadow: "0 4px 24px 0 rgba(255,68,68,0.15)",
                     },
                     transition: "all 0.4s ease",
                     "@media (prefers-reduced-motion: reduce)": {
