@@ -19,11 +19,15 @@ const config: Config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
+          DEFAULT: "#ff4444",
+          light: "#ff6b6b",
+          dark: "#d32f2f",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
+          DEFAULT: "#1a1a1a",
+          light: "#333333",
+          dark: "#000000",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
@@ -34,10 +38,12 @@ const config: Config = {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
+        // accent: {
+        //   DEFAULT: "hsl(var(--accent))",
+        //   foreground: "hsl(var(--accent-foreground))",
+        //   mint: "#daf6f5",
+        //   mintDark: "#b8f2ef",
+        // },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -46,11 +52,11 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "cape-cod": "#0a2536",
-        obsidian: "#03366d",
-        "pure-mint": "#daf6f5",
-        "mint-dark": "#b8f2ef",
-        "pure-white": "#f3f4f6",
+        // "cape-cod": "#0a2536",
+        // obsidian: "#03366d",
+        // "pure-mint": "#daf6f5",
+        // "mint-dark": "#b8f2ef",
+        // "pure-white": "#f3f4f6",
       },
       borderRadius: {
         lg: "var(--radius)",
