@@ -10,36 +10,50 @@ import {
 import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 
-const solutions = [
+type Solutions = {
+  title: string;
+  description: string;
+  image: string | null;
+  category: string;
+};
+
+const solutions: Solutions[] = [
   {
     title: "Contract Analysis Suite",
     description: "Comprehensive contract review and risk assessment",
-    image: "/solutions/contracts.jpg",
+    // image: "/solutions/contracts.jpg",
     category: "Contract Management",
+    image: null,
   },
   {
     title: "Litigation Support Platform",
     description: "AI-powered case research and document discovery",
-    image: "/solutions/litigation.jpg",
+    // image: "/solutions/litigation.jpg",
     category: "Litigation",
+    image: null,
   },
   {
     title: "Compliance Dashboard",
     description: "Real-time regulatory monitoring and alerts",
-    image: "/solutions/compliance.jpg",
+    // image: "/solutions/compliance.jpg",
     category: "Compliance",
+    image: null,
   },
   {
     title: "Legal Research Engine",
     description: "Instant access to case law and precedents",
-    image: "/solutions/research.jpg",
+    // image: "/solutions/research.jpg",
     category: "Research",
+    image: null,
   },
   {
     title: "Document Automation",
     description: "Streamlined document creation and management",
-    image: "/solutions/automation.jpg",
+    // image: "/solutions/automation.jpg",
     category: "Automation",
+    image: null,
+
+    // image: null,
   },
 ];
 
@@ -158,50 +172,65 @@ export default function SolutionsCarousel() {
                   }}
                 >
                   {/* Placeholder for image */}
-                  <Box
-                    sx={{
-                      height: 200,
-                      background: `linear-gradient(135deg, #ff4444${Math.floor(
-                        30 + index * 10
-                      )
-                        .toString(16)
-                        .padStart(2, "0")} 0%, #ff6b6b${Math.floor(
-                        20 + index * 8
-                      )
-                        .toString(16)
-                        .padStart(2, "0")} 100%)`,
-                      position: "relative",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                  {solution.image ? (
+                    <CardMedia
+                      component="img"
+                      image={solution.image}
+                      alt={solution.title}
+                      sx={{
+                        height: 200,
+                        width: "100%",
+                        objectFit: "cover",
+                        // borderTopLeftRadius: theme => theme.shape.borderRadius * 4,
+                        // borderTopRightRadius: theme => theme.shape.borderRadius * 4,
+                      }}
+                    />
+                  ) : (
                     <Box
                       sx={{
-                        position: "absolute",
-                        top: 16,
-                        left: 16,
-                        background: "#fff3cd",
-                        color: "#ff4444",
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        px: 1,
-                        py: 0.25,
-                        letterSpacing: 0.5,
-                        fontSize: 12,
+                        height: 200,
+                        background: `linear-gradient(135deg, #ff4444${Math.floor(
+                          30 + index * 10
+                        )
+                          .toString(16)
+                          .padStart(2, "0")} 0%, #ff6b6b${Math.floor(
+                          20 + index * 8
+                        )
+                          .toString(16)
+                          .padStart(2, "0")} 100%)`,
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      {solution.category}
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 16,
+                          left: 16,
+                          background: "#fff3cd",
+                          color: "#ff4444",
+                          fontWeight: 600,
+                          borderRadius: 2,
+                          px: 1,
+                          py: 0.25,
+                          letterSpacing: 0.5,
+                          fontSize: 12,
+                        }}
+                      >
+                        {solution.category}
+                      </Box>
+                      <Typography
+                        role="img"
+                        aria-label={`${solution.category} category illustratiion`}
+                        variant="h6"
+                        sx={{ color: "white", fontWeight: 600 }}
+                      >
+                        {solution.category}
+                      </Typography>
                     </Box>
-                    <Typography
-                      role="img"
-                      aria-label={`${solution.category} category illustratiion`}
-                      variant="h6"
-                      sx={{ color: "white", fontWeight: 600 }}
-                    >
-                      {solution.category}
-                    </Typography>
-                  </Box>
+                  )}
 
                   <CardContent sx={{ p: 3 }}>
                     <Typography
