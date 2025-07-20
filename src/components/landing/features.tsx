@@ -105,11 +105,11 @@ export default function FeaturesCarousel() {
     );
   };
 
-  const visibleFeatures = features.slice(
-    currentIndex,
-    currentIndex + itemsPerView
-  );
-
+  const visibleFeatures = [];
+  for (let i = 0; i < itemsPerView; i++) {
+    const index = (currentIndex + i) % features.length;
+    visibleFeatures.push(features[index]);
+  }
   return (
     <Box
       id="features"
@@ -149,6 +149,7 @@ export default function FeaturesCarousel() {
         <Box sx={{ position: "relative", overflow: "hidden" }}>
           {/* Navigation Arrows */}
           <IconButton
+            aria-label="Previous features"
             onClick={goToPrev}
             sx={{
               position: "absolute",
@@ -170,6 +171,7 @@ export default function FeaturesCarousel() {
           </IconButton>
 
           <IconButton
+            aria-label="Next features"
             onClick={goToNext}
             sx={{
               position: "absolute",
@@ -189,7 +191,6 @@ export default function FeaturesCarousel() {
           >
             <ArrowForwardIos />
           </IconButton>
-
           {/* Features Display */}
           <Box
             sx={{
@@ -262,7 +263,9 @@ export default function FeaturesCarousel() {
                         {feature.icon}
                       </Box>
                       <Chip
-                        label={`0${currentIndex + index + 1}`}
+                        label={`0${
+                          ((currentIndex + index) % features.length) + 1
+                        }`}
                         size="small"
                         sx={{
                           backgroundColor: feature.color,

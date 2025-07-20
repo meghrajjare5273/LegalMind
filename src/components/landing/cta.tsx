@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { Send } from "@mui/icons-material";
 
 export default function CTASection() {
+  const isEmailValid = true;
   return (
     <Box
       sx={{
@@ -58,6 +59,9 @@ export default function CTASection() {
           >
             <TextField
               placeholder="Enter your email address"
+              type="email"
+              label="Email Address"
+              required
               variant="filled"
               fullWidth
               sx={{
@@ -76,7 +80,7 @@ export default function CTASection() {
                   },
                 },
               }}
-            />
+            />{" "}
             <Button
               variant="contained"
               endIcon={<Send />}
@@ -90,6 +94,9 @@ export default function CTASection() {
                 },
                 transition: "all 0.3s ease",
               }}
+              type="submit"
+              disabled={isEmailValid}
+              aria-label="Subscribe to newletter with email"
             >
               Get Started
             </Button>

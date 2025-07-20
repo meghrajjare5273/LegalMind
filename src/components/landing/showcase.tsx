@@ -105,7 +105,7 @@ export default function SolutionsCarousel() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                style={{ minWidth: "350px", flex: "none" }}
+                style={{ minWidth: "clamp(280px, 350px, 90vw)", flex: "none" }}
               >
                 <Card
                   sx={{
@@ -119,6 +119,12 @@ export default function SolutionsCarousel() {
                       boxShadow: "0 25px 50px rgba(255, 68, 68, 0.3)",
                     },
                     transition: "all 0.4s ease",
+                    "@media (prefers-reduced-motion: reduce)": {
+                      transition: "none",
+                      "&:hover": {
+                        transform: "none",
+                      },
+                    },
                     cursor: "pointer",
                   }}
                 >
@@ -128,9 +134,13 @@ export default function SolutionsCarousel() {
                       height: 200,
                       background: `linear-gradient(135deg, #ff4444${Math.floor(
                         30 + index * 10
-                      ).toString(16)} 0%, #ff6b6b${Math.floor(
+                      )
+                        .toString(16)
+                        .padStart(2, "0")} 0%, #ff6b6b${Math.floor(
                         20 + index * 8
-                      ).toString(16)} 100%)`,
+                      )
+                        .toString(16)
+                        .padStart(2, "0")} 100%)`,
                       position: "relative",
                       display: "flex",
                       alignItems: "center",
@@ -138,6 +148,8 @@ export default function SolutionsCarousel() {
                     }}
                   >
                     <Typography
+                      role="img"
+                      aria-label={`${solution.category} category illustratiion`}
                       variant="h6"
                       sx={{ color: "white", fontWeight: 600 }}
                     >
