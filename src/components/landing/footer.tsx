@@ -14,7 +14,7 @@ export default function Footer() {
     >
       <Container maxWidth="xl">
         <Grid container spacing={6} alignItems="flex-start">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
               LegalMind
             </Typography>
@@ -27,7 +27,7 @@ export default function Footer() {
             </Typography>
           </Grid>
           {/* Columns for Company & Platform */}
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography
               variant="subtitle2"
               gutterBottom
@@ -66,7 +66,7 @@ export default function Footer() {
               </Link>
             </Box>
           </Grid>
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography
               variant="subtitle2"
               gutterBottom
@@ -107,9 +107,7 @@ export default function Footer() {
           </Grid>
           {/* Contact */}
           <Grid
-            item
-            xs={12}
-            md={4}
+            size={{ xs: 12, md: 6 }}
             sx={{ textAlign: { xs: "left", md: "right" } }}
           >
             <Typography
