@@ -1,249 +1,330 @@
 "use client";
-
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
-  ChevronRight,
-  ChevronLeft,
-  Play,
-  Pause,
-  FileText,
-  Shield,
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Chip,
+  IconButton,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import { useState, useEffect } from "react";
+import {
+  Analytics,
+  Speed,
+  Security,
+  Description,
+  Notifications,
   Search,
-  Zap,
-} from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+  Psychology,
+} from "@mui/icons-material";
 
-const featuresList = [
+const features = [
   {
     title: "AI-Powered Legal Analysis",
     description:
-      "Advanced machine learning algorithms analyze complex legal documents with unprecedented accuracy.",
-    icon: FileText,
-    color: "from-[#FF6B35] to-[#F7931E]",
+      "Advanced machine learning algorithms analyze complex legal documents with unprecedented accuracy and speed.",
+    icon: <Analytics />,
+    color: "#ff4444",
+  },
+  {
+    title: "Lightning-Fast Document Review",
+    description:
+      "Process hundreds of pages in seconds, not hours. Transform your document review workflow.",
+    icon: <Speed />,
+    color: "#ff6b6b",
   },
   {
     title: "Smart Risk Assessment",
     description:
-      "Identify potential legal risks before they become problems with intelligent pattern recognition.",
-    icon: Shield,
-    color: "from-[#F7931E] to-[#FF8A65]",
+      "Identify potential legal risks before they become problems using predictive analytics.",
+    icon: <Security />,
+    color: "#4ecdc4",
+  },
+  {
+    title: "Contract Intelligence Engine",
+    description:
+      "Extract key terms and clauses with precision accuracy across any contract type.",
+    icon: <Description />,
+    color: "#45b7d1",
+  },
+  {
+    title: "Real-Time Compliance Monitoring",
+    description:
+      "Stay ahead of regulatory changes and requirements with automated monitoring.",
+    icon: <Notifications />,
+    color: "#96ceb4",
   },
   {
     title: "Case Precedent Discovery",
     description:
-      "Find relevant case law and precedents instantly with intelligent search algorithms.",
-    icon: Search,
-    color: "from-[#FF8A65] to-[#FF6B35]",
+      "Find relevant case law and precedents instantly from our comprehensive database.",
+    icon: <Search />,
+    color: "#feca57",
   },
   {
-    title: "Lightning-Fast Processing",
+    title: "Intelligent Legal Research",
     description:
-      "Process hundreds of pages in seconds, not hours. Transform your workflow efficiency.",
-    icon: Zap,
-    color: "from-[#FF6B35] to-[#F7931E]",
+      "Research complex legal topics with AI assistance and get instant insights.",
+    icon: <Psychology />,
+    color: "#ff9ff3",
   },
 ];
 
-export function Features() {
-  const [currentSlide, setCurrentSlide] = useState(0);
+export default function FeaturesCarousel() {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const itemsPerView = isMobile ? 1 : 3;
 
   useEffect(() => {
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % featuresList.length);
+      setCurrentIndex((prev) =>
+        prev >= features.length - itemsPerView ? 0 : prev + 1
+      );
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, itemsPerView]);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % featuresList.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide(
-      (prev) => (prev - 1 + featuresList.length) % featuresList.length
+  const goToNext = () => {
+    setCurrentIndex((prev) =>
+      prev >= features.length - itemsPerView ? 0 : prev + 1
     );
   };
 
+  const goToPrev = () => {
+    setCurrentIndex((prev) =>
+      prev <= 0 ? features.length - itemsPerView : prev - 1
+    );
+  };
+
+  const visibleFeatures = features.slice(
+    currentIndex,
+    currentIndex + itemsPerView
+  );
+
   return (
-    <section id="features" className="py-24 bg-white">
-      <div className="container mx-auto px-6">
+    <Box
+      id="features"
+      sx={{
+        py: 12,
+        backgroundColor: "#f8fafc",
+        position: "relative",
+      }}
+      onMouseEnter={() => setIsAutoPlaying(false)}
+      onMouseLeave={() => setIsAutoPlaying(true)}
+    >
+      <Container maxWidth="lg">
+        {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <Typography
+            variant="h2"
+            align="center"
+            sx={{ mb: 2, color: "secondary.main" }}
+          >
             Building Legal Solutions
-            <br />
-            <span className="text-[#FF6B35]">with Purpose</span>
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Empowering legal professionals with intelligent tools designed for
-            precision, efficiency, and excellence.
-          </p>
+          </Typography>
+          <Typography
+            variant="h3"
+            align="center"
+            sx={{ mb: 8, color: "primary.main", fontWeight: 600 }}
+          >
+            with Purpose
+          </Typography>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="space-y-8"
+        {/* Carousel Container */}
+        <Box sx={{ position: "relative", overflow: "hidden" }}>
+          {/* Navigation Arrows */}
+          <IconButton
+            onClick={goToPrev}
+            sx={{
+              position: "absolute",
+              left: -20,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 2,
+              backgroundColor: "white",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+              "&:hover": {
+                backgroundColor: "primary.main",
+                color: "white",
+                transform: "translateY(-50%) scale(1.1)",
+              },
+              transition: "all 0.3s ease",
+            }}
           >
-            <div className="space-y-6">
-              <h3 className="text-3xl font-bold text-gray-900">
-                Crafting environments that inspire
-              </h3>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                LegalMind combines cutting-edge AI technology with deep legal
-                expertise to create tools that enhance your practice and deliver
-                exceptional results for your clients.
-              </p>
-            </div>
+            <ArrowBackIos />
+          </IconButton>
 
-            <div className="space-y-4">
-              {featuresList.map((feature, index) => (
+          <IconButton
+            onClick={goToNext}
+            sx={{
+              position: "absolute",
+              right: -20,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 2,
+              backgroundColor: "white",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+              "&:hover": {
+                backgroundColor: "primary.main",
+                color: "white",
+                transform: "translateY(-50%) scale(1.1)",
+              },
+              transition: "all 0.3s ease",
+            }}
+          >
+            <ArrowForwardIos />
+          </IconButton>
+
+          {/* Features Display */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 3,
+              justifyContent: "center",
+              minHeight: 300,
+            }}
+          >
+            <AnimatePresence mode="wait">
+              {visibleFeatures.map((feature, index) => (
                 <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.6 }}
-                  className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group"
-                  onClick={() => setCurrentSlide(index)}
+                  key={`${currentIndex}-${index}`}
+                  initial={{ opacity: 0, x: 100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  style={{ flex: 1, maxWidth: isMobile ? "100%" : "350px" }}
                 >
-                  <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center group-hover:scale-110 transition-transform`}
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 4,
+                      height: "100%",
+                      borderRadius: 4,
+                      position: "relative",
+                      overflow: "hidden",
+                      background: `linear-gradient(135deg, ${feature.color}15 0%, ${feature.color}05 100%)`,
+                      border: `2px solid ${feature.color}20`,
+                      cursor: "pointer",
+                      "&:hover": {
+                        transform: "translateY(-8px)",
+                        boxShadow: `0 20px 40px ${feature.color}30`,
+                        border: `2px solid ${feature.color}`,
+                      },
+                      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    }}
                   >
-                    <feature.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 group-hover:text-[#FF6B35] transition-colors">
+                    {/* Background Pattern */}
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: -50,
+                        right: -50,
+                        width: 150,
+                        height: 150,
+                        backgroundColor: feature.color,
+                        borderRadius: "50%",
+                        opacity: 0.05,
+                      }}
+                    />
+
+                    {/* Content */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        mb: 3,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          backgroundColor: feature.color,
+                          color: "white",
+                          p: 1.5,
+                          borderRadius: 3,
+                          mr: 2,
+                        }}
+                      >
+                        {feature.icon}
+                      </Box>
+                      <Chip
+                        label={`0${currentIndex + index + 1}`}
+                        size="small"
+                        sx={{
+                          backgroundColor: feature.color,
+                          color: "white",
+                          fontWeight: 600,
+                        }}
+                      />
+                    </Box>
+
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      sx={{ fontWeight: 600, mb: 2 }}
+                    >
                       {feature.title}
-                    </h4>
-                    <p className="text-sm text-gray-600">
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ lineHeight: 1.6 }}
+                    >
                       {feature.description}
-                    </p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-[#FF6B35] transition-colors" />
+                    </Typography>
+                  </Paper>
                 </motion.div>
               ))}
-            </div>
+            </AnimatePresence>
+          </Box>
 
-            <div className="flex gap-3">
-              <Button className="bg-gradient-to-r from-[#FF6B35] to-[#F7931E] text-white rounded-full px-6">
-                Explore
-              </Button>
-              <Button
-                variant="outline"
-                className="border-gray-300 text-gray-700 rounded-full px-6 bg-transparent"
-              >
-                Learn More
-              </Button>
-            </div>
-          </motion.div>
-
-          {/* Enhanced Carousel */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative"
+          {/* Carousel Indicators */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mt: 4,
+              gap: 1,
+            }}
           >
-            <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-gray-900">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-              >
-                {featuresList.map((feature, index) => (
-                  <div key={index} className="w-full flex-shrink-0">
-                    <Card className="border-none bg-gray-900 text-white h-80">
-                      <CardContent className="flex flex-col justify-center items-center text-center p-8 h-full">
-                        <div
-                          className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-6`}
-                        >
-                          <feature.icon className="w-8 h-8 text-white" />
-                        </div>
-                        <span className="text-sm font-medium text-[#FF6B35] mb-2 uppercase tracking-wide">
-                          Feature Spotlight
-                        </span>
-                        <h4 className="text-2xl font-bold mb-4">
-                          {feature.title}
-                        </h4>
-                        <p className="text-gray-300 leading-relaxed">
-                          {feature.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ))}
-              </div>
-
-              {/* Navigation Controls */}
-              <div className="absolute inset-y-0 left-4 flex items-center">
-                <Button
-                  onClick={prevSlide}
-                  size="icon"
-                  className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm rounded-full"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
-              </div>
-
-              <div className="absolute inset-y-0 right-4 flex items-center">
-                <Button
-                  onClick={nextSlide}
-                  size="icon"
-                  className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm rounded-full"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
-              </div>
-
-              {/* Play/Pause Control */}
-              <div className="absolute top-4 right-4">
-                <Button
-                  onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                  size="icon"
-                  className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm rounded-full"
-                >
-                  {isAutoPlaying ? (
-                    <Pause className="h-4 w-4" />
-                  ) : (
-                    <Play className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Slide Indicators */}
-            <div className="flex justify-center mt-6 space-x-2">
-              {featuresList.map((_, index) => (
-                <button
+            {Array.from({ length: features.length - itemsPerView + 1 }).map(
+              (_, index) => (
+                <Box
                   key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentSlide
-                      ? "bg-[#FF6B35] scale-125"
-                      : "bg-gray-300 hover:bg-gray-400"
-                  }`}
+                  onClick={() => setCurrentIndex(index)}
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: "50%",
+                    backgroundColor:
+                      currentIndex === index ? "primary.main" : "grey.300",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      transform: "scale(1.2)",
+                    },
+                  }}
                 />
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
+              )
+            )}
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 }
