@@ -17,6 +17,7 @@ import {
 import { Menu, Close } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 const navigationItems = [
   { label: "Features", href: "#features" },
@@ -73,7 +74,7 @@ export default function Header() {
                   cursor: "pointer",
                   transition: "color 0.3s ease",
                 }}
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                onClick={() => window?.scrollTo({ top: 0, behavior: "smooth" })}
               >
                 LegalMind
               </Typography>
@@ -90,6 +91,7 @@ export default function Header() {
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                   >
                     <Button
+                      component={Link}
                       href={item.href}
                       sx={{
                         color: scrolled ? "text.primary" : "white",
@@ -150,6 +152,7 @@ export default function Header() {
 
       {/* Mobile Drawer */}
       <Drawer
+        aria-label="Navigation Menu"
         anchor="right"
         open={mobileOpen}
         onClose={handleDrawerToggle}
@@ -161,7 +164,7 @@ export default function Header() {
         }}
       >
         <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
-          <IconButton onClick={handleDrawerToggle}>
+          <IconButton onClick={handleDrawerToggle} aria-label="Close Navigation Menu">
             <Close />
           </IconButton>
         </Box>

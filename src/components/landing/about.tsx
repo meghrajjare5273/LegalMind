@@ -75,6 +75,8 @@ export default function AboutSection() {
 
                 {/* Decorative element */}
                 <Box
+                  aria-hidden="true"
+                  role="presentation"
                   sx={{
                     position: "absolute",
                     top: -20,
