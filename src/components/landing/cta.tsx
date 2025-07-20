@@ -18,9 +18,25 @@ export default function CTASection() {
         background: "linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%)",
         py: 12,
         color: "white",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <Container maxWidth="md">
+      {/* Decorative shapes */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: -70,
+          right: -100,
+          width: 300,
+          height: 200,
+          background: "rgba(255,255,255,0.07)",
+          borderRadius: "50%",
+          filter: "blur(24px)",
+          zIndex: 0,
+        }}
+      />
+      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -31,9 +47,19 @@ export default function CTASection() {
             variant="h2"
             align="center"
             gutterBottom
-            sx={{ fontWeight: 700 }}
+            sx={{
+              fontWeight: 800,
+              letterSpacing: -1,
+              fontSize: { xs: "2.25rem", md: "3.4rem" },
+              mb: 2,
+              background: "linear-gradient(90deg,#fff3cd 30%, #ff4444 70%)",
+              backgroundClip: "text",
+              color: "transparent",
+              WebkitBackgroundClip: "text",
+            }}
           >
-            Let&apos;s Design Your Legal Future Together
+            Let’s Design Your Legal{" "}
+            <span style={{ fontStyle: "italic" }}>Future</span> Together
           </Typography>
           <Typography
             variant="body1"
@@ -86,13 +112,16 @@ export default function CTASection() {
               endIcon={<Send />}
               sx={{
                 backgroundColor: "white",
-                color: "primary.main",
+                color: "#ff4444",
                 minWidth: 140,
+                fontWeight: 700,
+                boxShadow: "0 4px 32px #ff444469",
                 "&:hover": {
-                  backgroundColor: "rgba(255,255,255,0.9)",
-                  transform: "translateY(-2px)",
+                  backgroundColor: "#ff4444",
+                  color: "white",
+                  transform: "translateY(-4px) scale(1.04)",
                 },
-                transition: "all 0.3s ease",
+                transition: "all 0.3s cubic-bezier(.4,0,.2,1)",
               }}
               type="submit"
               disabled={isEmailValid}

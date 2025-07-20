@@ -147,6 +147,23 @@ export default function SolutionsCarousel() {
                       justifyContent: "center",
                     }}
                   >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 16,
+                        left: 16,
+                        background: "#fff3cd",
+                        color: "#ff4444",
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        px: 1,
+                        py: 0.25,
+                        letterSpacing: 0.5,
+                        fontSize: 12,
+                      }}
+                    >
+                      {solution.category}
+                    </Box>
                     <Typography
                       role="img"
                       aria-label={`${solution.category} category illustratiion`}

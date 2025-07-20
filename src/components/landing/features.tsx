@@ -117,6 +117,7 @@ export default function FeaturesCarousel() {
         py: 12,
         backgroundColor: "#f8fafc",
         position: "relative",
+        overflow: "visible",
       }}
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
@@ -146,7 +147,7 @@ export default function FeaturesCarousel() {
         </motion.div>
 
         {/* Carousel Container */}
-        <Box sx={{ position: "relative", overflow: "hidden" }}>
+        <Box sx={{ position: "relative", overflow: "visible" }}>
           {/* Navigation Arrows */}
           <IconButton
             aria-label="Previous features"
@@ -169,7 +170,6 @@ export default function FeaturesCarousel() {
           >
             <ArrowBackIos />
           </IconButton>
-
           <IconButton
             aria-label="Next features"
             onClick={goToNext}
@@ -198,6 +198,7 @@ export default function FeaturesCarousel() {
               gap: 3,
               justifyContent: "center",
               minHeight: 300,
+              overflow: "visible",
             }}
           >
             <AnimatePresence mode="wait">
@@ -217,16 +218,18 @@ export default function FeaturesCarousel() {
                       height: "100%",
                       borderRadius: 4,
                       position: "relative",
-                      overflow: "hidden",
+                      overflow: "visible",
                       background: `linear-gradient(135deg, ${feature.color}15 0%, ${feature.color}05 100%)`,
-                      border: `2px solid ${feature.color}20`,
+                      border: `2px solid ${feature.color}10`,
                       cursor: "pointer",
+                      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                      boxShadow: "0 4px 20px 0 rgba(0,0,0,0.08)",
                       "&:hover": {
                         transform: "translateY(-8px)",
-                        boxShadow: `0 20px 40px ${feature.color}30`,
+                        boxShadow: `0 20px 40px ${feature.color}33`,
                         border: `2px solid ${feature.color}`,
+                        zIndex: 2,
                       },
-                      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                     }}
                   >
                     {/* Background Pattern */}
@@ -295,7 +298,6 @@ export default function FeaturesCarousel() {
               ))}
             </AnimatePresence>
           </Box>
-
           {/* Carousel Indicators */}
           <Box
             sx={{
