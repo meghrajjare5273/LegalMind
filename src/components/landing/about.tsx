@@ -7,7 +7,7 @@ export default function AboutSection() {
     <Box sx={{ py: 12, backgroundColor: "white" }}>
       <Container maxWidth="lg">
         <Grid container spacing={8} alignItems="center">
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -39,7 +39,7 @@ export default function AboutSection() {
               </Typography>
             </motion.div>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}

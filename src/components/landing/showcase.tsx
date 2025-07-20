@@ -54,7 +54,7 @@ export default function SolutionsCarousel() {
         py: 12,
         backgroundColor: "secondary.main",
         color: "white",
-        overflow: "hidden",
+        overflow: "visible",
       }}
     >
       <Container maxWidth="lg">
@@ -81,7 +81,8 @@ export default function SolutionsCarousel() {
         <Box
           ref={constraintsRef}
           sx={{
-            overflow: "hidden",
+            overflowX: "visible",
+            overflowY: "visible",
             cursor: isDragging ? "grabbing" : "grab",
           }}
         >
@@ -113,7 +114,7 @@ export default function SolutionsCarousel() {
                     backdropFilter: "blur(10px)",
                     border: "1px solid rgba(255,255,255,0.1)",
                     borderRadius: 4,
-                    overflow: "hidden",
+                    overflow: "visible",
                     "&:hover": {
                       transform: "translateY(-8px)",
                       boxShadow: "0 25px 50px rgba(255, 68, 68, 0.3)",
