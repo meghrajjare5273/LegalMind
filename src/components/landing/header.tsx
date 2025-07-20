@@ -141,7 +141,22 @@ export default function Header() {
                 color="inherit"
                 aria-label="open drawer"
                 onClick={handleDrawerToggle}
-                sx={{ color: scrolled ? "text.primary" : "white" }}
+                sx={{
+                  color: scrolled ? "text.primary" : "white",
+                  backgroundColor: scrolled
+                    ? "transparent"
+                    : "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: scrolled ? "none" : "blur(10px)",
+                  border: scrolled
+                    ? "none"
+                    : "1px solid rgba(255, 255, 255, 0.2)",
+                  "&:hover": {
+                    backgroundColor: scrolled
+                      ? "rgba(0, 0, 0, 0.04)"
+                      : "rgba(255, 255, 255, 0.2)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
               >
                 <Menu />
               </IconButton>
@@ -164,7 +179,10 @@ export default function Header() {
         }}
       >
         <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
-          <IconButton onClick={handleDrawerToggle} aria-label="Close Navigation Menu">
+          <IconButton
+            onClick={handleDrawerToggle}
+            aria-label="Close Navigation Menu"
+          >
             <Close />
           </IconButton>
         </Box>
