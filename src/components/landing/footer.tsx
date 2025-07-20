@@ -1,120 +1,153 @@
-"use client";
-import { Scale } from "lucide-react";
-import Link from "next/link";
+import { Box, Container, Typography, Link, Divider } from "@mui/material";
+import Grid from "@mui/material/Grid";
 
-export function Footer() {
+export default function Footer() {
   return (
-    <footer className="bg-black text-white py-16">
-      <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
-          {/* Brand Section */}
-          <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] rounded-xl flex items-center justify-center">
-                <Scale className="w-5 h-5 text-white" />
-              </div>
-              <h4 className="text-2xl font-bold text-white">LegalMind</h4>
+    <Box sx={{ backgroundColor: "secondary.main", color: "white", py: 8 }}>
+      <Container maxWidth="lg">
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
+              LegalMind
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, opacity: 0.8 }}>
+              Mastering the Art of Legal Intelligence
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.6 }}>
+              Transforming legal practice through innovative AI technology and
+              intelligent document analysis.
+            </Typography>
+          </Grid>
+
+          <Grid item xs={6} md={2}>
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ fontWeight: 600 }}
+            >
+              Company
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
+              >
+                About Us
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
+              >
+                Careers
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
+              >
+                Blog
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
+              >
+                Press
+              </Link>
+            </Box>
+          </Grid>
+
+          <Grid item xs={6} md={2}>
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ fontWeight: 600 }}
+            >
+              Platform
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
+              >
+                Features
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
+              >
+                Security
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
+              >
+                API
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, "&:hover": { opacity: 1 } }}
+              >
+                Pricing
+              </Link>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ fontWeight: 600 }}
+            >
+              Contact
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
+              hello@legalmind.ai
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              1-800-LEGAL-AI
+            </Typography>
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 4, backgroundColor: "rgba(255,255,255,0.1)" }} />
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Typography variant="body2" sx={{ opacity: 0.6 }}>
+            © 2025 LegalMind AI. All rights reserved.
+          </Typography>
+          <Box sx={{ display: "flex", gap: 3 }}>
+            <Link
+              href="#"
+              color="inherit"
+              sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
+            >
+              Privacy Policy
             </Link>
-            <p className="text-gray-400 max-w-md mb-6 leading-relaxed">
-              Mastering the Art of Legal Technology
-            </p>
-            <p className="text-sm text-gray-500">
-              © 2025 LegalMind. All rights reserved.
-            </p>
-          </div>
-
-          {/* Links Sections */}
-          <div>
-            <h5 className="font-bold text-white mb-6">Product</h5>
-            <ul className="space-y-3 text-gray-400">
-              <li>
-                <Link
-                  href="#features"
-                  className="hover:text-white transition-colors"
-                >
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/chat"
-                  className="hover:text-white transition-colors"
-                >
-                  AI Chat
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contract-review"
-                  className="hover:text-white transition-colors"
-                >
-                  Contract Review
-                </Link>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Pricing
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 className="font-bold text-white mb-6">Company</h5>
-            <ul className="space-y-3 text-gray-400">
-              <li>
-                <Link
-                  href="#about"
-                  className="hover:text-white transition-colors"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 className="font-bold text-white mb-6">Support</h5>
-            <ul className="space-y-3 text-gray-400">
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Community
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  API Docs
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Status
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </footer>
+            <Link
+              href="#"
+              color="inherit"
+              sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
+            >
+              Terms of Service
+            </Link>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 }
