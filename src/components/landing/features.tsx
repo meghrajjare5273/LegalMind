@@ -110,6 +110,7 @@ export default function FeaturesCarousel() {
     const index = (currentIndex + i) % features.length;
     visibleFeatures.push(features[index]);
   }
+
   return (
     <Box
       id="features"
@@ -117,7 +118,7 @@ export default function FeaturesCarousel() {
         py: 12,
         backgroundColor: "#f8fafc",
         position: "relative",
-        overflow: "visible",
+        overflow: "hidden", // Changed from "visible" to "hidden"
       }}
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
@@ -146,89 +147,109 @@ export default function FeaturesCarousel() {
           </Typography>
         </motion.div>
 
-        {/* Carousel Container */}
-        <Box sx={{ position: "relative", overflow: "visible" }}>
-          {/* Navigation Arrows */}
+        {/* Carousel Container - Fixed layout */}
+        <Box 
+          sx={{ 
+            position: "relative", 
+            overflow: "hidden", // Ensure no overflow
+            mx: { xs: 0, md: 6 }, // Add horizontal margin for arrow space
+            px: { xs: 2, md: 0 }, // Add padding on mobile
+          }}
+        >
+          {/* Navigation Arrows - Better positioning */}
           <IconButton
             aria-label="Previous features"
             onClick={goToPrev}
             sx={{
               position: "absolute",
-              left: -20,
+              left: { xs: 8, md: -48 }, // Responsive positioning
               top: "50%",
               transform: "translateY(-50%)",
               zIndex: 2,
               backgroundColor: "white",
               boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+              width: { xs: 40, md: 48 },
+              height: { xs: 40, md: 48 },
               "&:hover": {
                 backgroundColor: "primary.main",
                 color: "white",
-                transform: "translateY(-50%) scale(1.1)",
+                transform: "translateY(-50%) scale(1.05)",
               },
               transition: "all 0.3s ease",
             }}
           >
-            <ArrowBackIos />
+            <ArrowBackIos sx={{ fontSize: { xs: 16, md: 20 } }} />
           </IconButton>
+          
           <IconButton
             aria-label="Next features"
             onClick={goToNext}
             sx={{
               position: "absolute",
-              right: -20,
+              right: { xs: 8, md: -48 }, // Responsive positioning
               top: "50%",
               transform: "translateY(-50%)",
               zIndex: 2,
               backgroundColor: "white",
               boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+              width: { xs: 40, md: 48 },
+              height: { xs: 40, md: 48 },
               "&:hover": {
                 backgroundColor: "primary.main",
                 color: "white",
-                transform: "translateY(-50%) scale(1.1)",
+                transform: "translateY(-50%) scale(1.05)",
               },
               transition: "all 0.3s ease",
             }}
           >
-            <ArrowForwardIos />
+            <ArrowForwardIos sx={{ fontSize: { xs: 16, md: 20 } }} />
           </IconButton>
-          {/* Features Display */}
+
+          {/* Features Display - Fixed container */}
           <Box
             sx={{
               display: "flex",
-              gap: 3,
+              gap: { xs: 2, md: 3 },
               justifyContent: "center",
-              minHeight: 300,
-              overflow: "visible",
+              minHeight: { xs: 320, md: 300 }, // Fixed minimum height
+              overflow: "hidden",
+              px: { xs: 6, md: 0 }, // Padding for arrows on mobile
             }}
           >
             <AnimatePresence mode="wait">
               {visibleFeatures.map((feature, index) => (
                 <motion.div
                   key={`${currentIndex}-${index}`}
-                  initial={{ opacity: 0, x: 100 }}
+                  initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  style={{ flex: 1, maxWidth: isMobile ? "100%" : "350px" }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ 
+                    duration: 0.4, 
+                    delay: index * 0.05,
+                    ease: "easeInOut" 
+                  }}
+                  style={{ 
+                    flex: isMobile ? "0 0 100%" : "0 0 calc(33.333% - 16px)",
+                    minWidth: isMobile ? "100%" : "300px",
+                    maxWidth: isMobile ? "100%" : "350px",
+                  }}
                 >
                   <Paper
                     elevation={0}
                     sx={{
-                      p: 4,
+                      p: { xs: 3, md: 4 },
                       height: "100%",
                       borderRadius: 4,
                       position: "relative",
-                      overflow: "visible",
                       background: `linear-gradient(135deg, ${feature.color}15 0%, ${feature.color}05 100%)`,
                       border: `2px solid ${feature.color}10`,
                       cursor: "pointer",
-                      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                       boxShadow: "0 4px 20px 0 rgba(0,0,0,0.08)",
                       "&:hover": {
-                        transform: "translateY(-8px)",
-                        boxShadow: `0 20px 40px ${feature.color}33`,
-                        border: `2px solid ${feature.color}`,
-                        zIndex: 2,
+                        transform: "translateY(-4px)",
+                        boxShadow: `0 12px 32px ${feature.color}33`,
+                        border: `2px solid ${feature.color}30`,
                       },
                     }}
                   >
@@ -236,10 +257,10 @@ export default function FeaturesCarousel() {
                     <Box
                       sx={{
                         position: "absolute",
-                        top: -50,
-                        right: -50,
-                        width: 150,
-                        height: 150,
+                        top: -30,
+                        right: -30,
+                        width: 100,
+                        height: 100,
                         backgroundColor: feature.color,
                         borderRadius: "50%",
                         opacity: 0.05,
@@ -261,6 +282,9 @@ export default function FeaturesCarousel() {
                           p: 1.5,
                           borderRadius: 3,
                           mr: 2,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
                         {feature.icon}
@@ -274,6 +298,7 @@ export default function FeaturesCarousel() {
                           backgroundColor: feature.color,
                           color: "white",
                           fontWeight: 600,
+                          fontSize: "0.75rem",
                         }}
                       />
                     </Box>
@@ -281,7 +306,11 @@ export default function FeaturesCarousel() {
                     <Typography
                       variant="h6"
                       gutterBottom
-                      sx={{ fontWeight: 600, mb: 2 }}
+                      sx={{ 
+                        fontWeight: 600, 
+                        mb: 2,
+                        fontSize: { xs: "1.1rem", md: "1.25rem" }
+                      }}
                     >
                       {feature.title}
                     </Typography>
@@ -289,7 +318,10 @@ export default function FeaturesCarousel() {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ lineHeight: 1.6 }}
+                      sx={{ 
+                        lineHeight: 1.6,
+                        fontSize: { xs: "0.875rem", md: "0.875rem" }
+                      }}
                     >
                       {feature.description}
                     </Typography>
@@ -298,6 +330,7 @@ export default function FeaturesCarousel() {
               ))}
             </AnimatePresence>
           </Box>
+
           {/* Carousel Indicators */}
           <Box
             sx={{
@@ -322,6 +355,7 @@ export default function FeaturesCarousel() {
                     transition: "all 0.3s ease",
                     "&:hover": {
                       transform: "scale(1.2)",
+                      backgroundColor: currentIndex === index ? "primary.main" : "primary.light",
                     },
                   }}
                 />
