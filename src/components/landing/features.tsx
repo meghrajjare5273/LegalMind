@@ -118,7 +118,7 @@ export default function FeaturesCarousel() {
         py: 12,
         backgroundColor: "#f8fafc",
         position: "relative",
-        overflow: "hidden", // Changed from "visible" to "hidden"
+        overflow: "visible", // Changed from "visible" to "hidden"
       }}
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
@@ -148,10 +148,10 @@ export default function FeaturesCarousel() {
         </motion.div>
 
         {/* Carousel Container - Fixed layout */}
-        <Box 
-          sx={{ 
-            position: "relative", 
-            overflow: "hidden", // Ensure no overflow
+        <Box
+          sx={{
+            position: "relative",
+            overflow: "visible", // Ensure no overflow
             mx: { xs: 0, md: 6 }, // Add horizontal margin for arrow space
             px: { xs: 2, md: 0 }, // Add padding on mobile
           }}
@@ -180,7 +180,7 @@ export default function FeaturesCarousel() {
           >
             <ArrowBackIos sx={{ fontSize: { xs: 16, md: 20 } }} />
           </IconButton>
-          
+
           <IconButton
             aria-label="Next features"
             onClick={goToNext}
@@ -211,8 +211,8 @@ export default function FeaturesCarousel() {
               display: "flex",
               gap: { xs: 2, md: 3 },
               justifyContent: "center",
-              minHeight: { xs: 320, md: 300 }, // Fixed minimum height
-              overflow: "hidden",
+              minHeight: { xs: 350, md: 300 }, // Fixed minimum height
+              overflow: "visible",
               px: { xs: 6, md: 0 }, // Padding for arrows on mobile
             }}
           >
@@ -223,12 +223,12 @@ export default function FeaturesCarousel() {
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -50 }}
-                  transition={{ 
-                    duration: 0.4, 
+                  transition={{
+                    duration: 0.4,
                     delay: index * 0.05,
-                    ease: "easeInOut" 
+                    ease: "easeInOut",
                   }}
-                  style={{ 
+                  style={{
                     flex: isMobile ? "0 0 100%" : "0 0 calc(33.333% - 16px)",
                     minWidth: isMobile ? "100%" : "300px",
                     maxWidth: isMobile ? "100%" : "350px",
@@ -306,10 +306,10 @@ export default function FeaturesCarousel() {
                     <Typography
                       variant="h6"
                       gutterBottom
-                      sx={{ 
-                        fontWeight: 600, 
+                      sx={{
+                        fontWeight: 600,
                         mb: 2,
-                        fontSize: { xs: "1.1rem", md: "1.25rem" }
+                        fontSize: { xs: "1.1rem", md: "1.25rem" },
                       }}
                     >
                       {feature.title}
@@ -318,9 +318,9 @@ export default function FeaturesCarousel() {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ 
+                      sx={{
                         lineHeight: 1.6,
-                        fontSize: { xs: "0.875rem", md: "0.875rem" }
+                        fontSize: { xs: "0.875rem", md: "0.875rem" },
                       }}
                     >
                       {feature.description}
@@ -355,7 +355,10 @@ export default function FeaturesCarousel() {
                     transition: "all 0.3s ease",
                     "&:hover": {
                       transform: "scale(1.2)",
-                      backgroundColor: currentIndex === index ? "primary.main" : "primary.light",
+                      backgroundColor:
+                        currentIndex === index
+                          ? "primary.main"
+                          : "primary.light",
                     },
                   }}
                 />
