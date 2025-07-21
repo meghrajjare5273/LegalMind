@@ -98,6 +98,8 @@
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  position: relative;
 }
 
 /* Custom scrollbar */
@@ -180,4 +182,45 @@ html {
 /* Enhanced Focus States */
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-[#03366D] focus:ring-offset-2;
+}
+
+main {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.carousel-container {
+  overflow: hidden !important;
+  position: relative;
+}
+
+
+@media (max-width: 768px) {
+  /* Prevent white space on mobile */
+  * {
+    max-width: 100vw;
+  }
+  /* Fix for framer motion containers */
+  [data-framer-component-type] {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+}
+
+.embla__viewport {
+  overflow: hidden;
+}
+
+.embla__container {
+  backface-visibility: hidden;
+  display: flex;
+  touch-action: pan-y;
+  margin-left: calc(1rem * -1);
+}
+
+.embla__slide {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding-left: 1rem;
 }

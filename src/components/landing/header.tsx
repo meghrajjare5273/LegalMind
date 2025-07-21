@@ -165,53 +165,68 @@ export default function Header() {
         </Container>
       </AppBar>
 
-      {/* Mobile Drawer */}
-      <Drawer
-        aria-label="Navigation Menu"
-        anchor="right"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
+      {/* Mobile Drawer - Updated for better mobile support */}
+<Drawer
+  aria-label="Navigation Menu"
+  anchor="right"
+  open={mobileOpen}
+  onClose={handleDrawerToggle}
+  sx={{
+    "& .MuiDrawer-paper": {
+      width: "min(280px, 85vw)", // Responsive width
+      backgroundColor: "white",
+      maxWidth: "100vw", // Prevent overflow
+    },
+    "& .MuiBackdrop-root": {
+      backdropFilter: "blur(4px)",
+    },
+  }}
+>
+  <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
+    <IconButton
+      onClick={handleDrawerToggle}
+      aria-label="Close Navigation Menu"
+      sx={{
+        "&:hover": {
+          backgroundColor: "rgba(255, 68, 68, 0.1)",
+        },
+      }}
+    >
+      <Close />
+    </IconButton>
+  </Box>
+  <List>
+    {navigationItems.map((item) => (
+      <ListItem
+        key={item.label}
+        component="a"
+        href={item.href}
+        onClick={handleDrawerToggle}
         sx={{
-          "& .MuiDrawer-paper": {
-            width: 280,
-            backgroundColor: "white",
+          "&:hover": {
+            backgroundColor: "rgba(255, 68, 68, 0.05)",
           },
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
-          <IconButton
-            onClick={handleDrawerToggle}
-            aria-label="Close Navigation Menu"
-          >
-            <Close />
-          </IconButton>
-        </Box>
-        <List>
-          {navigationItems.map((item) => (
-            <ListItem
-              key={item.label}
-              component="a"
-              href={item.href}
-              onClick={handleDrawerToggle}
-            >
-              <ListItemText
-                primary={item.label}
-                sx={{ "& .MuiTypography-root": { fontWeight: 500 } }}
-              />
-            </ListItem>
-          ))}
-          <ListItem sx={{ pt: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
-            >
-              Start Free Trial
-            </Button>
-          </ListItem>
-        </List>
-      </Drawer>
+        <ListItemText
+          primary={item.label}
+          sx={{ "& .MuiTypography-root": { fontWeight: 500 } }}
+        />
+      </ListItem>
+    ))}
+    <ListItem sx={{ pt: 2, px: 2 }}>
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
+      >
+        Start Free Trial
+      </Button>
+    </ListItem>
+  </List>
+</Drawer>
+
     </>
   );
 }
