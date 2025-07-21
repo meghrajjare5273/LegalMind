@@ -38,12 +38,6 @@ const config: Config = {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
-        // accent: {
-        //   DEFAULT: "hsl(var(--accent))",
-        //   foreground: "hsl(var(--accent-foreground))",
-        //   mint: "#daf6f5",
-        //   mintDark: "#b8f2ef",
-        // },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -52,11 +46,6 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // "cape-cod": "#0a2536",
-        // obsidian: "#03366d",
-        // "pure-mint": "#daf6f5",
-        // "mint-dark": "#b8f2ef",
-        // "pure-white": "#f3f4f6",
       },
       borderRadius: {
         lg: "var(--radius)",
