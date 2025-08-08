@@ -1,119 +1,89 @@
 "use client";
-
 import {
   Box,
   Container,
   Typography,
   Card,
-  CardMedia,
   CardContent,
+  Chip,
 } from "@mui/material";
 import { motion, useAnimation } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Solutions = {
-  title: string;
-  description: string;
-  image: string | null;
-  category: string;
-};
+type Solution = { title: string; description: string; category: string };
 
-const solutions: Solutions[] = [
+const SOLUTIONS: Solution[] = [
   {
     title: "Contract Analysis Suite",
-    description: "Comprehensive contract review and risk assessment",
-    category: "Contract Management",
-    image: null,
+    description:
+      "Comprehensive review, risk extraction, obligations & redlines.",
+    category: "Contract",
   },
   {
     title: "Litigation Support Platform",
-    description: "AI-powered case research and document discovery",
+    description: "AI research, discovery assistance, and case timelines.",
     category: "Litigation",
-    image: null,
   },
   {
     title: "Compliance Dashboard",
-    description: "Real-time regulatory monitoring and alerts",
+    description: "Real-time monitoring, alerts, and audit readiness.",
     category: "Compliance",
-    image: null,
   },
   {
     title: "Legal Research Engine",
-    description: "Instant access to case law and precedents",
+    description: "Instant citations and precedent suggestions.",
     category: "Research",
-    image: null,
   },
   {
     title: "Document Automation",
-    description: "Streamlined document creation and management",
+    description: "Generate, validate, and route docs programmatically.",
     category: "Automation",
-    image: null,
   },
 ];
 
 export default function SolutionsCarousel() {
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0 });
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const constraintsRef = useRef<HTMLDivElement>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [constraints, setConstraints] = useState({ left: 0, right: 0 });
+  const shellRef = useRef<HTMLDivElement>(null);
+  const beltRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
+  const [i, setI] = useState(0);
 
-  // Auto-scroll functionality
   useEffect(() => {
-    if (isDragging) return;
+    const tick = setInterval(() => {
+      if (dragging) return;
+      setI((p) => (p + 1) % SOLUTIONS.length);
+    }, 3800);
+    return () => clearInterval(tick);
+  }, [dragging]);
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % solutions.length;
-        return nextIndex;
-      });
-    }, 4000); // Auto-scroll every 4 seconds
-
-    return () => clearInterval(interval);
-  }, [isDragging]);
-
-  // Update constraints and handle auto-scroll animation
   useEffect(() => {
-    const updateConstraints = () => {
-      if (constraintsRef.current && carouselRef.current) {
-        const containerWidth = constraintsRef.current.offsetWidth;
-        const cardWidth = 350; // Fixed card width
-        const gap = 24;
-        const totalWidth = solutions.length * (cardWidth + gap);
-        const difference = totalWidth - containerWidth;
-
-        setDragConstraints({
-          left: -Math.max(0, difference),
-          right: 0,
-        });
-      }
+    const recalc = () => {
+      if (!shellRef.current) return;
+      const w = shellRef.current.offsetWidth;
+      const card = 360;
+      const gap = 24;
+      const total = SOLUTIONS.length * (card + gap);
+      const diff = total - w;
+      setConstraints({ left: -Math.max(0, diff), right: 0 });
     };
-
-    updateConstraints();
-    window.addEventListener("resize", updateConstraints);
-    return () => window.removeEventListener("resize", updateConstraints);
+    recalc();
+    window.addEventListener("resize", recalc);
+    return () => window.removeEventListener("resize", recalc);
   }, []);
 
-  // Animate to current index
   useEffect(() => {
-    if (!isDragging && constraintsRef.current) {
-      const containerWidth = constraintsRef.current.offsetWidth;
-      const cardWidth = 350;
-      const gap = 24;
-      const offset = currentIndex * (cardWidth + gap);
-      const maxOffset = Math.max(
-        0,
-        solutions.length * (cardWidth + gap) - containerWidth
-      );
-      const clampedOffset = Math.min(offset, maxOffset);
-
-      controls.start({
-        x: -clampedOffset,
-        transition: { duration: 0.8, ease: "easeInOut" },
-      });
-    }
-  }, [currentIndex, isDragging, controls]);
+    if (!shellRef.current) return;
+    const w = shellRef.current.offsetWidth;
+    const card = 360;
+    const gap = 24;
+    const offset = i * (card + gap);
+    const max = Math.max(0, SOLUTIONS.length * (card + gap) - w);
+    controls.start({
+      x: -Math.min(offset, max),
+      transition: { duration: 0.7, ease: "easeInOut" },
+    });
+  }, [i, controls]);
 
   return (
     <Box
@@ -122,7 +92,7 @@ export default function SolutionsCarousel() {
         py: 12,
         backgroundColor: "secondary.main",
         color: "white",
-        overflow: "hidden", // Hide horizontal overflow at the section level
+        overflow: "hidden",
       }}
     >
       <Container maxWidth="lg">
@@ -132,175 +102,112 @@ export default function SolutionsCarousel() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <Typography variant="h2" align="center" gutterBottom sx={{ mb: 2 }}>
-            Crafting Legal Stories
+          <Typography variant="h2" align="center" sx={{ mb: 1 }}>
+            Solutions that Scale
           </Typography>
           <Typography
             variant="body1"
             align="center"
-            sx={{ mb: 8, opacity: 0.8, maxWidth: 600, mx: "auto" }}
+            sx={{ opacity: 0.8, maxWidth: 680, mx: "auto", mb: 6 }}
           >
-            Explore our comprehensive suite of AI-powered legal solutions
-            designed to transform your practice.
+            Hand-picked modules that plug into your existing workflow for
+            measurable outcomes.
           </Typography>
         </motion.div>
-
-        {/* Carousel Container with proper overflow handling */}
-        <Box
-          sx={{
-            position: "relative",
-            mx: -2, // Negative margin to allow cards to extend slightly
-            px: 2, // Padding to prevent content from touching edges
-          }}
-        >
+        <Box sx={{ position: "relative", px: 1.5 }}>
           <Box
-            ref={constraintsRef}
+            ref={shellRef}
             sx={{
               overflow: "hidden",
-              cursor: isDragging ? "grabbing" : "grab",
+              cursor: dragging ? "grabbing" : "grab",
               width: "100%",
-              position: "relative",
-              // Add padding to prevent shadow clipping
-              py: 2,
+              py: 1,
             }}
           >
             <motion.div
-              ref={carouselRef}
+              ref={beltRef}
               drag="x"
-              dragConstraints={dragConstraints}
-              dragElastic={0.1}
-              onDragStart={() => setIsDragging(true)}
-              onDragEnd={() => setIsDragging(false)}
+              dragConstraints={constraints}
+              dragElastic={0.12}
+              onDragStart={() => setDragging(true)}
+              onDragEnd={() => setDragging(false)}
               animate={controls}
+              whileTap={{ cursor: "grabbing" }}
               style={{
                 display: "flex",
-                gap: "24px",
-                paddingLeft: "20px",
-                paddingRight: "20px",
+                gap: 24,
                 width: "max-content",
+                paddingInline: 12,
               }}
-              whileTap={{ cursor: "grabbing" }}
             >
-              {solutions.map((solution, index) => (
+              {SOLUTIONS.map((s, idx) => (
                 <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 50 }}
+                  key={idx}
+                  initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  style={{
-                    minWidth: "350px",
-                    maxWidth: "350px",
-                    flex: "none",
-                  }}
+                  transition={{ duration: 0.5, delay: idx * 0.06 }}
+                  style={{ minWidth: 360, maxWidth: 360, flex: "none" }}
                 >
                   <Card
                     sx={{
-                      backgroundColor: "rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255,255,255,0.15)",
+                      height: "100%",
+                      bgcolor: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.16)",
                       borderRadius: 4,
-                      overflow: "hidden", // Prevent content overflow
-                      // Consistent shadow for all cards
-                      boxShadow:
-                        "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(255,68,68,0.08)",
+                      backdropFilter: "blur(8px)",
+                      overflow: "hidden",
+                      boxShadow: "0 10px 28px rgba(0,0,0,.25)",
+                      transition: "transform .25s ease, box-shadow .25s ease",
                       "&:hover": {
-                        transform: "translateY(-8px)",
-                        // Enhanced shadow on hover
-                        boxShadow:
-                          "0 16px 48px rgba(0,0,0,0.16), 0 4px 16px rgba(255,68,68,0.12)",
+                        transform: "translateY(-6px)",
+                        boxShadow: "0 20px 48px rgba(0,0,0,.35)",
                       },
-                      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "@media (prefers-reduced-motion: reduce)": {
-                        transition: "none",
-                        "&:hover": {
-                          transform: "none",
-                        },
-                      },
-                      cursor: "pointer",
-                      height: "100%", // Ensure consistent card heights
                     }}
                   >
-                    {/* Placeholder for image */}
-                    {solution.image ? (
-                      <CardMedia
-                        component="img"
-                        image={solution.image}
-                        alt={solution.title}
+                    <Box
+                      sx={{
+                        height: 180,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                        background:
+                          "linear-gradient(135deg, rgba(255,68,68,.25) 0%, rgba(255,107,107,.2) 100%)",
+                      }}
+                    >
+                      <Chip
+                        label={s.category}
+                        size="small"
                         sx={{
-                          height: 200,
-                          width: "100%",
-                          objectFit: "cover",
+                          position: "absolute",
+                          top: 14,
+                          left: 14,
+                          bgcolor: "rgba(255,255,255,0.9)",
+                          color: "secondary.main",
+                          fontWeight: 700,
                         }}
                       />
-                    ) : (
-                      <Box
-                        sx={{
-                          height: 200,
-                          background: `linear-gradient(135deg, #ff4444${Math.floor(
-                            30 + index * 10
-                          )
-                            .toString(16)
-                            .padStart(2, "0")} 0%, #ff6b6b${Math.floor(
-                            20 + index * 8
-                          )
-                            .toString(16)
-                            .padStart(2, "0")} 100%)`,
-                          position: "relative",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 16,
-                            left: 16,
-                            background: "rgba(255, 243, 205, 0.95)",
-                            color: "#ff4444",
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            px: 1.5,
-                            py: 0.5,
-                            letterSpacing: 0.5,
-                            fontSize: 12,
-                            backdropFilter: "blur(4px)",
-                          }}
-                        >
-                          {solution.category}
-                        </Box>
-                        <Typography
-                          role="img"
-                          aria-label={`${solution.category} category illustration`}
-                          variant="h6"
-                          sx={{
-                            color: "white",
-                            fontWeight: 600,
-                            textAlign: "center",
-                            px: 2,
-                          }}
-                        >
-                          {solution.category}
-                        </Typography>
-                      </Box>
-                    )}
-                    <CardContent sx={{ p: 3, flexGrow: 1 }}>
                       <Typography
                         variant="h6"
-                        gutterBottom
-                        sx={{ color: "white", fontWeight: 600, mb: 1.5 }}
+                        sx={{ color: "white", fontWeight: 700 }}
                       >
-                        {solution.title}
+                        {s.category}
+                      </Typography>
+                    </Box>
+
+                    <CardContent sx={{ p: 3 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ color: "white", fontWeight: 700, mb: 1 }}
+                      >
+                        {s.title}
                       </Typography>
                       <Typography
                         variant="body2"
-                        sx={{
-                          color: "rgba(255,255,255,0.7)",
-                          lineHeight: 1.6,
-                        }}
+                        sx={{ color: "rgba(255,255,255,.8)" }}
                       >
-                        {solution.description}
+                        {s.description}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -309,35 +216,23 @@ export default function SolutionsCarousel() {
             </motion.div>
           </Box>
 
-          {/* Carousel indicators */}
           <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 1,
-              mt: 4,
-            }}
+            sx={{ display: "flex", justifyContent: "center", mt: 3, gap: 1 }}
           >
-            {solutions.map((_, index) => (
+            {SOLUTIONS.map((_, dot) => (
               <Box
-                key={index}
-                onClick={() => setCurrentIndex(index)}
+                key={dot}
+                onClick={() => setI(dot)}
                 sx={{
-                  width: 8,
+                  width: i === dot ? 28 : 8,
                   height: 8,
-                  borderRadius: "50%",
-                  backgroundColor:
-                    currentIndex === index
-                      ? "rgba(255, 68, 68, 0.8)"
-                      : "rgba(255, 255, 255, 0.3)",
+                  borderRadius: 6,
+                  bgcolor:
+                    i === dot
+                      ? "rgba(255,68,68,0.9)"
+                      : "rgba(255,255,255,0.35)",
                   cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    backgroundColor:
-                      currentIndex === index
-                        ? "rgba(255, 68, 68, 1)"
-                        : "rgba(255, 255, 255, 0.5)",
-                  },
+                  transition: "all .25s ease",
                 }}
               />
             ))}
