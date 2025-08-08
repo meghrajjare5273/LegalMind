@@ -1,50 +1,76 @@
+// src/app/contract-review/page.tsx
 "use client";
 
-import type React from "react";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import React, { useRef, useState } from "react";
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  Grid,
+  Button as MuiButton,
+  IconButton,
+  Chip,
+  CircularProgress,
+  Divider,
+  Tabs,
+  Tab,
+  Tooltip,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import {
   ArrowLeft,
   Upload,
   Loader2,
   AlertTriangle,
-  CheckCircle,
-  FileText,
-  Shield,
-  TrendingUp,
+  Lightbulb,
   Brain,
+  DollarSign,
+  Shield,
   Target,
   Eye,
   BookOpen,
-  Download,
-  Share2,
-  Zap,
-  Clock,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
-import {
-  apiService,
-  type EnhancedExtractAndAnalyzeResponse,
-  type EnhancedRiskAnalysis,
+
+import { Chart } from "react-chartjs-2";
+import "chart.js/auto";
+
+import { apiService } from "@/services/api";
+import type {
+  EnhancedExtractAndAnalyzeResponse,
+  EnhancedRiskAnalysis,
+  ContractSection,
 } from "@/services/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+
+/**
+ * ContractReviewPage
+ *
+ * - Uses Material UI components and the app's MUI theme (src/lib/theme.ts).
+ * - Preserves all features and exact backend field names.
+ * - Modern, slightly futuristic look (glass panels, chips, subtle gradients).
+ */
 
 export default function ContractReviewPage() {
+  const theme = useTheme();
+
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] =
     useState<EnhancedExtractAndAnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "risks" | "sections" | "text"
-  >("overview");
-  const [dragActive, setDragActive] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [activeTab, setActiveTab] = useState<"risks" | "sections" | "text">(
+    "risks"
+  );
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileSelectClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       if (selectedFile.type !== "application/pdf") {
@@ -55,707 +81,915 @@ export default function ContractReviewPage() {
       setError(null);
       setResult(null);
     }
-  };
+  }
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile.type !== "application/pdf") {
-        setError("Please upload a PDF file only.");
-        return;
-      }
-      setFile(droppedFile);
-      setError(null);
-      setResult(null);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function handleSubmit(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     if (!file) {
       setError("Please upload a PDF file.");
       return;
     }
+
     setIsLoading(true);
     setError(null);
     setResult(null);
 
     try {
       const response = await apiService.extractAndAnalyze(file);
+      // response is already typed as EnhancedExtractAndAnalyzeResponse
       setResult(response);
-      setActiveTab("overview");
     } catch (err) {
+      console.error("Contract analysis error:", err);
       setError(
         err instanceof Error
           ? err.message
           : "An error occurred while processing the contract."
       );
-      console.error("Contract analysis error:", err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   const getRiskLevelColor = (level: string) => {
+    // Keep color semantics consistent with previous UI but route them through theme where sensible
     switch (level) {
       case "HIGH":
-        return "text-red-500 bg-red-50 border-red-200";
+        return theme.palette.error.main || "#ff4444";
       case "MEDIUM":
-        return "text-orange-500 bg-orange-50 border-orange-200";
+      case "MEDIUM-HIGH":
+        return theme.palette.warning?.main || "#ffbb33";
       case "LOW":
-        return "text-yellow-500 bg-yellow-50 border-yellow-200";
+        return theme.palette.success?.main || "#33bb33";
       default:
-        return "text-gray-500 bg-gray-50 border-gray-200";
+        return theme.palette.grey?.[500] || "#9ca3af";
     }
   };
 
-  // const getRiskProgress = (level: string) => {
-  //   switch (level) {
-  //     case "HIGH":
-  //       return 90;
-  //     case "MEDIUM":
-  //       return 60;
-  //     case "LOW":
-  //       return 30;
-  //     default:
-  //       return 0;
-  //   }
-  // };
-
-  const getOverallRiskColor = (level: string) => {
-    switch (level) {
-      case "HIGH":
-        return "text-red-600";
-      case "MEDIUM":
-        return "text-orange-600";
-      case "LOW":
-        return "text-green-600";
+  const getRiskCategoryIcon = (category: string) => {
+    switch (category) {
+      case "Financial Risk":
+        return <DollarSign size={16} />;
+      case "Legal Risk":
+        return <Shield size={16} />;
+      case "Contract Continuity":
+        return <Target size={16} />;
       default:
-        return "text-gray-600";
+        return <AlertTriangle size={16} />;
     }
   };
+
+  const getOverallRiskColorClass = (level: string) => {
+    // returns a color string for text
+    return getRiskLevelColor(level);
+  };
+
+  // Chart dataset for risk distribution
+  const riskChartData = result
+    ? {
+        labels: ["High", "Medium", "Low"],
+        datasets: [
+          {
+            data: [
+              result.summary.high_risk_count ?? 0,
+              result.summary.medium_risk_count ?? 0,
+              result.summary.low_risk_count ?? 0,
+            ],
+            backgroundColor: [
+              theme.palette.error.main || "#ff4444",
+              theme.palette.warning?.main || "#ffbb33",
+              theme.palette.success?.main || "#33bb33",
+            ],
+          },
+        ],
+      }
+    : undefined;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Streamlined Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-gray-100"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                  <Brain className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-semibold text-gray-900">
-                    AI Contract Analyzer
-                  </h1>
-                  <p className="text-xs text-gray-500">
-                    Intelligent document review powered by AI
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-500">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span>Secure & Confidential</span>
-              </div>
-              {result && (
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!result ? (
-          /* Upload Section */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl mx-auto"
+    <Box sx={{ minHeight: "100vh", background: "transparent", pb: 8 }}>
+      {/* Top header (in-page, keeps previous nav affordances) */}
+      <Box
+        component="header"
+        sx={{
+          borderBottom: `1px solid rgba(255,255,255,0.06)`,
+          backdropFilter: "blur(8px)",
+          background: "rgba(0,0,0,0.55)",
+        }}
+      >
+        <Container maxWidth="lg" sx={{ py: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Upload Your Contract
-              </h2>
-              <p className="text-gray-600 text-lg">
-                Get instant AI-powered analysis and risk assessment
-              </p>
-            </div>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+              <Link href="/" legacyBehavior>
+                <MuiButton
+                  size="small"
+                  variant="outlined"
+                  startIcon={<ArrowLeft size={16} />}
+                  sx={{
+                    color: "common.white",
+                    borderColor: "rgba(255,255,255,0.06)",
+                    "&:hover": { borderColor: "rgba(255,255,255,0.12)" },
+                  }}
+                >
+                  Back
+                </MuiButton>
+              </Link>
 
-            <Card className="border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors">
-              <CardContent className="p-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div
-                    className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                      dragActive
-                        ? "border-blue-400 bg-blue-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: `linear-gradient(135deg, ${
+                      theme.palette.primary.main
+                    }, ${theme.palette.secondary?.main || "#0a2536"})`,
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  <Brain color="#fff" size={18} />
+                </Box>
+
+                <Box>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ color: "common.white", fontWeight: 600 }}
                   >
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileChange}
-                      disabled={isLoading}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="space-y-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto">
-                        <Upload className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-medium text-gray-900">
-                          Drop your PDF here or click to browse
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Maximum file size: 10MB
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                    Smart Contract Review
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "rgba(255,255,255,0.55)" }}
+                  >
+                    AI-powered legal contract analysis
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                alignItems: "center",
+                color: "rgba(255,255,255,0.7)",
+              }}
+            >
+              <Box
+                sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  bgcolor: "success.main",
+                  boxShadow: "0 0 8px rgba(0,255,0,0.08)",
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{ color: "rgba(255,255,255,0.7)" }}
+              >
+                Secure Session
+              </Typography>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Main content */}
+      <Container maxWidth="lg" sx={{ mt: 6 }}>
+        {/* Upload Card */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, md: 3 },
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))",
+            border: "1px solid rgba(255,255,255,0.06)",
+            borderRadius: 2,
+            mb: 4,
+            backdropFilter: "blur(6px)",
+          }}
+        >
+          <Box component="form" onSubmit={handleSubmit}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} md={6}>
+                <Typography
+                  variant="h6"
+                  sx={{ color: "common.white", fontWeight: 700 }}
+                >
+                  Upload PDF Contract
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "rgba(255,255,255,0.65)", mt: 0.5 }}
+                >
+                  Drop a PDF or click to select. We’ll extract and analyze for
+                  risks, sections and recommendations.
+                </Typography>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf"
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
+
+                <Box
+                  sx={{ display: "flex", gap: 1, mt: 2, alignItems: "center" }}
+                >
+                  <MuiButton
+                    variant="contained"
+                    onClick={handleFileSelectClick}
+                    startIcon={<Upload size={16} />}
+                    sx={{
+                      background: `linear-gradient(90deg, ${
+                        theme.palette.primary.main
+                      }, ${theme.palette.secondary?.main || "#0a2536"})`,
+                      color: "white",
+                      px: 2,
+                      py: 1,
+                      "&:hover": { opacity: 0.95 },
+                    }}
+                  >
+                    Select PDF
+                  </MuiButton>
+
+                  <MuiButton
+                    color="inherit"
+                    variant="outlined"
+                    disabled={!file || isLoading}
+                    onClick={() => handleSubmit()}
+                    startIcon={
+                      isLoading ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Upload size={14} />
+                      )
+                    }
+                    sx={{
+                      borderColor: "rgba(255,255,255,0.06)",
+                      color: "common.white",
+                      px: 2,
+                      py: 1,
+                    }}
+                  >
+                    {isLoading ? "Analyzing..." : "Analyze Contract"}
+                  </MuiButton>
 
                   {file && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-blue-50 border border-blue-200 rounded-lg p-4"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                        <div className="flex-1">
-                          <p className="font-medium text-blue-900">
-                            {file.name}
-                          </p>
-                          <p className="text-sm text-blue-600">
-                            {(file.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      </div>
-                    </motion.div>
+                    <Chip
+                      label={file.name}
+                      size="small"
+                      sx={{
+                        color: "rgba(255,255,255,0.9)",
+                        bgcolor: "rgba(255,255,255,0.03)",
+                      }}
+                    />
                   )}
+                </Box>
 
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center space-x-2"
+                {error && (
+                  <Box sx={{ mt: 2 }}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 1.5,
+                        bgcolor: "rgba(255,0,0,0.04)",
+                        border: "1px solid rgba(255,0,0,0.08)",
+                      }}
                     >
-                      <AlertTriangle className="w-5 h-5" />
-                      <span>{error}</span>
-                    </motion.div>
-                  )}
+                      <Typography
+                        variant="body2"
+                        sx={{ color: theme.palette.error.main }}
+                      >
+                        {error}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                )}
+              </Grid>
 
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !file}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
+              <Grid item xs={12} md={6}>
+                <Box sx={{ textAlign: { xs: "left", md: "right" } }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "rgba(255,255,255,0.55)" }}
                   >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Analyzing Contract...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-5 h-5 mr-2" />
-                        Analyze Contract
-                      </>
-                    )}
-                  </Button>
-                </form>
-
-                {/* Features Preview */}
-                <div className="mt-8 pt-8 border-t border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    What you&apos;ll get:
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[
-                      {
-                        icon: <Shield className="w-5 h-5 text-blue-600" />,
-                        title: "Risk Assessment",
-                        description:
-                          "Identify potential legal risks and issues",
-                      },
-                      {
-                        icon: <Target className="w-5 h-5 text-green-600" />,
-                        title: "Key Terms",
-                        description:
-                          "Extract important clauses and obligations",
-                      },
-                      {
-                        icon: (
-                          <TrendingUp className="w-5 h-5 text-purple-600" />
-                        ),
-                        title: "Recommendations",
-                        description: "Get actionable insights and suggestions",
-                      },
-                    ].map((feature, index) => (
-                      <div key={index} className="text-center p-4">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                          {feature.icon}
-                        </div>
-                        <h4 className="font-medium text-gray-900 mb-1">
-                          {feature.title}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          {feature.description}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ) : (
-          /* Results Section */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            {/* Results Header */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Analysis Complete
-                  </h2>
-                  <p className="text-gray-600">Contract: {result.filename}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">
-                    Analyzed just now
-                  </span>
-                </div>
-              </div>
-
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div
-                    className={`text-2xl font-bold ${getOverallRiskColor(
-                      result.summary.overall_risk_level
-                    )}`}
+                    Tips
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                      justifyContent: { xs: "flex-start", md: "flex-end" },
+                      mt: 1,
+                    }}
                   >
-                    {result.summary.overall_risk_level}
-                  </div>
-                  <div className="text-sm text-gray-600">Risk Level</div>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900">
-                    {result.summary.total_risks}
-                  </div>
-                  <div className="text-sm text-gray-600">Issues Found</div>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">
-                    {result.summary.high_risk_count}
-                  </div>
-                  <div className="text-sm text-gray-600">High Priority</div>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">
-                    {result.summary.medium_risk_count}
-                  </div>
-                  <div className="text-sm text-gray-600">Medium Priority</div>
-                </div>
-              </div>
-            </div>
+                    <Chip label="PDF only" size="small" />
+                    <Chip label="Confidential" size="small" />
+                    <Chip label="Fast results" size="small" />
+                  </Box>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
 
-            {/* Navigation Tabs */}
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="flex border-b border-gray-200">
-                {[
-                  {
-                    id: "overview",
-                    label: "Overview",
-                    icon: <Eye className="w-4 h-4" />,
-                  },
-                  {
-                    id: "risks",
-                    label: "Risk Analysis",
-                    icon: <AlertTriangle className="w-4 h-4" />,
-                  },
-                  {
-                    id: "sections",
-                    label: "Sections",
-                    icon: <BookOpen className="w-4 h-4" />,
-                  },
-                  {
-                    id: "text",
-                    label: "Full Text",
-                    icon: <FileText className="w-4 h-4" />,
-                  },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 text-sm font-medium transition-colors ${
-                      activeTab === tab.id
-                        ? "bg-blue-50 text-blue-700 border-b-2 border-blue-600"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
-              </div>
+        {/* Results */}
+        {result && (
+          <Box sx={{ display: "grid", gap: 3 }}>
+            {/* Summary card */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, md: 3 },
+                background:
+                  "linear-gradient(180deg, rgba(3,54,109,0.12), rgba(10,37,54,0.08))",
+                border: "1px solid rgba(255,255,255,0.04)",
+                borderRadius: 2,
+                backdropFilter: "blur(6px)",
+              }}
+            >
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={8}>
+                  <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                    <Brain color="#fff" size={22} />
+                    <Box>
+                      <Typography
+                        variant="h6"
+                        sx={{ color: "common.white", fontWeight: 700 }}
+                      >
+                        Contract Analysis Summary
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "rgba(255,255,255,0.65)" }}
+                      >
+                        File:{" "}
+                        <strong style={{ color: "white" }}>
+                          {result.filename ?? "Uploaded contract"}
+                        </strong>
+                      </Typography>
+                    </Box>
+                  </Box>
 
-              <div className="p-6">
-                <AnimatePresence mode="wait">
-                  {activeTab === "overview" && (
-                    <motion.div
-                      key="overview"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="space-y-6"
+                  <Grid container spacing={1} sx={{ mt: 2 }}>
+                    <Grid item xs={6} sm={3}>
+                      <Box sx={{ textAlign: "center" }}>
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            color: getOverallRiskColorClass(
+                              result.summary.overall_risk_level
+                            ),
+                            fontWeight: 700,
+                          }}
+                        >
+                          {result.summary.overall_risk_level}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "rgba(255,255,255,0.6)" }}
+                        >
+                          Overall Risk
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={6} sm={3}>
+                      <Box sx={{ textAlign: "center" }}>
+                        <Typography
+                          variant="h4"
+                          sx={{ color: "common.white", fontWeight: 700 }}
+                        >
+                          {result.summary.total_risks}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "rgba(255,255,255,0.6)" }}
+                        >
+                          Total Risks Found
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={6} sm={3}>
+                      <Box sx={{ textAlign: "center" }}>
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            color: theme.palette.error.main,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {result.summary.high_risk_count}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "rgba(255,255,255,0.6)" }}
+                        >
+                          High Priority
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={6} sm={3}>
+                      <Box sx={{ textAlign: "center" }}>
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            color: theme.palette.warning?.main || "#ffbb33",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {result.summary.medium_risk_count}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "rgba(255,255,255,0.6)" }}
+                        >
+                          Medium Priority
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <Grid
+                  item
+                  xs={12}
+                  md={4}
+                  sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                >
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "rgba(255,255,255,0.85)" }}
                     >
-                      {result.overall_summary && (
-                        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-                          <CardHeader>
-                            <CardTitle className="flex items-center space-x-2">
-                              <Brain className="w-5 h-5 text-blue-600" />
-                              <span>AI Summary</span>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-gray-700 leading-relaxed">
-                              {result.overall_summary}
-                            </p>
-                          </CardContent>
-                        </Card>
+                      Risk Distribution
+                    </Typography>
+
+                    <Box sx={{ height: 160, mt: 1 }}>
+                      {riskChartData ? (
+                        <Chart
+                          type="pie"
+                          data={riskChartData}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: { position: "top" },
+                              title: { display: false },
+                            },
+                          }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            height: "100%",
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "rgba(255,255,255,0.55)" }}
+                          >
+                            No data
+                          </Typography>
+                        </Box>
                       )}
+                    </Box>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Paper>
 
-                      {/* Risk Distribution */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Risk Distribution</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-red-700">
-                                High Risk
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                {result.summary.high_risk_count}
-                              </span>
-                            </div>
-                            <Progress
-                              value={
-                                (result.summary.high_risk_count /
-                                  result.summary.total_risks) *
-                                100
-                              }
-                              className="h-2"
-                            />
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-orange-700">
-                                Medium Risk
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                {result.summary.medium_risk_count}
-                              </span>
-                            </div>
-                            <Progress
-                              value={
-                                (result.summary.medium_risk_count /
-                                  result.summary.total_risks) *
-                                100
-                              }
-                              className="h-2"
-                            />
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-yellow-700">
-                                Low Risk
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                {result.summary.low_risk_count}
-                              </span>
-                            </div>
-                            <Progress
-                              value={
-                                (result.summary.low_risk_count /
-                                  result.summary.total_risks) *
-                                100
-                              }
-                              className="h-2"
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  )}
+            {/* Overall summary */}
+            {result.overall_summary && (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  border: "1px solid rgba(0,0,0,0.25)",
+                  background:
+                    "linear-gradient(90deg, rgba(255,243,205,0.03), rgba(255,255,255,0.01))",
+                }}
+              >
+                <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                  <Lightbulb
+                    color={theme.palette.warning?.main || "#ffcc00"}
+                    size={18}
+                  />
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ color: "common.white", fontWeight: 700 }}
+                  >
+                    Overall Summary
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "rgba(255,255,255,0.75)", mt: 1 }}
+                >
+                  {result.overall_summary}
+                </Typography>
+              </Paper>
+            )}
 
-                  {activeTab === "risks" && (
-                    <motion.div
-                      key="risks"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="space-y-4"
+            {/* Tabs */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                border: "1px solid rgba(255,255,255,0.04)",
+                background: "rgba(255,255,255,0.01)",
+              }}
+            >
+              <Tabs
+                value={activeTab}
+                onChange={(_, v) =>
+                  setActiveTab(v as "risks" | "sections" | "text")
+                }
+                textColor="inherit"
+                indicatorColor="primary"
+                sx={{
+                  mb: 2,
+                  "& .MuiTab-root": {
+                    color: "rgba(255,255,255,0.8)",
+                    textTransform: "none",
+                    fontWeight: 600,
+                  },
+                  "& .MuiTab-root.Mui-selected": { color: "white" },
+                }}
+                aria-label="contract review tabs"
+              >
+                <Tab
+                  value="risks"
+                  icon={<AlertTriangle size={16} />}
+                  label="Risk Analysis"
+                />
+                <Tab
+                  value="sections"
+                  icon={<BookOpen size={16} />}
+                  label="Contract Sections"
+                />
+                <Tab
+                  value="text"
+                  icon={<Eye size={16} />}
+                  label="Extracted Text"
+                />
+              </Tabs>
+
+              {/* Tab content */}
+              {activeTab === "risks" && (
+                <Box sx={{ display: "grid", gap: 2 }}>
+                  {result.analysis.length === 0 ? (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.65)" }}
                     >
-                      {result.analysis.length > 0 ? (
-                        result.analysis.map(
-                          (risk: EnhancedRiskAnalysis, index: number) => (
-                            <Card
-                              key={index}
-                              className="border-l-4 border-l-red-400"
+                      No risks detected.
+                    </Typography>
+                  ) : (
+                    result.analysis.map(
+                      (risk: EnhancedRiskAnalysis, idx: number) => (
+                        <Paper
+                          elevation={0}
+                          key={idx}
+                          sx={{
+                            p: 2,
+                            borderRadius: 1.5,
+                            border: `1px solid rgba(255,255,255,0.04)`,
+                            display: "grid",
+                            gridTemplateColumns: "1fr auto",
+                            gap: 2,
+                            background: `linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.12))`,
+                          }}
+                        >
+                          <Box>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
                             >
-                              <CardContent className="p-6">
-                                <div className="flex items-start justify-between mb-4">
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-3 mb-2">
-                                      <h3 className="text-lg font-semibold text-gray-900">
-                                        {risk.risk_type}
-                                      </h3>
-                                      <Badge
-                                        className={getRiskLevelColor(
-                                          risk.risk_level
-                                        )}
-                                      >
-                                        {risk.risk_level}
-                                      </Badge>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-2">
-                                      {risk.risk_category}
-                                    </p>
-                                    <p className="text-gray-700 mb-4">
-                                      {risk.description}
-                                    </p>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-2xl font-bold text-gray-900">
-                                      {risk.priority_score}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      Priority Score
-                                    </div>
-                                  </div>
-                                </div>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  gap: 1,
+                                  alignItems: "center",
+                                }}
+                              >
+                                {getRiskCategoryIcon(risk.risk_category)}
+                              </Box>
+                              <Typography
+                                variant="subtitle1"
+                                sx={{ color: "common.white", fontWeight: 700 }}
+                              >
+                                {risk.risk_type}
+                              </Typography>
+                              <Chip
+                                size="small"
+                                label={risk.risk_level}
+                                sx={{
+                                  ml: 1,
+                                  bgcolor: `${getRiskLevelColor(
+                                    risk.risk_level
+                                  )}22`,
+                                  color: getRiskLevelColor(risk.risk_level),
+                                  fontWeight: 700,
+                                }}
+                              />
+                            </Box>
 
-                                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                                    Relevant Contract Text:
-                                  </h4>
-                                  <p className="text-sm text-gray-700 italic">
-                                    &quot;{risk.sentence}&quot;
-                                  </p>
-                                </div>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: "rgba(255,255,255,0.75)", mt: 1 }}
+                            >
+                              {risk.description}
+                            </Typography>
 
-                                {risk.specific_concerns?.length > 0 && (
-                                  <div className="mb-4">
-                                    <h4 className="text-sm font-medium text-gray-900 mb-2">
-                                      Specific Concerns:
-                                    </h4>
-                                    <ul className="space-y-1">
-                                      {risk.specific_concerns.map(
-                                        (concern, idx) => (
-                                          <li
-                                            key={idx}
-                                            className="flex items-start space-x-2"
-                                          >
-                                            <div className="w-1.5 h-1.5 bg-red-400 rounded-full mt-2 flex-shrink-0" />
-                                            <span className="text-sm text-gray-700">
-                                              {concern}
-                                            </span>
-                                          </li>
-                                        )
-                                      )}
-                                    </ul>
-                                  </div>
-                                )}
-
-                                <div className="mb-4">
-                                  <h4 className="text-sm font-medium text-gray-900 mb-2">
-                                    Recommended Actions:
-                                  </h4>
-                                  <ul className="space-y-1">
-                                    {risk.negotiation_strategies.map(
-                                      (strategy, idx) => (
-                                        <li
-                                          key={idx}
-                                          className="flex items-start space-x-2"
-                                        >
-                                          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
-                                          <span className="text-sm text-gray-700">
-                                            {strategy}
-                                          </span>
-                                        </li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    window.open(
-                                      `/chat?query=${encodeURIComponent(
-                                        `Explain this clause: ${risk.sentence}`
-                                      )}`,
-                                      "_blank"
-                                    )
-                                  }
+                            <Box sx={{ mt: 1 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: "rgba(255,255,255,0.6)",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                Relevant excerpt
+                              </Typography>
+                              <Paper
+                                elevation={0}
+                                sx={{
+                                  mt: 1,
+                                  p: 1,
+                                  bgcolor: "rgba(255,255,255,0.02)",
+                                  borderRadius: 1,
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontStyle: "italic",
+                                    color: "rgba(255,255,255,0.75)",
+                                  }}
                                 >
-                                  <Users className="w-4 h-4 mr-2" />
-                                  Get Expert Advice
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          )
-                        )
-                      ) : (
-                        <Card className="bg-green-50 border-green-200">
-                          <CardContent className="p-6 text-center">
-                            <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-green-900 mb-2">
-                              No Significant Risks Detected
-                            </h3>
-                            <p className="text-green-700">
-                              Great news! No significant risk patterns were
-                              detected in this contract.
-                            </p>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </motion.div>
-                  )}
+                                  "{risk.sentence}"
+                                </Typography>
+                              </Paper>
+                            </Box>
 
-                  {activeTab === "sections" && (
-                    <motion.div
-                      key="sections"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="space-y-4"
-                    >
-                      {result.sections && result.sections.length > 0 ? (
-                        result.sections.map((section, index) => (
-                          <Card key={index}>
-                            <CardHeader>
-                              <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg">
-                                  {section.title}
-                                </CardTitle>
-                                <Badge variant="outline">
-                                  {section.risk_count} risk(s)
-                                </Badge>
-                              </div>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="bg-gray-50 rounded-lg p-4">
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                  {section.content}
-                                </p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))
-                      ) : (
-                        <Card>
-                          <CardContent className="p-6 text-center text-gray-500">
-                            No specific contract sections were identified.
-                          </CardContent>
-                        </Card>
-                      )}
-                    </motion.div>
-                  )}
+                            {risk.specific_concerns?.length > 0 && (
+                              <Box sx={{ mt: 1 }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: "rgba(255,255,255,0.6)",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  Specific Concerns
+                                </Typography>
+                                <Box
+                                  sx={{
+                                    mt: 1,
+                                    display: "flex",
+                                    gap: 1,
+                                    flexWrap: "wrap",
+                                  }}
+                                >
+                                  {risk.specific_concerns.map((c, i) => (
+                                    <Chip
+                                      key={i}
+                                      label={c}
+                                      size="small"
+                                      sx={{ bgcolor: "rgba(255,255,255,0.02)" }}
+                                    />
+                                  ))}
+                                </Box>
+                              </Box>
+                            )}
 
-                  {activeTab === "text" && (
-                    <motion.div
-                      key="text"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                    >
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Extracted Contract Text</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="max-h-96 overflow-y-auto bg-gray-50 rounded-lg p-4 border">
-                            <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono">
-                              {result.extracted_text ||
-                                "No text could be extracted from the PDF."}
-                            </pre>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
+                            {risk.negotiation_strategies?.length > 0 && (
+                              <Box sx={{ mt: 1 }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: "rgba(255,255,255,0.6)",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  Suggested Negotiation Strategies
+                                </Typography>
+                                <Box sx={{ mt: 1 }}>
+                                  {risk.negotiation_strategies.map((s, i) => (
+                                    <Typography
+                                      key={i}
+                                      variant="body2"
+                                      sx={{
+                                        color: "rgba(255,255,255,0.75)",
+                                        mt: 0.5,
+                                      }}
+                                    >
+                                      • {s}
+                                    </Typography>
+                                  ))}
+                                </Box>
+                              </Box>
+                            )}
+                          </Box>
+
+                          <Box sx={{ textAlign: "right", minWidth: 110 }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "rgba(255,255,255,0.6)",
+                                display: "block",
+                              }}
+                            >
+                              Priority
+                            </Typography>
+                            <Typography
+                              variant="h5"
+                              sx={{
+                                color: getRiskLevelColor(risk.risk_level),
+                                fontWeight: 800,
+                              }}
+                            >
+                              {risk.priority_score}/10
+                            </Typography>
+                          </Box>
+                        </Paper>
+                      )
+                    )
                   )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </motion.div>
+                </Box>
+              )}
+
+              {activeTab === "sections" && (
+                <Box sx={{ display: "grid", gap: 2 }}>
+                  {result.sections.length === 0 ? (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255,255,255,0.65)" }}
+                    >
+                      No sections detected.
+                    </Typography>
+                  ) : (
+                    result.sections.map((section: ContractSection, idx) => (
+                      <Paper
+                        key={idx}
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          borderRadius: 1.5,
+                          border: "1px solid rgba(255,255,255,0.04)",
+                          background:
+                            "linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.08))",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ color: "common.white", fontWeight: 700 }}
+                          >
+                            {section.title}
+                          </Typography>
+                          <Chip
+                            label={`${section.risk_count} risks`}
+                            size="small"
+                            sx={{ bgcolor: "rgba(255,255,255,0.02)" }}
+                          />
+                        </Box>
+
+                        <Typography
+                          variant="body2"
+                          sx={{ mt: 1, color: "rgba(255,255,255,0.75)" }}
+                        >
+                          {section.content}
+                        </Typography>
+                      </Paper>
+                    ))
+                  )}
+                </Box>
+              )}
+
+              {activeTab === "text" && (
+                <Box>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 1.5,
+                      background: "rgba(0,0,0,0.18)",
+                      border: "1px solid rgba(255,255,255,0.02)",
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.6)" }}
+                    >
+                      Extracted Text
+                    </Typography>
+                    <Box
+                      sx={{
+                        mt: 1,
+                        p: 2,
+                        bgcolor: "rgba(255,255,255,0.01)",
+                        borderRadius: 1,
+                        maxHeight: 420,
+                        overflow: "auto",
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily:
+                            "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace",
+                          color: "rgba(255,255,255,0.85)",
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {result.extracted_text ||
+                          "No extracted text available."}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Box>
+              )}
+            </Paper>
+
+            {/* Recommendations */}
+            {result.recommendations?.length > 0 && (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  background: "rgba(255,255,255,0.01)",
+                  border: "1px solid rgba(255,255,255,0.02)",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ color: "common.white", fontWeight: 700 }}
+                >
+                  Recommendations
+                </Typography>
+                <Box sx={{ mt: 1 }}>
+                  {result.recommendations.map((rec, i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        display: "flex",
+                        gap: 1,
+                        alignItems: "flex-start",
+                        mt: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "rgba(255,255,255,0.85)",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {i + 1}.
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "rgba(255,255,255,0.75)" }}
+                      >
+                        {rec}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Paper>
+            )}
+          </Box>
         )}
-      </div>
-
-      {/* Footer Disclaimer */}
-      <div className="border-t border-gray-200 bg-white/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-xs text-gray-500 text-center">
-            This AI provides general information only and is not a substitute
-            for professional legal advice. Always consult with a qualified
-            attorney before making legal decisions.
-          </p>
-        </div>
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }
