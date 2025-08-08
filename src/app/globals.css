@@ -270,3 +270,137 @@ main {
   min-width: 0;
   padding-left: 1rem;
 }
+
+/* Enhanced scroll effects */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Scroll-triggered animations */
+.scroll-animate {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.scroll-animate-left {
+  opacity: 0;
+  animation: slideInLeft 0.8s ease-out forwards;
+}
+
+.scroll-animate-right {
+  opacity: 0;
+  animation: slideInRight 0.8s ease-out forwards;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ff4444, #ff6b6b);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ff6b6b, #ff4444);
+}
+
+/* Parallax effect for background elements */
+.parallax-bg {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Enhanced button hover effects */
+.btn-primary-enhanced {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.btn-primary-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.btn-primary-enhanced:hover::before {
+  left: 100%;
+}
+
+/* Card hover effects */
+.card-hover-lift {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0) scale(1);
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 1.2s ease-in-out infinite;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+}
+
+/* Dark mode improvements */
+.dark .card-hover-lift:hover {
+  box-shadow: 0 20px 60px rgba(255, 68, 68, 0.2);
+}

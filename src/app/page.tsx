@@ -2,9 +2,9 @@ import Header from "@/components/landing/header";
 import HeroSection from "@/components/landing/hero";
 import FeaturesCarousel from "@/components/landing/features";
 import AboutSection from "@/components/landing/about";
-import SolutionsCarousel from "@/components/landing/showcase";
 import CTASection from "@/components/landing/cta";
 import Footer from "@/components/landing/footer";
+import FAQSection from "@/components/landing/faq";
 
 export default function Home() {
   return (
@@ -13,7 +13,7 @@ export default function Home() {
       <HeroSection />
       <FeaturesCarousel />
       <AboutSection />
-      <SolutionsCarousel />
+      <FAQSection />
       <CTASection />
       <Footer />
     </main>
