@@ -4,6 +4,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { theme } from "@/lib/theme";
 import "./globals.css";
+import ScrollProgress from "@/components/scroll-progress";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
         {/* Add overflow hidden */}
         <ThemeProvider theme={theme}>
           <CssBaseline />
+          <ScrollProgress />
           <div style={{ width: "100%", overflowX: "hidden" }}>
             {" "}
             {/* Wrapper div */}

@@ -17,6 +17,7 @@ import { Recommendations } from "@/components/contract-review/recommendations";
 import { palette } from "@/components/contract-review/tokens";
 
 export default function ContractReviewPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const theme = useTheme();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
