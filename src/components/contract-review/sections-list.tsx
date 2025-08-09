@@ -9,7 +9,7 @@ const MotionPaper = motion(Paper);
 export function SectionsList({ items }: { items: ContractSection[] }) {
   if (items.length === 0) {
     return (
-      <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }}>
+      <Typography variant="body1" sx={{ color: "text.secondary" }}>
         No sections detected.
       </Typography>
     );
@@ -20,16 +20,21 @@ export function SectionsList({ items }: { items: ContractSection[] }) {
       {items.map((section, idx) => (
         <MotionPaper
           key={idx}
-          elevation={0}
+          elevation={1}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, delay: idx * 0.03 }}
           sx={{
-            p: 2,
-            borderRadius: 1.5,
-            border: "1px solid rgba(255,255,255,0.06)",
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.08))",
+            p: 3,
+            borderRadius: 2,
+            backgroundColor: "background.paper",
+            border: 1,
+            borderColor: "divider",
+            "&:hover": {
+              boxShadow: 3,
+              borderColor: "primary.light",
+            },
+            transition: "all 0.2s ease",
           }}
         >
           <Box
@@ -37,24 +42,30 @@ export function SectionsList({ items }: { items: ContractSection[] }) {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              mb: 2,
             }}
           >
             <Typography
-              variant="subtitle1"
-              sx={{ color: "white", fontWeight: 800 }}
+              variant="h6"
+              sx={{ color: "text.primary", fontWeight: 700 }}
             >
               {section.title}
             </Typography>
             <Chip
               label={`${section.risk_count} risks`}
               size="small"
-              sx={{ bgcolor: "rgba(255,255,255,0.06)" }}
+              sx={{
+                bgcolor:
+                  section.risk_count > 0 ? "error.light" : "success.light",
+                color: section.risk_count > 0 ? "error.dark" : "success.dark",
+                fontWeight: 600,
+              }}
             />
           </Box>
 
           <Typography
-            variant="body2"
-            sx={{ mt: 1, color: "rgba(255,255,255,0.8)" }}
+            variant="body1"
+            sx={{ color: "text.secondary", lineHeight: 1.6 }}
           >
             {section.content}
           </Typography>

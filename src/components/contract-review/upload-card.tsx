@@ -9,7 +9,6 @@ import {
   Chip,
 } from "@mui/material";
 import { Upload, Loader2 } from "lucide-react";
-import { palette } from "./tokens";
 import { motion } from "framer-motion";
 
 type Props = {
@@ -31,35 +30,33 @@ export function UploadCard({
 }: Props) {
   return (
     <MotionPaper
-      elevation={0}
+      elevation={2}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       sx={{
-        p: { xs: 2, md: 3 },
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))",
-        border: "1px solid rgba(255,255,255,0.06)",
+        p: { xs: 3, md: 4 },
+        backgroundColor: "background.paper",
+        border: 1,
+        borderColor: "divider",
         borderRadius: 2,
-        backdropFilter: "blur(6px)",
       }}
     >
       <Typography
-        variant="h6"
-        sx={{ color: "white", fontWeight: 800, mb: 0.5 }}
+        variant="h5"
+        sx={{ color: "text.primary", fontWeight: 700, mb: 1 }}
       >
         Upload PDF Contract
       </Typography>
-      <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.72)" }}>
-        Drop a PDF or click to select. We’ll extract and analyze risks, sections
+      <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
+        Drop a PDF or click to select. We&apos;ll extract and analyze risks, sections
         and recommendations.
       </Typography>
 
       <Box
         sx={{
           display: "flex",
-          gap: 1,
-          mt: 2,
+          gap: 2,
           alignItems: "center",
           flexWrap: "wrap",
         }}
@@ -69,17 +66,16 @@ export function UploadCard({
           onClick={onPick}
           startIcon={<Upload size={16} />}
           sx={{
-            background: `linear-gradient(90deg, ${palette.navy}, ${palette.deep})`,
+            backgroundColor: "primary.main",
             color: "white",
-            px: 2,
-            py: 1,
-            "&:hover": { opacity: 0.95 },
+            px: 3,
+            py: 1.5,
+            "&:hover": { backgroundColor: "primary.dark" },
           }}
         >
           Select PDF
         </MuiButton>
         <MuiButton
-          color="inherit"
           variant="outlined"
           disabled={!file || isLoading}
           onClick={onAnalyze}
@@ -91,10 +87,15 @@ export function UploadCard({
             )
           }
           sx={{
-            borderColor: "rgba(255,255,255,0.06)",
-            color: "white",
-            px: 2,
-            py: 1,
+            borderColor: "divider",
+            color: "text.primary",
+            px: 3,
+            py: 1.5,
+            "&:hover": {
+              borderColor: "primary.main",
+              backgroundColor: "primary.light",
+              color: "white",
+            },
           }}
         >
           {isLoading ? "Analyzing..." : "Analyze Contract"}
@@ -102,41 +103,47 @@ export function UploadCard({
         {file && (
           <Chip
             label={file.name}
-            size="small"
+            size="medium"
             sx={{
-              color: "rgba(255,255,255,0.9)",
-              bgcolor: "rgba(255,255,255,0.06)",
+              color: "text.primary",
+              backgroundColor: "background.default",
+              border: 1,
+              borderColor: "divider",
             }}
           />
         )}
       </Box>
 
       {error && (
-        <Box sx={{ mt: 2 }}>
+        <Box sx={{ mt: 3 }}>
           <Paper
             elevation={0}
             sx={{
-              p: 1.5,
-              bgcolor: "rgba(255,0,0,0.04)",
-              border: "1px solid rgba(255,0,0,0.08)",
+              p: 2,
+              backgroundColor: "error.light",
+              border: 1,
+              borderColor: "error.main",
               borderRadius: 1,
             }}
           >
-            <Typography variant="body2" sx={{ color: "#ff6b6b" }}>
+            <Typography variant="body2" sx={{ color: "error.dark" }}>
               {error}
             </Typography>
           </Paper>
         </Box>
       )}
 
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.55)" }}>
-          Tips
+      <Box sx={{ mt: 3 }}>
+        <Typography
+          variant="caption"
+          sx={{ color: "text.secondary", fontWeight: 600 }}
+        >
+          Features
         </Typography>
         <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
-          <Chip label="PDF only" size="small" />
-          <Chip label="Confidential" size="small" />
-          <Chip label="Fast results" size="small" />
+          <Chip label="PDF only" size="small" variant="outlined" />
+          <Chip label="Confidential" size="small" variant="outlined" />
+          <Chip label="Fast results" size="small" variant="outlined" />
         </Box>
       </Box>
     </MotionPaper>

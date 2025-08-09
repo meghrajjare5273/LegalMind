@@ -3,7 +3,6 @@
 import { Box, Typography, Paper } from "@mui/material";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { palette } from "./tokens";
 
 export type StepKey = "upload" | "analyzing" | "review" | "finalize";
 
@@ -30,30 +29,31 @@ export function StepsSidebar({
 
   return (
     <MotionPaper
-      elevation={0}
+      elevation={2}
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.35 }}
       sx={{
-        p: 2,
+        p: 3,
         borderRadius: 2,
-        background: "rgba(255,255,255,0.08)",
-        border: "1px solid rgba(255,255,255,0.16)",
+        backgroundColor: "background.paper",
+        border: 1,
+        borderColor: "divider",
         position: "sticky",
-        top: 92,
+        top: 100,
       }}
       aria-label="Review Progress"
     >
       <Typography
-        variant="subtitle1"
-        sx={{ color: "white", fontWeight: 800, mb: 1 }}
+        variant="h6"
+        sx={{ color: "text.primary", fontWeight: 700, mb: 2 }}
       >
         Review Progress
       </Typography>
 
       <Box
         component="ol"
-        sx={{ display: "grid", gap: 1.5, listStyle: "none", pl: 0, m: 0 }}
+        sx={{ display: "grid", gap: 2, listStyle: "none", pl: 0, m: 0 }}
       >
         {steps.map((s, idx) => {
           const completed = idx < currentIndex;
@@ -63,26 +63,23 @@ export function StepsSidebar({
               component="li"
               key={s.key}
               onClick={() => {
-                // Allow backward navigation only to avoid breaking async flow
                 if (onNavigate && (completed || active)) onNavigate(s.key);
               }}
               sx={{
                 display: "grid",
                 gridTemplateColumns: "auto 1fr",
-                gap: 1.25,
+                gap: 1.5,
                 alignItems: "center",
-                p: 1.25,
+                p: 1.5,
                 borderRadius: 1.5,
                 cursor: completed ? "pointer" : "default",
-                transition: "background .2s ease, transform .2s ease",
-                background: active
-                  ? "linear-gradient(90deg, rgba(218,246,245,0.08), rgba(184,242,239,0.06))"
-                  : "transparent",
+                transition: "background-color 0.2s ease",
+                backgroundColor: active ? "primary.light" : "transparent",
                 "&:hover": {
-                  background: completed
-                    ? "rgba(255,255,255,0.06)"
+                  backgroundColor: completed
+                    ? "background.default"
                     : active
-                    ? "linear-gradient(90deg, rgba(218,246,245,0.10), rgba(184,242,239,0.08))"
+                    ? "primary.light"
                     : "transparent",
                 },
               }}
@@ -90,19 +87,24 @@ export function StepsSidebar({
             >
               <Box
                 sx={{
-                  width: 28,
-                  height: 28,
+                  width: 32,
+                  height: 32,
                   borderRadius: "50%",
                   display: "grid",
                   placeItems: "center",
-                  background: completed
-                    ? `linear-gradient(135deg, ${palette.mint}, ${palette.mintDark})`
-                    : "transparent",
-                  color: completed ? palette.deep : "white",
-                  border: completed
-                    ? "none"
-                    : "1px dashed rgba(255,255,255,0.35)",
-                  fontWeight: 800,
+                  backgroundColor: completed
+                    ? "primary.main"
+                    : active
+                    ? "white"
+                    : "background.default",
+                  color: completed
+                    ? "white"
+                    : active
+                    ? "primary.main"
+                    : "text.secondary",
+                  border: completed ? "none" : 2,
+                  borderColor: active ? "primary.main" : "divider",
+                  fontWeight: 700,
                   fontSize: 14,
                 }}
               >
@@ -111,10 +113,10 @@ export function StepsSidebar({
 
               <Box sx={{ minWidth: 0 }}>
                 <Typography
-                  variant="body2"
+                  variant="body1"
                   sx={{
-                    color: "white",
-                    fontWeight: active ? 800 : 600,
+                    color: active ? "white" : "text.primary",
+                    fontWeight: active ? 700 : 600,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -125,7 +127,11 @@ export function StepsSidebar({
                 {s.subtitle ? (
                   <Typography
                     variant="caption"
-                    sx={{ color: "rgba(255,255,255,0.7)" }}
+                    sx={{
+                      color: active
+                        ? "rgba(255,255,255,0.8)"
+                        : "text.secondary",
+                    }}
                   >
                     {s.subtitle}
                   </Typography>
@@ -138,36 +144,42 @@ export function StepsSidebar({
 
       <Box
         sx={{
-          mt: 3,
-          p: 1.5,
+          mt: 4,
+          p: 2,
           borderRadius: 1.5,
-          background: "rgba(255,255,255,0.06)",
+          backgroundColor: "background.default",
+          border: 1,
+          borderColor: "divider",
         }}
       >
         <Typography
           variant="subtitle2"
-          sx={{ color: "white", fontWeight: 800 }}
+          sx={{ color: "text.primary", fontWeight: 700 }}
         >
           Having trouble?
         </Typography>
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.75)" }}>
-          Contact support and we’ll help you complete the review.
+        <Typography variant="caption" sx={{ color: "text.secondary" }}>
+          Contact support and we&apos;ll help you complete the review.
         </Typography>
         <Box
           component="a"
-          href="mailto:support@example.com"
+          href="mailto:support@legalmind.com"
           sx={{
             display: "inline-block",
-            mt: 1,
-            px: 1.25,
-            py: 0.75,
+            mt: 1.5,
+            px: 2,
+            py: 1,
             borderRadius: 1,
-            border: "1px solid rgba(255,255,255,0.16)",
-            color: "white",
+            border: 1,
+            borderColor: "primary.main",
+            color: "primary.main",
             textDecoration: "none",
             fontSize: 12,
-            fontWeight: 700,
-            "&:hover": { background: "rgba(255,255,255,0.08)" },
+            fontWeight: 600,
+            "&:hover": {
+              backgroundColor: "primary.main",
+              color: "white",
+            },
           }}
         >
           Contact Us

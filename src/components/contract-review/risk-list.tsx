@@ -10,12 +10,12 @@ const MotionPaper = motion(Paper);
 function getRiskColor(level: string) {
   switch (level) {
     case "HIGH":
-      return "#ff6b6b";
+      return "#f44336";
     case "MEDIUM":
     case "MEDIUM-HIGH":
-      return "#f7b731";
+      return "#ff9800";
     default:
-      return "#2ecc71";
+      return "#4caf50";
   }
 }
 
@@ -35,7 +35,7 @@ function getIcon(cat: string) {
 export function RiskList({ items }: { items: EnhancedRiskAnalysis[] }) {
   if (items.length === 0) {
     return (
-      <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }}>
+      <Typography variant="body1" sx={{ color: "text.secondary" }}>
         No risks detected.
       </Typography>
     );
@@ -48,27 +48,36 @@ export function RiskList({ items }: { items: EnhancedRiskAnalysis[] }) {
         return (
           <MotionPaper
             key={idx}
-            elevation={0}
+            elevation={1}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: idx * 0.03 }}
             sx={{
-              p: 2,
-              borderRadius: 1.5,
-              border: "1px solid rgba(255,255,255,0.06)",
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.12))",
+              p: 3,
+              borderRadius: 2,
+              backgroundColor: "background.paper",
+              border: 1,
+              borderColor: "divider",
               display: "grid",
               gridTemplateColumns: "1fr auto",
               gap: 2,
+              "&:hover": {
+                boxShadow: 3,
+                borderColor: "primary.light",
+              },
+              transition: "all 0.2s ease",
             }}
           >
             <Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                {getIcon(risk.risk_category)}
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}
+              >
+                <Box sx={{ color: "primary.main" }}>
+                  {getIcon(risk.risk_category)}
+                </Box>
                 <Typography
-                  variant="subtitle1"
-                  sx={{ color: "white", fontWeight: 800 }}
+                  variant="h6"
+                  sx={{ color: "text.primary", fontWeight: 700 }}
                 >
                   {risk.risk_type}
                 </Typography>
@@ -76,40 +85,46 @@ export function RiskList({ items }: { items: EnhancedRiskAnalysis[] }) {
                   size="small"
                   label={risk.risk_level}
                   sx={{
-                    ml: 1,
-                    bgcolor: `${color}22`,
+                    bgcolor: `${color}20`,
                     color,
-                    fontWeight: 800,
+                    fontWeight: 700,
+                    border: `1px solid ${color}40`,
                   }}
                 />
               </Box>
 
               <Typography
-                variant="body2"
-                sx={{ color: "rgba(255,255,255,0.78)", mt: 1 }}
+                variant="body1"
+                sx={{ color: "text.secondary", mb: 2, lineHeight: 1.6 }}
               >
                 {risk.description}
               </Typography>
 
-              <Box sx={{ mt: 1 }}>
+              <Box sx={{ mb: 2 }}>
                 <Typography
                   variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.66)", fontWeight: 700 }}
+                  sx={{
+                    color: "text.secondary",
+                    fontWeight: 700,
+                    display: "block",
+                    mb: 1,
+                  }}
                 >
                   Relevant excerpt
                 </Typography>
                 <Paper
                   elevation={0}
                   sx={{
-                    mt: 1,
-                    p: 1,
-                    bgcolor: "rgba(255,255,255,0.02)",
+                    p: 2,
+                    bgcolor: "background.default",
                     borderRadius: 1,
+                    border: 1,
+                    borderColor: "divider",
                   }}
                 >
                   <Typography
                     variant="body2"
-                    sx={{ fontStyle: "italic", color: "rgba(255,255,255,0.8)" }}
+                    sx={{ fontStyle: "italic", color: "text.primary" }}
                   >
                     &quot;{risk.sentence}&quot;
                   </Typography>
@@ -117,22 +132,29 @@ export function RiskList({ items }: { items: EnhancedRiskAnalysis[] }) {
               </Box>
 
               {risk.specific_concerns?.length > 0 && (
-                <Box sx={{ mt: 1 }}>
+                <Box sx={{ mb: 2 }}>
                   <Typography
                     variant="caption"
-                    sx={{ color: "rgba(255,255,255,0.66)", fontWeight: 700 }}
+                    sx={{
+                      color: "text.secondary",
+                      fontWeight: 700,
+                      display: "block",
+                      mb: 1,
+                    }}
                   >
                     Specific Concerns
                   </Typography>
-                  <Box
-                    sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}
-                  >
+                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                     {risk.specific_concerns.map((c, i) => (
                       <Chip
                         key={i}
                         label={c}
                         size="small"
-                        sx={{ bgcolor: "rgba(255,255,255,0.04)" }}
+                        variant="outlined"
+                        sx={{
+                          borderColor: "divider",
+                          color: "text.secondary",
+                        }}
                       />
                     ))}
                   </Box>
@@ -140,19 +162,24 @@ export function RiskList({ items }: { items: EnhancedRiskAnalysis[] }) {
               )}
 
               {risk.negotiation_strategies?.length > 0 && (
-                <Box sx={{ mt: 1 }}>
+                <Box>
                   <Typography
                     variant="caption"
-                    sx={{ color: "rgba(255,255,255,0.66)", fontWeight: 700 }}
+                    sx={{
+                      color: "text.secondary",
+                      fontWeight: 700,
+                      display: "block",
+                      mb: 1,
+                    }}
                   >
                     Suggested Negotiation Strategies
                   </Typography>
-                  <Box sx={{ mt: 1 }}>
+                  <Box>
                     {risk.negotiation_strategies.map((s, i) => (
                       <Typography
                         key={i}
                         variant="body2"
-                        sx={{ color: "rgba(255,255,255,0.78)", mt: 0.5 }}
+                        sx={{ color: "text.primary", mb: 0.5 }}
                       >
                         • {s}
                       </Typography>
@@ -162,14 +189,21 @@ export function RiskList({ items }: { items: EnhancedRiskAnalysis[] }) {
               )}
             </Box>
 
-            <Box sx={{ textAlign: "right", minWidth: 110 }}>
+            <Box sx={{ textAlign: "right", minWidth: 80 }}>
               <Typography
                 variant="caption"
-                sx={{ color: "rgba(255,255,255,0.66)", display: "block" }}
+                sx={{ color: "text.secondary", display: "block" }}
               >
                 Priority
               </Typography>
-              <Typography variant="h5" sx={{ color, fontWeight: 900 }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  color,
+                  fontWeight: 800,
+                  fontSize: "2rem",
+                }}
+              >
                 {risk.priority_score}/10
               </Typography>
             </Box>

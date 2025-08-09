@@ -1,7 +1,16 @@
 export const palette = {
-  navy: "#03366D",
-  deep: "#0A2536",
-  mint: "#DAF6F5",
-  mintDark: "#B8F2EF",
-  white: "#F3F4F6",
+  // Use Material UI theme colors
+  primary: "#ff4444",
+  primaryLight: "#ff6b6b",
+  primaryDark: "#d32f2f",
+  secondary: "#1a1a1a",
+  secondaryLight: "#333333",
+  background: "#ffffff",
+  paper: "#f8fafc",
+  textPrimary: "#1a1a1a",
+  textSecondary: "#666666",
+  divider: "#e0e0e0",
+  success: "#4caf50",
+  warning: "#ff9800",
+  error: "#f44336",
 };

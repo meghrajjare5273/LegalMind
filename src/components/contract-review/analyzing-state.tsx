@@ -8,45 +8,42 @@ const MotionPaper = motion(Paper);
 export function AnalyzingState({ filename }: { filename?: string }) {
   return (
     <MotionPaper
-      elevation={0}
+      elevation={2}
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       sx={{
-        p: 3,
+        p: 4,
         borderRadius: 2,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
+        border: 1,
+        borderColor: "divider",
+        backgroundColor: "background.paper",
       }}
     >
-      <Typography variant="h6" sx={{ color: "white", fontWeight: 800 }}>
+      <Typography variant="h5" sx={{ color: "text.primary", fontWeight: 700 }}>
         Analyzing your contract…
       </Typography>
-      <Typography
-        variant="body2"
-        sx={{ color: "rgba(255,255,255,0.75)", mt: 0.5 }}
-      >
+      <Typography variant="body1" sx={{ color: "text.secondary", mt: 1 }}>
         {filename
           ? `File: ${filename}`
           : "Preparing model context and extracting text"}
       </Typography>
 
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{ mt: 3 }}>
         <LinearProgress
           color="primary"
           sx={{
             height: 8,
-            borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
+            borderRadius: 4,
+            backgroundColor: "background.default",
             "& .MuiLinearProgress-bar": {
-              borderRadius: 999,
+              borderRadius: 4,
             },
           }}
         />
       </Box>
 
-      <Box sx={{ mt: 3, display: "grid", gap: 1.25 }}>
+      <Box sx={{ mt: 4, display: "grid", gap: 2 }}>
         {[
           "Parsing text",
           "Detecting sections",
@@ -57,18 +54,17 @@ export function AnalyzingState({ filename }: { filename?: string }) {
             key={label}
             sx={{
               display: "grid",
-              gridTemplateColumns: "16px 1fr",
-              gap: 1,
+              gridTemplateColumns: "20px 1fr",
+              gap: 1.5,
               alignItems: "center",
-              opacity: 0.85,
             }}
           >
             <Box
               sx={{
-                width: 16,
-                height: 16,
+                width: 20,
+                height: 20,
                 borderRadius: "50%",
-                background: "rgba(255,255,255,0.12)",
+                backgroundColor: "primary.main",
                 animation: "pulse 1.8s ease-in-out infinite",
                 animationDelay: `${i * 0.18}s`,
                 "@keyframes pulse": {
@@ -77,7 +73,7 @@ export function AnalyzingState({ filename }: { filename?: string }) {
                 },
               }}
             />
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.8)" }}>
+            <Typography variant="body1" sx={{ color: "text.primary" }}>
               {label}
             </Typography>
           </Box>

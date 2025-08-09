@@ -2,7 +2,6 @@
 
 import { Paper, Box, Typography } from "@mui/material";
 import { Lightbulb } from "lucide-react";
-import { palette } from "./tokens";
 import { motion } from "framer-motion";
 
 const MotionPaper = motion(Paper);
@@ -10,30 +9,42 @@ const MotionPaper = motion(Paper);
 export function OverallSummary({ text }: { text: string }) {
   return (
     <MotionPaper
-      elevation={0}
+      elevation={2}
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       sx={{
-        p: 2,
+        p: 3,
         borderRadius: 2,
-        border: "1px solid rgba(255,255,255,0.06)",
-        background:
-          "linear-gradient(90deg, rgba(255,243,205,0.04), rgba(255,255,255,0.01))",
+        backgroundColor: "background.paper",
+        border: 1,
+        borderColor: "divider",
       }}
     >
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <Lightbulb color={palette.mint} size={18} />
+      <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", mb: 2 }}>
+        <Box
+          sx={{
+            width: 32,
+            height: 32,
+            borderRadius: 1.5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "primary.main",
+          }}
+        >
+          <Lightbulb color="white" size={16} />
+        </Box>
         <Typography
-          variant="subtitle1"
-          sx={{ color: "white", fontWeight: 800 }}
+          variant="h6"
+          sx={{ color: "text.primary", fontWeight: 700 }}
         >
           Overall Summary
         </Typography>
       </Box>
       <Typography
-        variant="body2"
-        sx={{ color: "rgba(255,255,255,0.78)", mt: 1 }}
+        variant="body1"
+        sx={{ color: "text.secondary", lineHeight: 1.6 }}
       >
         {text}
       </Typography>

@@ -13,36 +13,41 @@ type NextActionsProps = {
 export function NextActions({ onReset }: NextActionsProps) {
   return (
     <MotionPaper
-      elevation={0}
+      elevation={2}
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       sx={{
         p: 3,
         borderRadius: 2,
-        background: "rgba(255,255,255,0.02)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        backgroundColor: "background.paper",
+        border: 1,
+        borderColor: "divider",
       }}
     >
-      <Typography variant="h6" sx={{ color: "white", fontWeight: 800 }}>
-        Next actions
-      </Typography>
       <Typography
-        variant="body2"
-        sx={{ color: "rgba(255,255,255,0.78)", mt: 0.5 }}
+        variant="h6"
+        sx={{ color: "text.primary", fontWeight: 700, mb: 1 }}
       >
-        Choose what you’d like to do with these results.
+        Next Actions
+      </Typography>
+      <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
+        Choose what you&apos;d like to do with these results.
       </Typography>
 
-      <Box sx={{ mt: 2, display: "flex", gap: 1.25, flexWrap: "wrap" }}>
+      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
         <MuiButton
           startIcon={<Download size={16} />}
           disabled
+          variant="outlined"
           sx={{
-            borderColor: "rgba(255,255,255,0.16)",
-            color: "white",
-            textTransform: "none",
-            border: "1px solid rgba(255,255,255,0.16)",
+            borderColor: "divider",
+            color: "text.secondary",
+            "&:hover": {
+              borderColor: "primary.main",
+              backgroundColor: "primary.light",
+              color: "white",
+            },
           }}
         >
           Export PDF (coming soon)
@@ -52,11 +57,13 @@ export function NextActions({ onReset }: NextActionsProps) {
           component="a"
           href="/chat"
           startIcon={<MessageSquare size={16} />}
+          variant="contained"
           sx={{
-            background: "white",
-            color: "black",
-            textTransform: "none",
-            "&:hover": { background: "rgba(255,255,255,0.9)" },
+            backgroundColor: "primary.main",
+            color: "white",
+            "&:hover": {
+              backgroundColor: "primary.dark",
+            },
           }}
         >
           Discuss in Chat
@@ -65,12 +72,16 @@ export function NextActions({ onReset }: NextActionsProps) {
         <MuiButton
           startIcon={<RotateCcw size={16} />}
           onClick={onReset}
-          sx={{
-            color: "white",
-            textTransform: "none",
-            border: "1px solid rgba(255,255,255,0.16)",
-          }}
           variant="outlined"
+          sx={{
+            borderColor: "divider",
+            color: "text.primary",
+            "&:hover": {
+              borderColor: "primary.main",
+              backgroundColor: "primary.light",
+              color: "white",
+            },
+          }}
         >
           Start new review
         </MuiButton>

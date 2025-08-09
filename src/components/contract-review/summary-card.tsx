@@ -4,7 +4,6 @@ import { Paper, Box, Typography, Grid } from "@mui/material";
 import { Brain } from "lucide-react";
 import { Chart } from "react-chartjs-2";
 import "chart.js/auto";
-import { palette } from "./tokens";
 import type { EnhancedExtractAndAnalyzeResponse } from "@/services/api";
 import { motion } from "framer-motion";
 
@@ -24,68 +23,72 @@ export function SummaryCard({
           result.summary.medium_risk_count ?? 0,
           result.summary.low_risk_count ?? 0,
         ],
-        backgroundColor: ["#ff6b6b", "#f7b731", "#2ecc71"],
+        backgroundColor: ["#f44336", "#ff9800", "#4caf50"],
       },
     ],
   };
 
   const levelColor =
     result.summary.overall_risk_level === "HIGH"
-      ? "#ff6b6b"
+      ? "#f44336"
       : result.summary.overall_risk_level.includes("MEDIUM")
-      ? "#f7b731"
-      : "#2ecc71";
+      ? "#ff9800"
+      : "#4caf50";
 
   return (
     <MotionPaper
-      elevation={0}
+      elevation={2}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       sx={{
-        p: { xs: 2, md: 3 },
-        background: `linear-gradient(180deg, ${palette.navy}22, ${palette.deep}18)`,
-        border: "1px solid rgba(255,255,255,0.06)",
+        p: { xs: 3, md: 4 },
+        backgroundColor: "background.paper",
+        border: 1,
+        borderColor: "divider",
         borderRadius: 2,
-        backdropFilter: "blur(8px)",
       }}
     >
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 3 }}>
             <Box
               sx={{
-                width: 36,
-                height: 36,
-                borderRadius: 1.5,
+                width: 48,
+                height: 48,
+                borderRadius: 2,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: `linear-gradient(135deg, ${palette.mint}, ${palette.mintDark})`,
-                boxShadow: "0 6px 20px rgba(0,0,0,0.45)",
+                backgroundColor: "primary.main",
+                boxShadow: 2,
               }}
             >
-              <Brain color={palette.deep} size={18} />
+              <Brain color="white" size={24} />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ color: "white", fontWeight: 800 }}>
+              <Typography
+                variant="h5"
+                sx={{ color: "text.primary", fontWeight: 700 }}
+              >
                 Contract Analysis Summary
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: "rgba(255,255,255,0.72)" }}
-              >
-                File:{" "}
-                <strong style={{ color: "white" }}>
-                  {result.filename ?? "Uploaded contract"}
-                </strong>
+              <Typography variant="body1" sx={{ color: "text.secondary" }}>
+                File: <strong>{result.filename ?? "Uploaded contract"}</strong>
               </Typography>
             </Box>
           </Box>
 
-          <Grid container spacing={1} sx={{ mt: 2 }}>
+          <Grid container spacing={2}>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Box sx={{ textAlign: "center" }}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  backgroundColor: "background.default",
+                  borderRadius: 1,
+                }}
+              >
                 <Typography
                   variant="h4"
                   sx={{ color: levelColor, fontWeight: 800 }}
@@ -94,55 +97,76 @@ export function SummaryCard({
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.7)" }}
+                  sx={{ color: "text.secondary", fontWeight: 600 }}
                 >
                   Overall Risk
                 </Typography>
               </Box>
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Box sx={{ textAlign: "center" }}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  backgroundColor: "background.default",
+                  borderRadius: 1,
+                }}
+              >
                 <Typography
                   variant="h4"
-                  sx={{ color: "white", fontWeight: 800 }}
+                  sx={{ color: "text.primary", fontWeight: 800 }}
                 >
                   {result.summary.total_risks}
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.7)" }}
+                  sx={{ color: "text.secondary", fontWeight: 600 }}
                 >
                   Total Risks Found
                 </Typography>
               </Box>
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Box sx={{ textAlign: "center" }}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  backgroundColor: "background.default",
+                  borderRadius: 1,
+                }}
+              >
                 <Typography
                   variant="h4"
-                  sx={{ color: "#ff6b6b", fontWeight: 800 }}
+                  sx={{ color: "#f44336", fontWeight: 800 }}
                 >
                   {result.summary.high_risk_count}
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.7)" }}
+                  sx={{ color: "text.secondary", fontWeight: 600 }}
                 >
                   High Priority
                 </Typography>
               </Box>
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Box sx={{ textAlign: "center" }}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  backgroundColor: "background.default",
+                  borderRadius: 1,
+                }}
+              >
                 <Typography
                   variant="h4"
-                  sx={{ color: "#f7b731", fontWeight: 800 }}
+                  sx={{ color: "#ff9800", fontWeight: 800 }}
                 >
                   {result.summary.medium_risk_count}
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.7)" }}
+                  sx={{ color: "text.secondary", fontWeight: 600 }}
                 >
                   Medium Priority
                 </Typography>
@@ -153,12 +177,12 @@ export function SummaryCard({
 
         <Grid size={{ xs: 12, md: 4 }}>
           <Typography
-            variant="subtitle2"
-            sx={{ color: "rgba(255,255,255,0.9)" }}
+            variant="h6"
+            sx={{ color: "text.primary", fontWeight: 600, mb: 2 }}
           >
             Risk Distribution
           </Typography>
-          <Box sx={{ height: 160, mt: 1 }}>
+          <Box sx={{ height: 200 }}>
             <Chart
               type="pie"
               data={riskChartData}
@@ -166,7 +190,7 @@ export function SummaryCard({
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                  legend: { position: "top" },
+                  legend: { position: "bottom" },
                   title: { display: false },
                 },
               }}

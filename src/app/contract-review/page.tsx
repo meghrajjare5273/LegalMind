@@ -14,7 +14,6 @@ import { SummaryCard } from "@/components/contract-review/summary-card";
 import { OverallSummary } from "@/components/contract-review/overall-summary";
 import { ResultsTabs } from "@/components/contract-review/results-tab";
 import { Recommendations } from "@/components/contract-review/recommendations";
-import { palette } from "@/components/contract-review/tokens";
 import {
   StepsSidebar,
   type StepKey,
@@ -24,8 +23,6 @@ import { AnalyzingState } from "@/components/contract-review/analyzing-state";
 import { NextActions } from "@/components/contract-review/next-actions";
 
 export default function ContractReviewPage() {
-  // This page is a Client Component because it needs local state, event handlers, and browser-only file inputs [^1].
-  // const theme = useTheme();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -78,7 +75,6 @@ export default function ContractReviewPage() {
           ? err.message
           : "An error occurred while processing the contract."
       );
-      // Return to upload step for correction
       setStep("upload");
     } finally {
       setIsLoading(false);
@@ -87,11 +83,9 @@ export default function ContractReviewPage() {
 
   function onBack() {
     if (step === "analyzing") {
-      // Prevent navigating back during analysis to avoid interrupting the request
       return;
     }
     if (step === "review") setStep("analyzing");
-    // if (step === "analyzing") setStep("upload");
     if (step === "finalize") setStep("review");
   }
 
@@ -100,7 +94,7 @@ export default function ContractReviewPage() {
       analyze();
       return;
     }
-    if (step === "analyzing") return; // wait
+    if (step === "analyzing") return;
     if (step === "review") setStep("finalize");
   }
 
@@ -111,7 +105,6 @@ export default function ContractReviewPage() {
     setStep("upload");
   }
 
-  // Auto-scroll main container top on step change for better UX
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
@@ -120,17 +113,17 @@ export default function ContractReviewPage() {
     <Box
       sx={{
         minHeight: "100vh",
-        background: `linear-gradient(180deg, ${palette.deep} 0%, ${palette.navy} 100%)`,
+        backgroundColor: "background.default",
         pb: 8,
       }}
     >
-      {/* Top header */}
+      {/* Simple Navigation Bar */}
       <Box
         component="header"
         sx={{
-          borderBottom: `1px solid rgba(255,255,255,0.06)`,
-          backdropFilter: "blur(8px)",
-          background: "rgba(0,0,0,0.45)",
+          borderBottom: 1,
+          borderColor: "divider",
+          backgroundColor: "background.paper",
         }}
       >
         <Container maxWidth="lg" sx={{ py: 2 }}>
@@ -138,88 +131,61 @@ export default function ContractReviewPage() {
             sx={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
+              gap: 2,
             }}
           >
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <Link href="/" legacyBehavior>
-                <MuiButton
-                  size="small"
-                  variant="outlined"
-                  startIcon={<ArrowLeft size={16} />}
-                  sx={{
-                    color: "common.white",
-                    borderColor: "rgba(255,255,255,0.12)",
-                    "&:hover": { borderColor: "rgba(255,255,255,0.24)" },
-                  }}
-                >
-                  Back
-                </MuiButton>
-              </Link>
+            <Link href="/" legacyBehavior>
+              <MuiButton
+                size="small"
+                variant="outlined"
+                startIcon={<ArrowLeft size={16} />}
+                sx={{
+                  color: "text.primary",
+                  borderColor: "divider",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    backgroundColor: "primary.light",
+                    color: "white",
+                  },
+                }}
+              >
+                Back
+              </MuiButton>
+            </Link>
 
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 1.5,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: `linear-gradient(135deg, ${palette.mint}, ${palette.mintDark})`,
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
-                  }}
-                >
-                  <Brain color={palette.deep} size={18} />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ color: "white", fontWeight: 800 }}
-                  >
-                    Smart Contract Review
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "rgba(255,255,255,0.7)" }}
-                  >
-                    AI-powered legal contract analysis
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                display: "flex",
-                gap: 2,
-                alignItems: "center",
-                color: "rgba(255,255,255,0.7)",
-              }}
-            >
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <Box
                 sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  bgcolor: "success.main",
-                  boxShadow: "0 0 8px rgba(0,255,0,0.08)",
+                  width: 36,
+                  height: 36,
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "primary.main",
+                  boxShadow: 3,
                 }}
-              />
-              <Typography
-                variant="caption"
-                sx={{ color: "rgba(255,255,255,0.7)" }}
               >
-                Secure Session
-              </Typography>
+                <Brain color="white" size={18} />
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{ color: "text.primary", fontWeight: 700 }}
+                >
+                  Smart Contract Review
+                </Typography>
+                <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                  AI-powered legal contract analysis
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Container>
       </Box>
 
-      <Container maxWidth="lg" sx={{ mt: 6 }}>
-        {/* hidden input */}
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
         <input
           ref={fileInputRef}
           type="file"
@@ -232,7 +198,7 @@ export default function ContractReviewPage() {
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", md: "280px 1fr" },
-            gap: 2.5,
+            gap: 3,
           }}
         >
           <Box sx={{ display: { xs: "none", md: "block" } }}>
@@ -240,7 +206,6 @@ export default function ContractReviewPage() {
               steps={steps}
               current={step}
               onNavigate={(next) => {
-                // Allow navigating back to upload or review, not forward
                 const order: StepKey[] = [
                   "upload",
                   "analyzing",
@@ -254,8 +219,7 @@ export default function ContractReviewPage() {
             />
           </Box>
 
-          <Box sx={{ display: "grid", gap: 2.5 }}>
-            {/* Step content */}
+          <Box sx={{ display: "grid", gap: 3 }}>
             {step === "upload" && (
               <UploadCard
                 file={file}
@@ -290,8 +254,8 @@ export default function ContractReviewPage() {
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
-                gap: 1,
-                mt: 0.5,
+                gap: 2,
+                mt: 2,
               }}
             >
               <MuiButton
@@ -299,15 +263,20 @@ export default function ContractReviewPage() {
                 disabled={step === "upload" || step === "analyzing"}
                 onClick={onBack}
                 sx={{
-                  borderColor: "rgba(255,255,255,0.16)",
-                  color: "white",
-                  textTransform: "none",
+                  borderColor: "divider",
+                  color: "text.primary",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    backgroundColor: "primary.light",
+                    color: "white",
+                  },
                 }}
               >
                 Back
               </MuiButton>
 
               <MuiButton
+                variant="contained"
                 onClick={onContinue}
                 disabled={
                   (step === "upload" && !file) ||
@@ -315,11 +284,12 @@ export default function ContractReviewPage() {
                   (step === "review" && !result)
                 }
                 sx={{
-                  background: "linear-gradient(90deg, #ff4444, #ff6b6b)",
+                  backgroundColor: "primary.main",
                   color: "white",
-                  textTransform: "none",
                   px: 3,
-                  "&:hover": { opacity: 0.95 },
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
                 }}
               >
                 {step === "upload"
