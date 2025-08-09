@@ -114,26 +114,13 @@ export default function ContractReviewPage() {
       sx={{
         minHeight: "100vh",
         backgroundColor: "background.default",
-        pb: 8,
+        py: 4,
       }}
     >
-      {/* Simple Navigation Bar */}
-      <Box
-        component="header"
-        sx={{
-          borderBottom: 1,
-          borderColor: "divider",
-          backgroundColor: "background.paper",
-        }}
-      >
-        <Container maxWidth="lg" sx={{ py: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
+      <Container maxWidth="lg" sx={{ mt: 2 }}>
+        {/* Back button and title */}
+        {/* <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 3 }}>
             <Link href="/" legacyBehavior>
               <MuiButton
                 size="small"
@@ -141,7 +128,7 @@ export default function ContractReviewPage() {
                 startIcon={<ArrowLeft size={16} />}
                 sx={{
                   color: "text.primary",
-                  borderColor: "divider",
+                  borderColor: "grey.300",
                   "&:hover": {
                     borderColor: "primary.main",
                     backgroundColor: "primary.light",
@@ -149,7 +136,7 @@ export default function ContractReviewPage() {
                   },
                 }}
               >
-                Back
+                Back to Home
               </MuiButton>
             </Link>
 
@@ -158,34 +145,37 @@ export default function ContractReviewPage() {
                 sx={{
                   width: 36,
                   height: 36,
-                  borderRadius: 2,
+                  borderRadius: 1.5,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   backgroundColor: "primary.main",
-                  boxShadow: 3,
+                  color: "white",
                 }}
               >
-                <Brain color="white" size={18} />
+                <Brain size={18} />
               </Box>
 
               <Box>
                 <Typography
-                  variant="h6"
-                  sx={{ color: "text.primary", fontWeight: 700 }}
+                  variant="h4"
+                  sx={{
+                    color: "text.primary",
+                    fontWeight: 700,
+                    fontSize: { xs: "1.5rem", md: "2rem" },
+                  }}
                 >
                   Smart Contract Review
                 </Typography>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
                   AI-powered legal contract analysis
                 </Typography>
               </Box>
             </Box>
           </Box>
-        </Container>
-      </Box>
+        </Box> */}
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        {/* hidden input */}
         <input
           ref={fileInputRef}
           type="file"
@@ -220,6 +210,7 @@ export default function ContractReviewPage() {
           </Box>
 
           <Box sx={{ display: "grid", gap: 3 }}>
+            {/* Step content */}
             {step === "upload" && (
               <UploadCard
                 file={file}
@@ -263,7 +254,7 @@ export default function ContractReviewPage() {
                 disabled={step === "upload" || step === "analyzing"}
                 onClick={onBack}
                 sx={{
-                  borderColor: "divider",
+                  borderColor: "grey.300",
                   color: "text.primary",
                   "&:hover": {
                     borderColor: "primary.main",
@@ -276,20 +267,17 @@ export default function ContractReviewPage() {
               </MuiButton>
 
               <MuiButton
-                variant="contained"
                 onClick={onContinue}
                 disabled={
                   (step === "upload" && !file) ||
                   step === "analyzing" ||
                   (step === "review" && !result)
                 }
+                variant="contained"
+                color="primary"
                 sx={{
-                  backgroundColor: "primary.main",
-                  color: "white",
                   px: 3,
-                  "&:hover": {
-                    backgroundColor: "primary.dark",
-                  },
+                  fontWeight: 600,
                 }}
               >
                 {step === "upload"
