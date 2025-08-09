@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useRef, useState } from "react";
+import type React from "react";
+import { useRef, useState, useEffect } from "react";
 import { Box, Container, Typography, Button as MuiButton } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { ArrowLeft, Brain } from "lucide-react";
 import Link from "next/link";
 
@@ -14,11 +15,15 @@ import { SummaryCard } from "@/components/contract-review/summary-card";
 import { OverallSummary } from "@/components/contract-review/overall-summary";
 import { ResultsTabs } from "@/components/contract-review/results-tab";
 import { Recommendations } from "@/components/contract-review/recommendations";
-import { palette } from "@/components/contract-review/tokens";
+import {
+  StepsSidebar,
+  type StepKey,
+  type StepDef,
+} from "@/components/contract-review/steps-sidebar";
+import { AnalyzingState } from "@/components/contract-review/analyzing-state";
+import { NextActions } from "@/components/contract-review/next-actions";
 
 export default function ContractReviewPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const theme = useTheme();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -26,6 +31,15 @@ export default function ContractReviewPage() {
     useState<EnhancedExtractAndAnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [step, setStep] = useState<StepKey>("upload");
+
+  const steps: StepDef[] = [
+    { key: "upload", title: "Upload", subtitle: "Add a PDF to begin" },
+    { key: "analyzing", title: "AI Analysis", subtitle: "Extracting insights" },
+    { key: "review", title: "Review", subtitle: "Explore risks & sections" },
+    { key: "finalize", title: "Next Actions", subtitle: "Export & discuss" },
+  ];
 
   const handlePick = () => fileInputRef.current?.click();
 
@@ -39,6 +53,7 @@ export default function ContractReviewPage() {
       setFile(f);
       setError(null);
       setResult(null);
+      setStep("upload");
     }
   }
 
@@ -50,123 +65,117 @@ export default function ContractReviewPage() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setStep("analyzing");
     try {
       const response = await apiService.extractAndAnalyze(file);
       setResult(response);
+      setStep("review");
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : "An error occurred while processing the contract."
       );
+      setStep("upload");
     } finally {
       setIsLoading(false);
     }
   }
 
+  function onBack() {
+    if (step === "analyzing") {
+      return;
+    }
+    if (step === "review") setStep("analyzing");
+    if (step === "finalize") setStep("review");
+  }
+
+  function onContinue() {
+    if (step === "upload") {
+      analyze();
+      return;
+    }
+    if (step === "analyzing") return;
+    if (step === "review") setStep("finalize");
+  }
+
+  function onReset() {
+    setFile(null);
+    setResult(null);
+    setError(null);
+    setStep("upload");
+  }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        background: `linear-gradient(180deg, ${palette.deep} 0%, ${palette.navy} 100%)`,
-        pb: 8,
+        backgroundColor: "background.default",
+        py: 4,
       }}
     >
-      {/* Top header */}
-      <Box
-        component="header"
-        sx={{
-          borderBottom: `1px solid rgba(255,255,255,0.06)`,
-          backdropFilter: "blur(8px)",
-          background: "rgba(0,0,0,0.45)",
-        }}
-      >
-        <Container maxWidth="lg" sx={{ py: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <Link href="/" legacyBehavior>
-                <MuiButton
-                  size="small"
-                  variant="outlined"
-                  startIcon={<ArrowLeft size={16} />}
-                  sx={{
-                    color: "common.white",
-                    borderColor: "rgba(255,255,255,0.12)",
-                    "&:hover": { borderColor: "rgba(255,255,255,0.24)" },
-                  }}
-                >
-                  Back
-                </MuiButton>
-              </Link>
+      <Container maxWidth="lg" sx={{ mt: 2 }}>
+        {/* Back button and title */}
+        {/* <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 3 }}>
+            <Link href="/" legacyBehavior>
+              <MuiButton
+                size="small"
+                variant="outlined"
+                startIcon={<ArrowLeft size={16} />}
+                sx={{
+                  color: "text.primary",
+                  borderColor: "grey.300",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    backgroundColor: "primary.light",
+                    color: "white",
+                  },
+                }}
+              >
+                Back to Home
+              </MuiButton>
+            </Link>
 
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 1.5,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: `linear-gradient(135deg, ${palette.mint}, ${palette.mintDark})`,
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
-                  }}
-                >
-                  <Brain color={palette.deep} size={18} />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ color: "white", fontWeight: 800 }}
-                  >
-                    Smart Contract Review
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "rgba(255,255,255,0.7)" }}
-                  >
-                    AI-powered legal contract analysis
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                display: "flex",
-                gap: 2,
-                alignItems: "center",
-                color: "rgba(255,255,255,0.7)",
-              }}
-            >
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <Box
                 sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  bgcolor: "success.main",
-                  boxShadow: "0 0 8px rgba(0,255,0,0.08)",
+                  width: 36,
+                  height: 36,
+                  borderRadius: 1.5,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "primary.main",
+                  color: "white",
                 }}
-              />
-              <Typography
-                variant="caption"
-                sx={{ color: "rgba(255,255,255,0.7)" }}
               >
-                Secure Session
-              </Typography>
+                <Brain size={18} />
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    color: "text.primary",
+                    fontWeight: 700,
+                    fontSize: { xs: "1.5rem", md: "2rem" },
+                  }}
+                >
+                  Smart Contract Review
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  AI-powered legal contract analysis
+                </Typography>
+              </Box>
             </Box>
           </Box>
-        </Container>
-      </Box>
+        </Box> */}
 
-      <Container maxWidth="lg" sx={{ mt: 6 }}>
         {/* hidden input */}
         <input
           ref={fileInputRef}
@@ -176,28 +185,111 @@ export default function ContractReviewPage() {
           onChange={onChangeFile}
         />
 
-        <UploadCard
-          file={file}
-          isLoading={isLoading}
-          error={error}
-          onPick={handlePick}
-          onAnalyze={analyze}
-        />
-
-        {result && (
-          <Box sx={{ display: "grid", gap: 3, mt: 3 }}>
-            <SummaryCard result={result} />
-            {result.overall_summary && (
-              <OverallSummary text={result.overall_summary} />
-            )}
-            <ResultsTabs
-              risks={result.analysis}
-              sections={result.sections}
-              text={result.extracted_text}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "280px 1fr" },
+            gap: 3,
+          }}
+        >
+          <Box sx={{ display: { xs: "none", md: "block" } }}>
+            <StepsSidebar
+              steps={steps}
+              current={step}
+              onNavigate={(next) => {
+                const order: StepKey[] = [
+                  "upload",
+                  "analyzing",
+                  "review",
+                  "finalize",
+                ];
+                if (order.indexOf(next) <= order.indexOf(step)) {
+                  setStep(next);
+                }
+              }}
             />
-            <Recommendations items={result.recommendations} />
           </Box>
-        )}
+
+          <Box sx={{ display: "grid", gap: 3 }}>
+            {/* Step content */}
+            {step === "upload" && (
+              <UploadCard
+                file={file}
+                isLoading={isLoading}
+                error={error}
+                onPick={handlePick}
+                onAnalyze={analyze}
+              />
+            )}
+
+            {step === "analyzing" && <AnalyzingState filename={file?.name} />}
+
+            {step === "review" && result && (
+              <>
+                <SummaryCard result={result} />
+                {result.overall_summary && (
+                  <OverallSummary text={result.overall_summary} />
+                )}
+                <ResultsTabs
+                  risks={result.analysis}
+                  sections={result.sections}
+                  text={result.extracted_text}
+                />
+                <Recommendations items={result.recommendations} />
+              </>
+            )}
+
+            {step === "finalize" && <NextActions onReset={onReset} />}
+
+            {/* Action bar */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 2,
+                mt: 2,
+              }}
+            >
+              <MuiButton
+                variant="outlined"
+                disabled={step === "upload" || step === "analyzing"}
+                onClick={onBack}
+                sx={{
+                  borderColor: "grey.300",
+                  color: "text.primary",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    backgroundColor: "primary.light",
+                    color: "white",
+                  },
+                }}
+              >
+                Back
+              </MuiButton>
+
+              <MuiButton
+                onClick={onContinue}
+                disabled={
+                  (step === "upload" && !file) ||
+                  step === "analyzing" ||
+                  (step === "review" && !result)
+                }
+                variant="contained"
+                color="primary"
+                sx={{
+                  px: 3,
+                  fontWeight: 600,
+                }}
+              >
+                {step === "upload"
+                  ? "Analyze"
+                  : step === "review"
+                  ? "Continue"
+                  : "Continue"}
+              </MuiButton>
+            </Box>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

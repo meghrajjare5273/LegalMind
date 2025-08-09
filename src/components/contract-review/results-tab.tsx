@@ -20,10 +20,11 @@ export function ResultsTabs({ risks, sections, text }: Props) {
   return (
     <Box
       sx={{
-        p: 2,
+        p: 3,
         borderRadius: 2,
-        border: "1px solid rgba(255,255,255,0.06)",
-        background: "rgba(255,255,255,0.02)",
+        backgroundColor: "background.paper",
+        border: 1,
+        borderColor: "divider",
       }}
     >
       <Tabs
@@ -32,13 +33,22 @@ export function ResultsTabs({ risks, sections, text }: Props) {
         textColor="inherit"
         indicatorColor="primary"
         sx={{
-          mb: 2,
+          mb: 3,
           "& .MuiTab-root": {
-            color: "rgba(255,255,255,0.85)",
+            color: "text.secondary",
             textTransform: "none",
+            fontWeight: 600,
+            "&:hover": {
+              color: "primary.main",
+            },
+          },
+          "& .MuiTab-root.Mui-selected": {
+            color: "primary.main",
             fontWeight: 700,
           },
-          "& .MuiTab-root.Mui-selected": { color: "white" },
+          "& .MuiTabs-indicator": {
+            backgroundColor: "primary.main",
+          },
         }}
         aria-label="contract review tabs"
       >
@@ -46,13 +56,20 @@ export function ResultsTabs({ risks, sections, text }: Props) {
           value="risks"
           icon={<AlertTriangle size={16} />}
           label="Risk Analysis"
+          iconPosition="start"
         />
         <Tab
           value="sections"
           icon={<BookOpen size={16} />}
           label="Contract Sections"
+          iconPosition="start"
         />
-        <Tab value="text" icon={<Eye size={16} />} label="Extracted Text" />
+        <Tab
+          value="text"
+          icon={<Eye size={16} />}
+          label="Extracted Text"
+          iconPosition="start"
+        />
       </Tabs>
 
       {tab === "risks" && <RiskList items={risks} />}
