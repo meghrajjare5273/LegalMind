@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import type React from "react";
+import { useRef, useState, useEffect } from "react";
 import { Box, Container, Typography, Button as MuiButton } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { ArrowLeft, Brain } from "lucide-react";
 import Link from "next/link";
 
@@ -15,10 +15,17 @@ import { OverallSummary } from "@/components/contract-review/overall-summary";
 import { ResultsTabs } from "@/components/contract-review/results-tab";
 import { Recommendations } from "@/components/contract-review/recommendations";
 import { palette } from "@/components/contract-review/tokens";
+import {
+  StepsSidebar,
+  type StepKey,
+  type StepDef,
+} from "@/components/contract-review/steps-sidebar";
+import { AnalyzingState } from "@/components/contract-review/analyzing-state";
+import { NextActions } from "@/components/contract-review/next-actions";
 
 export default function ContractReviewPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const theme = useTheme();
+  // This page is a Client Component because it needs local state, event handlers, and browser-only file inputs [^1].
+  // const theme = useTheme();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -26,6 +33,15 @@ export default function ContractReviewPage() {
     useState<EnhancedExtractAndAnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [step, setStep] = useState<StepKey>("upload");
+
+  const steps: StepDef[] = [
+    { key: "upload", title: "Upload", subtitle: "Add a PDF to begin" },
+    { key: "analyzing", title: "AI Analysis", subtitle: "Extracting insights" },
+    { key: "review", title: "Review", subtitle: "Explore risks & sections" },
+    { key: "finalize", title: "Next Actions", subtitle: "Export & discuss" },
+  ];
 
   const handlePick = () => fileInputRef.current?.click();
 
@@ -39,6 +55,7 @@ export default function ContractReviewPage() {
       setFile(f);
       setError(null);
       setResult(null);
+      setStep("upload");
     }
   }
 
@@ -50,19 +67,54 @@ export default function ContractReviewPage() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setStep("analyzing");
     try {
       const response = await apiService.extractAndAnalyze(file);
       setResult(response);
+      setStep("review");
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : "An error occurred while processing the contract."
       );
+      // Return to upload step for correction
+      setStep("upload");
     } finally {
       setIsLoading(false);
     }
   }
+
+  function onBack() {
+    if (step === "analyzing") {
+      // Prevent navigating back during analysis to avoid interrupting the request
+      return;
+    }
+    if (step === "review") setStep("analyzing");
+    // if (step === "analyzing") setStep("upload");
+    if (step === "finalize") setStep("review");
+  }
+
+  function onContinue() {
+    if (step === "upload") {
+      analyze();
+      return;
+    }
+    if (step === "analyzing") return; // wait
+    if (step === "review") setStep("finalize");
+  }
+
+  function onReset() {
+    setFile(null);
+    setResult(null);
+    setError(null);
+    setStep("upload");
+  }
+
+  // Auto-scroll main container top on step change for better UX
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   return (
     <Box
@@ -176,28 +228,109 @@ export default function ContractReviewPage() {
           onChange={onChangeFile}
         />
 
-        <UploadCard
-          file={file}
-          isLoading={isLoading}
-          error={error}
-          onPick={handlePick}
-          onAnalyze={analyze}
-        />
-
-        {result && (
-          <Box sx={{ display: "grid", gap: 3, mt: 3 }}>
-            <SummaryCard result={result} />
-            {result.overall_summary && (
-              <OverallSummary text={result.overall_summary} />
-            )}
-            <ResultsTabs
-              risks={result.analysis}
-              sections={result.sections}
-              text={result.extracted_text}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "280px 1fr" },
+            gap: 2.5,
+          }}
+        >
+          <Box sx={{ display: { xs: "none", md: "block" } }}>
+            <StepsSidebar
+              steps={steps}
+              current={step}
+              onNavigate={(next) => {
+                // Allow navigating back to upload or review, not forward
+                const order: StepKey[] = [
+                  "upload",
+                  "analyzing",
+                  "review",
+                  "finalize",
+                ];
+                if (order.indexOf(next) <= order.indexOf(step)) {
+                  setStep(next);
+                }
+              }}
             />
-            <Recommendations items={result.recommendations} />
           </Box>
-        )}
+
+          <Box sx={{ display: "grid", gap: 2.5 }}>
+            {/* Step content */}
+            {step === "upload" && (
+              <UploadCard
+                file={file}
+                isLoading={isLoading}
+                error={error}
+                onPick={handlePick}
+                onAnalyze={analyze}
+              />
+            )}
+
+            {step === "analyzing" && <AnalyzingState filename={file?.name} />}
+
+            {step === "review" && result && (
+              <>
+                <SummaryCard result={result} />
+                {result.overall_summary && (
+                  <OverallSummary text={result.overall_summary} />
+                )}
+                <ResultsTabs
+                  risks={result.analysis}
+                  sections={result.sections}
+                  text={result.extracted_text}
+                />
+                <Recommendations items={result.recommendations} />
+              </>
+            )}
+
+            {step === "finalize" && <NextActions onReset={onReset} />}
+
+            {/* Action bar */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 1,
+                mt: 0.5,
+              }}
+            >
+              <MuiButton
+                variant="outlined"
+                disabled={step === "upload" || step === "analyzing"}
+                onClick={onBack}
+                sx={{
+                  borderColor: "rgba(255,255,255,0.16)",
+                  color: "white",
+                  textTransform: "none",
+                }}
+              >
+                Back
+              </MuiButton>
+
+              <MuiButton
+                onClick={onContinue}
+                disabled={
+                  (step === "upload" && !file) ||
+                  step === "analyzing" ||
+                  (step === "review" && !result)
+                }
+                sx={{
+                  background: "linear-gradient(90deg, #ff4444, #ff6b6b)",
+                  color: "white",
+                  textTransform: "none",
+                  px: 3,
+                  "&:hover": { opacity: 0.95 },
+                }}
+              >
+                {step === "upload"
+                  ? "Analyze"
+                  : step === "review"
+                  ? "Continue"
+                  : "Continue"}
+              </MuiButton>
+            </Box>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );
