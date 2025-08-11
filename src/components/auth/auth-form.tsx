@@ -1,20 +1,47 @@
 "use client";
 
-import type React from "react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import RecovaBrand from "./recova-brand";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { z } from "zod";
+
+// Zod schemas
+const signInSchema = z.object({
+  email: z.email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+const signUpSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.email("Please enter a valid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/(?=.*[a-z])/, "Password must contain at least one lowercase letter")
+    .regex(/(?=.*[A-Z])/, "Password must contain at least one uppercase letter")
+    .regex(/(?=.*\d)/, "Password must contain at least one number"),
+});
+
 
 interface AuthFormProps {
-  mode: "signin" | "signup";
-  onModeChange: (mode: "signin" | "signup") => void;
+  mode: "sign-in" | "sign-up";
 }
 
-const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
+interface FormErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  general?: string;
+}
+
+export default function AuthForm({ mode }: AuthFormProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,35 +49,107 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    try {
+      if (mode === "sign-in") {
+        signInSchema.parse({
+          email: formData.email,
+          password: formData.password,
+        });
+      } else {
+        signUpSchema.parse(formData);
+      }
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const formErrors: FormErrors = {};
+        error.issues.forEach((err) => {
+          if (err.path[0]) {
+            formErrors[err.path[0] as keyof FormErrors] = err.message;
+          }
+        });
+        setErrors(formErrors);
+      }
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
+    setErrors({});
 
-    // TODO: Integrate with better-auth
-    console.log(`${mode} attempt:`, formData);
+    try {
+      if (mode === "sign-in") {
+        const result = await authClient.signIn.email({
+          email: formData.email,
+          password: formData.password,
+        });
 
-    // Simulate API call
-    setTimeout(() => {
+        if (result.error) {
+          setErrors({ general: result.error.message });
+        } else {
+          router.push("/dashboard"); // Redirect to chat or dashboard
+        }
+      } else {
+        const result = await authClient.signUp.email({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (result.error) {
+          setErrors({ general: result.error.message });
+        } else {
+          router.push("/chat"); // Redirect to chat or dashboard
+        }
+      }
+    } catch (error) {
+      setErrors({ general: "An unexpected error occurred. Please try again." });
+      console.log(error);
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const handleSocialAuth = async (provider: "google" | "microsoft") => {
-    // TODO: Integrate with better-auth social providers
-    console.log(`${provider} auth attempt`);
+    try {
+      if (provider === "google") {
+        await authClient.signIn.social({
+          provider: "google",
+        });
+      }
+      // Add Microsoft OAuth when implemented
+    } catch (error) {
+      setErrors({ general: "Social authentication failed. Please try again." });
+      console.log(error);
+    }
+  };
+
+  const switchMode = () => {
+    const newMode = mode === "sign-in" ? "sign-up" : "sign-in";
+    router.push(`/auth/${newMode}`);
   };
 
   return (
-    <div
-      className="w-full max-w-md mx-auto h-full flex flex-col justify-center"
-      style={{ minHeight: "0" }} // Allow shrinking
-    >
-      {/* Brand Header - Reduced spacing */}
+    <div className="w-full max-w-md mx-auto h-full flex flex-col justify-center">
+      {/* Brand Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -60,7 +159,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         <RecovaBrand />
       </motion.div>
 
-      {/* Welcome Section - Reduced spacing */}
+      {/* Welcome Section */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -68,16 +167,27 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         className="space-y-2 text-center mb-6"
       >
         <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
-          {mode === "signin" ? "Welcome back" : "Welcome to Recova"}
+          {mode === "sign-in" ? "Welcome back" : "Welcome to LegalMind"}
         </h1>
         <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-          {mode === "signin"
+          {mode === "sign-in"
             ? "Sign in to your account to continue your legal work."
-            : "Recova is a fast, simple and secure way to recover data. With it, you can protect your privacy and well being anytime and anywhere."}
+            : "Transform your legal practice with AI-powered intelligence and automation."}
         </p>
       </motion.div>
 
-      {/* Social Login Buttons - Reduced spacing */}
+      {/* General Error */}
+      {errors.general && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md"
+        >
+          <p className="text-sm text-red-600">{errors.general}</p>
+        </motion.div>
+      )}
+
+      {/* Social Login Buttons */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -111,34 +221,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
           </svg>
           Continue with Google
         </Button>
-
-        <Button
-          variant="social"
-          size="lg"
-          className="w-full h-10 text-sm font-medium"
-          onClick={() => handleSocialAuth("microsoft")}
-          disabled={isLoading}
-        >
-          <svg
-            className="w-4 h-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M11.4 24H12.6V12.6H24V11.4H12.6V0H11.4V11.4H0V12.6H11.4V24Z"
-              fill="#00BCF2"
-            />
-            <path d="M11.4 11.4H0V0H11.4V11.4Z" fill="#0078D4" />
-            <path d="M24 11.4H12.6V0H24V11.4Z" fill="#00BCF2" />
-            <path d="M11.4 24H0V12.6H11.4V24Z" fill="#40E0D0" />
-            <path d="M24 24H12.6V12.6H24V24Z" fill="#FFB900" />
-          </svg>
-          Continue with Microsoft
-        </Button>
       </motion.div>
 
-      {/* Divider - Reduced spacing */}
+      {/* Divider */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -153,7 +238,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         </div>
       </motion.div>
 
-      {/* Form - Reduced spacing */}
+      {/* Form */}
       <motion.form
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -161,7 +246,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         onSubmit={handleSubmit}
         className="space-y-3 mb-4"
       >
-        {mode === "signup" && (
+        {mode === "sign-up" && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -180,10 +265,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
                 placeholder="John Doe"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
-                className="h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10"
-                required={mode === "signup"}
+                className={`h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 ${
+                  errors.name ? "border-red-300" : ""
+                }`}
+                required={mode === "sign-up"}
               />
             </div>
+            {errors.name && (
+              <p className="text-xs text-red-600">{errors.name}</p>
+            )}
           </motion.div>
         )}
 
@@ -199,10 +289,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
               placeholder="john.doe@email.com"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
-              className="h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10"
+              className={`h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 ${
+                errors.email ? "border-red-300" : ""
+              }`}
               required
             />
           </div>
+          {errors.email && (
+            <p className="text-xs text-red-600">{errors.email}</p>
+          )}
         </div>
 
         <div className="space-y-1">
@@ -215,13 +310,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder={
-                mode === "signin"
+                mode === "sign-in"
                   ? "Enter your password"
                   : "Create a strong password"
               }
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
-              className="h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 pr-10"
+              className={`h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 pr-10 ${
+                errors.password ? "border-red-300" : ""
+              }`}
               required
             />
             <button
@@ -236,6 +333,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
               )}
             </button>
           </div>
+          {errors.password && (
+            <p className="text-xs text-red-600">{errors.password}</p>
+          )}
         </div>
 
         <Button
@@ -250,20 +350,21 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
               animate={{ rotate: 360 }}
               transition={{
                 duration: 1,
-                repeat: Number.POSITIVE_INFINITY,
+                repeat: Infinity,
                 ease: "linear",
               }}
-              className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-            />
-          ) : mode === "signin" ? (
+            >
+              <Loader2 className="w-4 h-4" />
+            </motion.div>
+          ) : mode === "sign-in" ? (
             "Sign in"
           ) : (
-            "Continue with email"
+            "Create Account"
           )}
         </Button>
       </motion.form>
 
-      {/* Mode Toggle - Reduced spacing */}
+      {/* Mode Toggle */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -271,21 +372,21 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         className="text-center mb-3"
       >
         <span className="text-muted-foreground text-sm">
-          {mode === "signin"
+          {mode === "sign-in"
             ? "Don't have an account? "
             : "Already have an account? "}
         </span>
         <Button
           variant="link"
           className="p-0 h-auto font-medium text-primary hover:text-primary/80 text-sm"
-          onClick={() => onModeChange(mode === "signin" ? "signup" : "signin")}
+          onClick={switchMode}
         >
-          {mode === "signin" ? "Sign up" : "Sign in"}
+          {mode === "sign-in" ? "Sign up" : "Sign in"}
         </Button>
       </motion.div>
 
-      {/* Terms - Only for signup, reduced spacing */}
-      {mode === "signup" && (
+      {/* Terms - Only for signup */}
+      {mode === "sign-up" && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -297,19 +398,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
             variant="link"
             className="p-0 h-auto text-xs text-muted-foreground underline hover:text-foreground"
           >
-            Terms of services
+            Terms of Service
           </Button>{" "}
           &{" "}
           <Button
             variant="link"
             className="p-0 h-auto text-xs text-muted-foreground underline hover:text-foreground"
           >
-            Privacy policy
+            Privacy Policy
           </Button>
         </motion.div>
       )}
     </div>
   );
-};
-
-export default AuthForm;
+}
