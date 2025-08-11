@@ -1,38 +1,92 @@
 "use client";
 
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import RecovaBrand from "./recova-brand";
+import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 
-const AuthForm = () => {
-  const [email, setEmail] = useState("");
+interface AuthFormProps {
+  mode: "signin" | "signup";
+  onModeChange: (mode: "signin" | "signup") => void;
+}
+
+const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // TODO: Integrate with better-auth
+    console.log(`${mode} attempt:`, formData);
+
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+  };
+
+  const handleSocialAuth = async (provider: "google" | "microsoft") => {
+    // TODO: Integrate with better-auth social providers
+    console.log(`${provider} auth attempt`);
+  };
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 md:p-2 space-y-8">
-      {/* Brand Header - centered */}
-      <div className="flex justify-center">
+    <div className="w-full max-w-md mx-auto space-y-8">
+      {/* Brand Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex justify-center"
+      >
         <RecovaBrand />
-      </div>
+      </motion.div>
 
       {/* Welcome Section */}
-      <div className="space-y-3 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="space-y-3 text-center"
+      >
         <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
-          Welcome to Recova
+          {mode === "signin" ? "Welcome back" : "Welcome to Recova"}
         </h1>
         <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-          Recova is a fast, simple and secure way to recover data. With it, you
-          can protect your privacy and well being anytime and anywhere.
+          {mode === "signin"
+            ? "Sign in to your account to continue your legal work."
+            : "Recova is a fast, simple and secure way to recover data. With it, you can protect your privacy and well being anytime and anywhere."}
         </p>
-      </div>
+      </motion.div>
 
       {/* Social Login Buttons */}
-      <div className="space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="space-y-3"
+      >
         <Button
           variant="social"
           size="lg"
           className="w-full h-12 text-base font-medium"
+          onClick={() => handleSocialAuth("google")}
+          disabled={isLoading}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -59,6 +113,8 @@ const AuthForm = () => {
           variant="social"
           size="lg"
           className="w-full h-12 text-base font-medium"
+          onClick={() => handleSocialAuth("microsoft")}
+          disabled={isLoading}
         >
           <svg
             className="w-5 h-5"
@@ -77,68 +133,172 @@ const AuthForm = () => {
           </svg>
           Continue with Microsoft
         </Button>
-      </div>
+      </motion.div>
 
       {/* Divider */}
-      <div className="relative">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="relative"
+      >
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-card text-muted-foreground">Or</span>
+          <span className="px-4 bg-white text-muted-foreground">Or</span>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Email Form */}
-      <div className="space-y-4">
+      {/* Form */}
+      <motion.form
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
+        {mode === "signup" && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-2"
+          >
+            <Label htmlFor="name">Full Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                className="h-12 text-base bg-gray-50 border-gray-200 focus:bg-white pl-10"
+                required={mode === "signup"}
+              />
+            </div>
+          </motion.div>
+        )}
+
         <div className="space-y-2">
-          <Label htmlFor="email" className="sr-only">
-            Email address
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="john.doe@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-12 text-base bg-gray-50 border-gray-200 focus:bg-background"
-          />
+          <Label htmlFor="email">Email address</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="john.doe@email.com"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              className="h-12 text-base bg-gray-50 border-gray-200 focus:bg-white pl-10"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder={
+                mode === "signin"
+                  ? "Enter your password"
+                  : "Create a strong password"
+              }
+              value={formData.password}
+              onChange={(e) => handleInputChange("password", e.target.value)}
+              className="h-12 text-base bg-gray-50 border-gray-200 focus:bg-white pl-10 pr-10"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
 
         <Button
+          type="submit"
           variant="ctaSoft"
           size="lg"
           className="w-full h-12 text-base font-medium"
+          disabled={isLoading}
         >
-          Continue with email
+          {isLoading ? (
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 1,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              }}
+              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+            />
+          ) : mode === "signin" ? (
+            "Sign in"
+          ) : (
+            "Continue with email"
+          )}
         </Button>
-      </div>
+      </motion.form>
 
-      {/* Sign In Link */}
-      <div className="text-center">
-        <span className="text-muted-foreground">Already have an account? </span>
-        <Button variant="link" className="p-0 h-auto font-medium">
-          Sign in
+      {/* Mode Toggle */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="text-center"
+      >
+        <span className="text-muted-foreground">
+          {mode === "signin"
+            ? "Don't have an account? "
+            : "Already have an account? "}
+        </span>
+        <Button
+          variant="link"
+          className="p-0 h-auto font-medium text-primary hover:text-primary/80"
+          onClick={() => onModeChange(mode === "signin" ? "signup" : "signin")}
+        >
+          {mode === "signin" ? "Sign up" : "Sign in"}
         </Button>
-      </div>
+      </motion.div>
 
       {/* Terms */}
-      <div className="text-center text-sm text-muted-foreground">
-        By signing up, you agree to our{" "}
-        <Button
-          variant="link"
-          className="p-0 h-auto text-sm text-muted-foreground underline"
+      {mode === "signup" && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="text-center text-sm text-muted-foreground"
         >
-          Terms of services
-        </Button>{" "}
-        &{" "}
-        <Button
-          variant="link"
-          className="p-0 h-auto text-sm text-muted-foreground underline"
-        >
-          Privacy policy
-        </Button>
-      </div>
+          By signing up, you agree to our{" "}
+          <Button
+            variant="link"
+            className="p-0 h-auto text-sm text-muted-foreground underline hover:text-foreground"
+          >
+            Terms of services
+          </Button>{" "}
+          &{" "}
+          <Button
+            variant="link"
+            className="p-0 h-auto text-sm text-muted-foreground underline hover:text-foreground"
+          >
+            Privacy policy
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 };
