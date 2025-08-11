@@ -46,49 +46,52 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-8">
-      {/* Brand Header */}
+    <div
+      className="w-full max-w-md mx-auto h-full flex flex-col justify-center"
+      style={{ minHeight: "0" }} // Allow shrinking
+    >
+      {/* Brand Header - Reduced spacing */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex justify-center"
+        className="flex justify-center mb-4"
       >
         <RecovaBrand />
       </motion.div>
 
-      {/* Welcome Section */}
+      {/* Welcome Section - Reduced spacing */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="space-y-3 text-center"
+        className="space-y-2 text-center mb-6"
       >
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
           {mode === "signin" ? "Welcome back" : "Welcome to Recova"}
         </h1>
-        <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
+        <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
           {mode === "signin"
             ? "Sign in to your account to continue your legal work."
             : "Recova is a fast, simple and secure way to recover data. With it, you can protect your privacy and well being anytime and anywhere."}
         </p>
       </motion.div>
 
-      {/* Social Login Buttons */}
+      {/* Social Login Buttons - Reduced spacing */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="space-y-3"
+        className="space-y-2 mb-4"
       >
         <Button
           variant="social"
           size="lg"
-          className="w-full h-12 text-base font-medium"
+          className="w-full h-10 text-sm font-medium"
           onClick={() => handleSocialAuth("google")}
           disabled={isLoading}
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -112,12 +115,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         <Button
           variant="social"
           size="lg"
-          className="w-full h-12 text-base font-medium"
+          className="w-full h-10 text-sm font-medium"
           onClick={() => handleSocialAuth("microsoft")}
           disabled={isLoading}
         >
           <svg
-            className="w-5 h-5"
+            className="w-4 h-4"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
@@ -135,12 +138,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         </Button>
       </motion.div>
 
-      {/* Divider */}
+      {/* Divider - Reduced spacing */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="relative"
+        className="relative mb-4"
       >
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-gray-200" />
@@ -150,13 +153,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         </div>
       </motion.div>
 
-      {/* Form */}
+      {/* Form - Reduced spacing */}
       <motion.form
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
         onSubmit={handleSubmit}
-        className="space-y-4"
+        className="space-y-3 mb-4"
       >
         {mode === "signup" && (
           <motion.div
@@ -164,9 +167,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="space-y-2"
+            className="space-y-1"
           >
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name" className="text-sm">
+              Full Name
+            </Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -175,15 +180,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
                 placeholder="John Doe"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
-                className="h-12 text-base bg-gray-50 border-gray-200 focus:bg-white pl-10"
+                className="h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10"
                 required={mode === "signup"}
               />
             </div>
           </motion.div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email address</Label>
+        <div className="space-y-1">
+          <Label htmlFor="email" className="text-sm">
+            Email address
+          </Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
@@ -192,14 +199,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
               placeholder="john.doe@email.com"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
-              className="h-12 text-base bg-gray-50 border-gray-200 focus:bg-white pl-10"
+              className="h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10"
               required
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+        <div className="space-y-1">
+          <Label htmlFor="password" className="text-sm">
+            Password
+          </Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
@@ -212,7 +221,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
               }
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
-              className="h-12 text-base bg-gray-50 border-gray-200 focus:bg-white pl-10 pr-10"
+              className="h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 pr-10"
               required
             />
             <button
@@ -233,7 +242,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
           type="submit"
           variant="ctaSoft"
           size="lg"
-          className="w-full h-12 text-base font-medium"
+          className="w-full h-10 text-sm font-medium"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -244,7 +253,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "linear",
               }}
-              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+              className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
             />
           ) : mode === "signin" ? (
             "Sign in"
@@ -254,46 +263,46 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, onModeChange }) => {
         </Button>
       </motion.form>
 
-      {/* Mode Toggle */}
+      {/* Mode Toggle - Reduced spacing */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.5 }}
-        className="text-center"
+        className="text-center mb-3"
       >
-        <span className="text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           {mode === "signin"
             ? "Don't have an account? "
             : "Already have an account? "}
         </span>
         <Button
           variant="link"
-          className="p-0 h-auto font-medium text-primary hover:text-primary/80"
+          className="p-0 h-auto font-medium text-primary hover:text-primary/80 text-sm"
           onClick={() => onModeChange(mode === "signin" ? "signup" : "signin")}
         >
           {mode === "signin" ? "Sign up" : "Sign in"}
         </Button>
       </motion.div>
 
-      {/* Terms */}
+      {/* Terms - Only for signup, reduced spacing */}
       {mode === "signup" && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="text-center text-sm text-muted-foreground"
+          className="text-center text-xs text-muted-foreground"
         >
           By signing up, you agree to our{" "}
           <Button
             variant="link"
-            className="p-0 h-auto text-sm text-muted-foreground underline hover:text-foreground"
+            className="p-0 h-auto text-xs text-muted-foreground underline hover:text-foreground"
           >
             Terms of services
           </Button>{" "}
           &{" "}
           <Button
             variant="link"
-            className="p-0 h-auto text-sm text-muted-foreground underline hover:text-foreground"
+            className="p-0 h-auto text-xs text-muted-foreground underline hover:text-foreground"
           >
             Privacy policy
           </Button>

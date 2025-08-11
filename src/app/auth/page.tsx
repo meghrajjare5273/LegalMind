@@ -11,7 +11,7 @@ export default function AuthPage() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        height: "100vh", // Fixed height to viewport
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -19,17 +19,7 @@ export default function AuthPage() {
           "linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 50%, #ffa8a8 100%)",
         position: "relative",
         overflow: "hidden",
-        // Custom scrollbar for auth route
-        "& ::-webkit-scrollbar": {
-          width: "6px",
-        },
-        "& ::-webkit-scrollbar-track": {
-          background: "rgba(255,255,255,0.1)",
-        },
-        "& ::-webkit-scrollbar-thumb": {
-          background: "rgba(255,255,255,0.3)",
-          borderRadius: "3px",
-        },
+        p: { xs: 1, md: 2 }, // Minimal padding
       }}
     >
       {/* Background Pattern */}
@@ -46,8 +36,9 @@ export default function AuthPage() {
         sx={{
           width: "100%",
           maxWidth: "1200px",
+          height: { xs: "98vh", md: "95vh" }, // Use most of viewport height
           mx: "auto",
-          px: { xs: 2, md: 4 },
+          px: { xs: 1, md: 2 },
           position: "relative",
           zIndex: 1,
         }}
@@ -56,6 +47,7 @@ export default function AuthPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{ height: "100%" }}
         >
           <Box
             sx={{
@@ -65,8 +57,7 @@ export default function AuthPage() {
               overflow: "hidden",
               backgroundColor: "white",
               boxShadow: "0 25px 50px rgba(0, 0, 0, 0.15)",
-              minHeight: { xs: "auto", lg: "600px" },
-              maxHeight: "90vh",
+              height: "100%", // Take full available height
             }}
           >
             {/* Left Side - Image */}
@@ -78,7 +69,7 @@ export default function AuthPage() {
                   "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/original-6a59077f10fccb866e9d094448edee39-cjwyOimQOjPhRcABDuNZXxNjoMq9UG.webp')",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
-                minHeight: "600px",
+                minHeight: "100%",
               }}
             >
               <Box
@@ -97,10 +88,10 @@ export default function AuthPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                p: { xs: 3, md: 6 },
+                p: { xs: 2, md: 4 }, // Reduced padding
                 position: "relative",
-                overflow: "auto",
-                maxHeight: { xs: "90vh", lg: "600px" },
+                height: "100%",
+                overflow: "hidden", // Prevent any overflow
               }}
             >
               <AnimatePresence mode="wait">
@@ -110,7 +101,7 @@ export default function AuthPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: mode === "signin" ? 20 : -20 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", height: "100%" }}
                 >
                   <AuthForm mode={mode} onModeChange={setMode} />
                 </motion.div>
