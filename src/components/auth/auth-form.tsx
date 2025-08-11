@@ -6,10 +6,11 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import RecovaBrand from "./recova-brand";
+import LegalMindBrand from "./recova-brand";
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { z } from "zod";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 // Zod schemas
 const signInSchema = z.object({
@@ -28,7 +29,6 @@ const signUpSchema = z.object({
     .regex(/(?=.*\d)/, "Password must contain at least one number"),
 });
 
-
 interface AuthFormProps {
   mode: "sign-in" | "sign-up";
 }
@@ -41,6 +41,8 @@ interface FormErrors {
 }
 
 export default function AuthForm({ mode }: AuthFormProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
@@ -148,31 +150,41 @@ export default function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-full flex flex-col justify-center">
-      {/* Brand Header */}
+    <div
+      className={`w-full ${
+        isMobile ? "max-w-none px-4" : "max-w-sm mx-auto"
+      } h-full flex flex-col justify-center space-y-3 sm:space-y-4`}
+    >
+      {/* Brand Header - Smaller on mobile */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex justify-center mb-4"
+        className="flex justify-center mb-2 sm:mb-3"
       >
-        <RecovaBrand />
+        <div style={{ transform: isMobile ? "scale(0.8)" : "scale(1)" }}>
+          <LegalMindBrand />
+        </div>
       </motion.div>
 
-      {/* Welcome Section */}
+      {/* Welcome Section - Mobile optimized */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="space-y-2 text-center mb-6"
+        className="space-y-1 text-center mb-3 sm:mb-4"
       >
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
+        <h1
+          className={`${
+            isMobile ? "text-xl" : "text-2xl"
+          } md:text-2xl font-bold text-foreground leading-tight`}
+        >
           {mode === "sign-in" ? "Welcome back" : "Welcome to LegalMind"}
         </h1>
-        <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+        <p className="text-muted-foreground text-sm leading-relaxed px-2">
           {mode === "sign-in"
-            ? "Sign in to your account to continue your legal work."
-            : "Transform your legal practice with AI-powered intelligence and automation."}
+            ? "Sign in to continue."
+            : "Transform your legal practice with AI."}
         </p>
       </motion.div>
 
@@ -192,12 +204,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="space-y-2 mb-4"
+        className="space-y-2 mb-3 sm:mb-4"
       >
         <Button
           variant="social"
-          size="lg"
-          className="w-full h-10 text-sm font-medium"
+          size={isMobile ? "default" : "lg"}
+          className="w-full h-10 sm:h-11 text-sm font-medium"
           onClick={() => handleSocialAuth("google")}
           disabled={isLoading}
         >
@@ -228,13 +240,15 @@ export default function AuthForm({ mode }: AuthFormProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="relative mb-4"
+        className="relative mb-3 sm:mb-4"
       >
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-white text-muted-foreground">Or</span>
+          <span className="px-2 sm:px-4 bg-white text-muted-foreground">
+            Or
+          </span>
         </div>
       </motion.div>
 
@@ -244,7 +258,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
         onSubmit={handleSubmit}
-        className="space-y-3 mb-4"
+        className="space-y-2 sm:space-y-3 mb-3 sm:mb-4"
       >
         {mode === "sign-up" && (
           <motion.div
@@ -265,7 +279,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 placeholder="John Doe"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
-                className={`h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 ${
+                className={`h-9 sm:h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 ${
                   errors.name ? "border-red-300" : ""
                 }`}
                 required={mode === "sign-up"}
@@ -289,7 +303,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
               placeholder="john.doe@email.com"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
-              className={`h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 ${
+              className={`h-9 sm:h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 ${
                 errors.email ? "border-red-300" : ""
               }`}
               required
@@ -300,6 +314,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           )}
         </div>
 
+        {/* Password field */}
         <div className="space-y-1">
           <Label htmlFor="password" className="text-sm">
             Password
@@ -316,7 +331,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
               }
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
-              className={`h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 pr-10 ${
+              className={`h-9 sm:h-10 text-sm bg-gray-50 border-gray-200 focus:bg-white pl-10 pr-10 ${
                 errors.password ? "border-red-300" : ""
               }`}
               required
@@ -341,8 +356,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
         <Button
           type="submit"
           variant="ctaSoft"
-          size="lg"
-          className="w-full h-10 text-sm font-medium"
+          size={isMobile ? "default" : "lg"}
+          className="w-full h-9 sm:h-10 text-sm font-medium mt-4"
           disabled={isLoading}
         >
           {isLoading ? (

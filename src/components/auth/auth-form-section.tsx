@@ -1,6 +1,6 @@
 "use client";
 
-import { Box } from "@mui/material";
+import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthForm from "./auth-form";
 
@@ -26,7 +26,9 @@ const slideVariants = {
 };
 
 export default function AuthFormSection({ mode }: AuthFormSectionProps) {
-  // Direction for animation (1 for sign-up to sign-in, -1 for sign-in to sign-up)
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const direction = mode === "sign-in" ? 1 : -1;
 
   return (
@@ -35,10 +37,17 @@ export default function AuthFormSection({ mode }: AuthFormSectionProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        p: { xs: 2, md: 4 },
+        p: {
+          xs: 2, // Reduced padding on mobile
+          sm: 3,
+          md: 4,
+          lg: 6,
+        },
         position: "relative",
         height: "100%",
         overflow: "hidden",
+        width: "100%",
+        minHeight: { xs: "100vh", sm: "auto" }, // Ensure full height on mobile
       }}
     >
       <AnimatePresence mode="wait" custom={direction}>
@@ -56,13 +65,23 @@ export default function AuthFormSection({ mode }: AuthFormSectionProps) {
           style={{
             width: "100%",
             height: "100%",
-            position: "absolute",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            // Remove absolute positioning to fix centering
           }}
         >
-          <AuthForm mode={mode} />
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth: isMobile ? "100%" : "420px", // Slightly wider on desktop for better centering
+              display: "flex",
+              justifyContent: "center", // Ensure form is centered
+              px: { xs: 1, sm: 0 }, // Small horizontal padding on mobile
+            }}
+          >
+            <AuthForm mode={mode} />
+          </Box>
         </motion.div>
       </AnimatePresence>
     </Box>

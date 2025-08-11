@@ -1,9 +1,44 @@
 "use client";
 
-import { Box } from "@mui/material";
-// import Image from "next/image";
+import { Box, useTheme, useMediaQuery } from "@mui/material";
 
 export default function AuthImageSection() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
+
+  if (isMobile) {
+    // Return a compact header version for tablets
+    return (
+      <Box
+        sx={{
+          display: { xs: "none", md: "flex" },
+          height: { md: "120px", lg: "100%" },
+          background: "linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%)",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            color: "white",
+            textAlign: "center",
+            px: 3,
+            zIndex: 2,
+          }}
+        >
+          <Box sx={{ fontSize: "1.5rem", fontWeight: 700, mb: 1 }}>
+            LegalMind
+          </Box>
+          <Box sx={{ fontSize: "0.9rem", opacity: 0.9 }}>
+            AI-powered legal intelligence
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -14,7 +49,7 @@ export default function AuthImageSection() {
         overflow: "hidden",
       }}
     >
-      {/* Placeholder for main image - replace with your actual image */}
+      {/* Main content area */}
       <Box
         sx={{
           position: "relative",
@@ -27,7 +62,6 @@ export default function AuthImageSection() {
           color: "white",
         }}
       >
-        {/* You can replace this with an actual Image component */}
         <Box
           sx={{
             width: "80%",
@@ -37,10 +71,11 @@ export default function AuthImageSection() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "1.5rem",
+            fontSize: { lg: "1.3rem", xl: "1.5rem" },
             fontWeight: 600,
             textAlign: "center",
             backdropFilter: "blur(10px)",
+            p: 3,
           }}
         >
           Legal Intelligence
@@ -49,7 +84,7 @@ export default function AuthImageSection() {
         </Box>
       </Box>
 
-      {/* Decorative overlay */}
+      {/* Bottom description */}
       <Box
         sx={{
           position: "absolute",
@@ -68,28 +103,28 @@ export default function AuthImageSection() {
           sx={{
             color: "#666",
             textAlign: "center",
-            px: 4,
+            px: { lg: 3, xl: 4 },
           }}
         >
-          <Box sx={{ fontSize: "1.1rem", fontWeight: 600, mb: 1 }}>
+          <Box
+            sx={{
+              fontSize: { lg: "1rem", xl: "1.1rem" },
+              fontWeight: 600,
+              mb: 1,
+            }}
+          >
             Transform Your Legal Practice
           </Box>
-          <Box sx={{ fontSize: "0.9rem", opacity: 0.7 }}>
+          <Box
+            sx={{
+              fontSize: { lg: "0.8rem", xl: "0.9rem" },
+              opacity: 0.7,
+            }}
+          >
             AI-powered legal intelligence for modern law firms
           </Box>
         </Box>
       </Box>
-
-      {/* Optional: Replace with actual image */}
-      {/* 
-      <Image
-        src="/path-to-your-auth-image.jpg"
-        alt="Legal platform illustration"
-        fill
-        style={{ objectFit: "cover" }}
-        priority
-      />
-      */}
     </Box>
   );
 }

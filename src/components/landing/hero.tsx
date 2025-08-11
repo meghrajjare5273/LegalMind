@@ -7,8 +7,8 @@ export default function HeroSection() {
   return (
     <Box
       sx={{
-        background:
-          "linear-gradient(135deg, #ff4444 0%, #ff6b6b 50%, #87ceeb 100%)",
+        backgroundImage: `url("../justice-2060093_1920.jpg")`,
+        
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
