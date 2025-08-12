@@ -7,8 +7,8 @@ export default function HeroSection() {
   return (
     <Box
       sx={{
-        background:
-          "linear-gradient(135deg, #ff4444 0%, #ff6b6b 50%, #87ceeb 100%)",
+        backgroundImage: `url("../pexels-sora-shimazaki-5668473.jpg")`,
+        imageResolution: "initial",
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
@@ -18,7 +18,7 @@ export default function HeroSection() {
       }}
     >
       {/* Animated Background Elements */}
-      <Box
+      {/* <Box
         component={motion.div}
         initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
         animate={{
@@ -37,10 +37,10 @@ export default function HeroSection() {
           borderRadius: "20px",
           backdropFilter: "blur(10px)",
         }}
-      />
+      /> */}
 
       {/* Secondary geometric element */}
-      <Box
+      {/* <Box
         component={motion.div}
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
@@ -55,7 +55,7 @@ export default function HeroSection() {
           borderRadius: "50%",
           backdropFilter: "blur(10px)",
         }}
-      />
+      /> */}
 
       <Container maxWidth="lg">
         <Stack

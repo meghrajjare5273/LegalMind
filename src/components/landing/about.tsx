@@ -60,7 +60,7 @@ export default function AboutSection() {
                   Legal Innovation Metrics
                 </Typography>
                 <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                  99.7% Accuracy
+                  0.7% Accuracy
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 3 }}>
                   Document analysis precision rate

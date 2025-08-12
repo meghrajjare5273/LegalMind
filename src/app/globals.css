@@ -52,6 +52,10 @@
   --color-pure-white: #ffffff;
   --color-light-gray: #f8fafc;
   --color-text-secondary: #666666;
+
+  /* CTA Soft colors */
+  --cta-soft: 24 100% 94%;
+  --cta-soft-foreground: 24 45% 35%;
 }
 
 :root {
@@ -403,4 +407,9 @@ main {
 /* Dark mode improvements */
 .dark .card-hover-lift:hover {
   box-shadow: 0 20px 60px rgba(255, 68, 68, 0.2);
+}
+
+/* Auth route specific styles */
+.bg-gradient-warm {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 50%, #ffa8a8 100%);
 }
