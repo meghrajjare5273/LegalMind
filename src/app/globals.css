@@ -59,68 +59,78 @@
 }
 
 :root {
+  /* Updated to use new color scheme - light theme */
+  --background: #f0f8ff;
+  --foreground: #222929;
+  --card: #f1f9ff;
+  --card-foreground: #222929;
+  --popover: #f0f8ff;
+  --popover-foreground: #222929;
+  --primary: #32393a;
+  --primary-foreground: #f0f8ff;
+  --secondary: #c2c6c9;
+  --secondary-foreground: #222929;
+  --muted: #c2c6c9;
+  --muted-foreground: #545d5e;
+  --accent: #9ea3a7;
+  --accent-foreground: #222929;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #f0f8ff;
+  --border: #b4b8bb;
+  --input: #c2c6c9;
+  --ring: #818684;
+  --chart-1: #2d3d3d;
+  --chart-2: #768a8d;
+  --chart-3: #bdc9c4;
+  --chart-4: #455457;
+  --chart-5: #5d6f73;
   --radius: 0.625rem;
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card: #ffffff;
-  --card-foreground: #1a1a1a;
-  --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
-  --primary: #ff4444;
-  --primary-foreground: #ffffff;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #ffffff;
-  --muted: #f8fafc;
-  --muted-foreground: #666666;
-  --accent: #ff6b6b;
-  --accent-foreground: #ffffff;
-  --destructive: #d32f2f;
-  --border: rgba(26, 26, 26, 0.1);
-  --input: rgba(26, 26, 26, 0.1);
-  --ring: #ff4444;
-  --chart-1: #ff4444;
-  --chart-2: #ff6b6b;
-  --chart-3: #d32f2f;
-  --chart-4: #1a1a1a;
-  --chart-5: #666666;
-  --sidebar: #f8fafc;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #ff4444;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(26, 26, 26, 0.1);
-  --sidebar-ring: #ff4444;
+  --sidebar: #f1f9ff;
+  --sidebar-foreground: #222929;
+  --sidebar-primary: #32393a;
+  --sidebar-primary-foreground: #f0f8ff;
+  --sidebar-accent: #c2c6c9;
+  --sidebar-accent-foreground: #222929;
+  --sidebar-border: #b4b8bb;
+  --sidebar-ring: #818684;
 }
 
 /* Dark mode variables */
 .dark {
-  --background: #1a1a1a;
-  --foreground: #ffffff;
-  --card: #333333;
-  --card-foreground: #ffffff;
-  --popover: #333333;
-  --popover-foreground: #ffffff;
-  --primary: #ff4444;
-  --primary-foreground: #ffffff;
-  --secondary: #666666;
-  --secondary-foreground: #ffffff;
-  --muted: #333333;
-  --muted-foreground: #ffffff;
-  --accent: #ff6b6b;
-  --accent-foreground: #1a1a1a;
-  --destructive: #d32f2f;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #ff4444;
-  --sidebar: #333333;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ff4444;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #666666;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #ff4444;
+  /* Updated to use new color scheme - dark theme */
+  --background: #141818;
+  --foreground: #f0f8ff;
+  --card: #1b2424;
+  --card-foreground: #f0f8ff;
+  --popover: #141818;
+  --popover-foreground: #f0f8ff;
+  --primary: #e6f1fa;
+  --primary-foreground: #222929;
+  --secondary: #434b4d;
+  --secondary-foreground: #f0f8ff;
+  --muted: #434b4d;
+  --muted-foreground: #9ea3a7;
+  --accent: #545d5e;
+  --accent-foreground: #f0f8ff;
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: #f0f8ff;
+  --border: #434b4d;
+  --input: #434b4d;
+  --ring: #818684;
+  --chart-1: #2d3d3d;
+  --chart-2: #768a8d;
+  --chart-3: #bdc9c4;
+  --chart-4: #455457;
+  --chart-5: #5d6f73;
+  --radius: 0.625rem;
+  --sidebar: #222929;
+  --sidebar-foreground: #f0f8ff;
+  --sidebar-primary: #e6f1fa;
+  --sidebar-primary-foreground: #222929;
+  --sidebar-accent: #434b4d;
+  --sidebar-accent-foreground: #f0f8ff;
+  --sidebar-border: #434b4d;
+  --sidebar-ring: #818684;
 }
 
 /* Font Classes */
@@ -330,18 +340,21 @@ main {
   width: 8px;
 }
 
+/* Scrollbar track (background) */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f1f1f1; /* Keep light neutral */
   border-radius: 4px;
 }
 
+/* Scrollbar thumb with golden gradient */
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #ff4444, #ff6b6b);
+  background: linear-gradient(135deg, #d4af37, #b08d28); /* Gold to bronze */
   border-radius: 4px;
 }
 
+/* Hover state — higher contrast gold */
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #ff6b6b, #ff4444);
+  background: linear-gradient(135deg, #ffcc33, #d4af37);
 }
 
 /* Parallax effect for background elements */
