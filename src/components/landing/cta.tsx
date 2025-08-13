@@ -15,7 +15,7 @@ export default function CTASection() {
   return (
     <Box
       sx={{
-        background: "linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%)",
+        background: "linear-gradient(135deg, #000000 0%, #545d56 100%)",
         py: 12,
         color: "white",
         position: "relative",
@@ -30,7 +30,7 @@ export default function CTASection() {
           right: -100,
           width: 300,
           height: 200,
-          background: "rgba(255,255,255,0.07)",
+          background: "rgba(240, 248, 255, 0.07)",
           borderRadius: "50%",
           filter: "blur(24px)",
           zIndex: 0,
@@ -52,19 +52,24 @@ export default function CTASection() {
               letterSpacing: -1,
               fontSize: { xs: "2.25rem", md: "3.4rem" },
               mb: 2,
-              background: "linear-gradient(90deg,#fff3cd 30%, #ff4444 70%)",
+              background: "linear-gradient(90deg, #f0f8ff 30%, #bbb7b4 70%)",
               backgroundClip: "text",
               color: "transparent",
               WebkitBackgroundClip: "text",
             }}
           >
-            Let’s Design Your Legal{" "}
+            Let&apos;s Design Your Legal{" "}
             <span style={{ fontStyle: "italic" }}>Future</span> Together
           </Typography>
           <Typography
             variant="body1"
             align="center"
-            sx={{ mb: 6, fontSize: "1.25rem", opacity: 0.9 }}
+            sx={{
+              mb: 6,
+              fontSize: "1.25rem",
+              color: "#e6f1fa",
+              opacity: 0.9,
+            }}
           >
             Join thousands of legal professionals who trust LegalMind to
             streamline their practice and deliver better outcomes for their
@@ -91,34 +96,37 @@ export default function CTASection() {
               variant="filled"
               fullWidth
               sx={{
-                backgroundColor: "rgba(255,255,255,0.15)",
+                backgroundColor: "rgba(180, 184, 187, 0.15)",
                 borderRadius: 2,
                 "& .MuiFilledInput-root": {
-                  backgroundColor: "rgba(255,255,255,0.15)",
+                  backgroundColor: "rgba(180, 184, 187, 0.15)",
                   "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.2)",
+                    backgroundColor: "rgba(180, 184, 187, 0.25)",
                   },
                 },
                 "& .MuiFilledInput-input": {
-                  color: "white",
+                  color: "#f0f8ff",
                   "&::placeholder": {
-                    color: "rgba(255,255,255,0.7)",
+                    color: "rgba(240, 248, 255, 0.7)",
                   },
                 },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(240, 248, 255, 0.8)",
+                },
               }}
-            />{" "}
+            />
             <Button
               variant="contained"
               endIcon={<Send />}
               sx={{
-                backgroundColor: "white",
-                color: "#ff4444",
+                backgroundColor: "#f1f9ff",
+                color: "#32393a",
                 minWidth: 140,
                 fontWeight: 700,
-                boxShadow: "0 4px 32px #ff444469",
+                boxShadow: "0 4px 32px rgba(180, 184, 187, 0.4)",
                 "&:hover": {
-                  backgroundColor: "#ff4444",
-                  color: "white",
+                  backgroundColor: "#bdc9c4",
+                  color: "#141818",
                   transform: "translateY(-4px) scale(1.04)",
                 },
                 transition: "all 0.3s cubic-bezier(.4,0,.2,1)",
