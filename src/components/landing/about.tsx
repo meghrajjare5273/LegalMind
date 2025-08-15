@@ -1,456 +1,308 @@
+// components/about-legalmind.tsx
 "use client";
+
+import Image from "next/image";
 import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Card,
-  CardActionArea,
-  CardContent,
-  IconButton,
-  Chip,
-} from "@mui/material";
-// import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
-import FiberManualRecordRoundedIcon from "@mui/icons-material/FiberManualRecordRounded";
-// import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+  motion,
+  AnimatePresence,
+  LayoutGroup,
+  type Variants,
+} from "framer-motion";
+// import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
+import * as React from "react";
+import { Typography } from "@mui/material";
 
-/**
- * Palette mapping (from user-provided scheme)
- * Neutrals / Dominants
- * - bgDeep:        #141818
- * - bgSurface:     #1b2424
- * - bgSoft:        #32393a
- * - borderSoft:    #434b4d
- * - textPrimary:   #f0f8ff
- * - textMuted:     #9ea3a7
- * Accents / Brilliant
- * - accentPrimary: #f1f9ff
- * - accentSoft:    #e6f1fa
- * - accentTeal:    #2d3d3d
- * - accentSlate:   #5d6f73
- * Optional navy contrast
- * - navy:          #0f1a2b
- * - navySoft:      #152336
- */
+type Feature = {
+  id: string;
+  title: string;
+  desc: string;
+  img: string;
+  tintFrom: string;
+  tintVia?: string;
+};
 
-const COLORS = {
-  // Light, airy banded background
-  bgBandTop: "#ffffff", // pure white
-  bgBandBottom: "#f4f6f8", // very light neutral
+const FEATURES: Feature[] = [
+  {
+    id: "context",
+    title: "Context Lens",
+    desc: "Surfaces entities, dates, and facts from unstructured files and threads; aligns them to your issues with traceable spans.",
+    img: "/images/gradient-rose.jpg",
+    tintFrom: "from-lm-accent/70",
+    tintVia: "via-lm-accentSoft/30",
+  },
+  {
+    id: "citations",
+    title: "Citation Graph",
+    desc: "Ranks authorities by reasoning patterns and treatments, revealing persuasive analogies and conflicts across jurisdictions.",
+    img: "/images/indigo-insight.jpg",
+    tintFrom: "from-[#2d3d3d]/60",
+    tintVia: "via-[#5d6f73]/30",
+  },
+  {
+    id: "draft",
+    title: "Structured Draft",
+    desc: "Generates a grounded draft with issues, standards, controlling authority, and risk signals—ready for your redlines.",
+    img: "/images/gradient-rose.jpg",
+    tintFrom: "from-lm-accent/60",
+    tintVia: "via-lm-accentSoft/20",
+  },
+];
 
-  // Panels: light surface with subtle depth
-  panelGrad:
-    "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(249,251,253,0.98) 60%, rgba(246,248,250,1) 100%)",
-  panelBorder: "#e1e6ea", // soft cool border (was #434b4d)
+const easeOutQuint = [0.22, 1, 0.36, 1] as const;
 
-  // Chips on light UI
-  chipBg: "#eef3f6", // light chip background (was dark)
-  chipText: "#2a3236", // dark readable text
-
-  // Typography on light surfaces
-  headline: "#1f2629", // strong near-black for titles (was light)
-  subText: "#5d6a70", // medium gray for body/secondary
-
-  // Tiles: flip to light gradients with subtle tint
-  tileA: "linear-gradient(180deg, #ffffff 0%, #f6f8f9 100%)",
-  tileB: "linear-gradient(180deg, #f9fbfc 0%, #eef3f6 100%)",
-  tileC: "linear-gradient(180deg, #f7fafb 0%, #edf2f5 100%)",
-
-  // Subtle highlight sheen on light backgrounds
-  navySheen: "linear-gradient(135deg, rgba(15,26,43,.06), rgba(69,84,87,.04))",
-
-  // Buttons: high-contrast on light UI
-  ctaBg: "#2a3236", // dark button bg for contrast
-  ctaText: "#ffffff", // white text on dark CTA
-  ctaHoverBg: "#3a4449", // slightly lighter on hover
-
-  // Links/accents: refined gold accent on light
-  linkGold: "#9c8f6a", // warmer, slightly darker than before
-
-  // Optional additional neutrals to help consistency
-  surface: "#ffffff",
-  surfaceAlt: "#f7f9fb",
-  divider: "#e6eaee",
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOutQuint } },
 };
 
 export default function AboutSection() {
-  return (
-    <Box
-      sx={{
-        background: `linear-gradient(180deg, ${COLORS.bgBandTop} 0%, ${COLORS.bgBandBottom} 100%)`,
-        py: { xs: 6, md: 10 },
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Full-width navy sheen overlay */}
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          background: COLORS.navySheen,
-          pointerEvents: "none",
-        }}
-      />
-
-      <Container
-        maxWidth="lg"
-        sx={{ px: { xs: 2, md: 4 }, position: "relative", zIndex: 1 }}
-      >
-        {/* Top headline and microcopy block */}
-        <Grid container spacing={4} alignItems="flex-start">
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Typography
-              variant="h2"
-              sx={{
-                color: COLORS.headline,
-                fontWeight: 800,
-                letterSpacing: "-0.01em",
-                lineHeight: 1.12,
-                fontSize: { xs: "2.1rem", md: "3rem" },
-              }}
-            >
-              Legal Intelligence,
-              <br />
-              <p className="text-color-gold">Built for Precision.</p>
-            </Typography>
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Typography
-              variant="body2"
-              sx={{
-                color: COLORS.subText,
-                fontSize: { xs: "0.98rem", md: "1rem" },
-                lineHeight: 1.7,
-                mt: { xs: 1, md: 0.5 },
-              }}
-            >
-              LegalMind accelerates contract review, delivers cited research,
-              and surfaces compliance risks—so legal teams can act faster with
-              confidence.
-            </Typography>
-          </Grid>
-        </Grid>
-
-        {/* Card mosaic */}
-        <Grid
-          container
-          spacing={3}
-          sx={{
-            mt: { xs: 4, md: 5 },
-            alignItems: "stretch",
-          }}
-        >
-          {/* Column A */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <StackCard
-              title="Why LegalMind"
-              subtitle="Speed, accuracy, and cited outputs."
-              cta="→"
-              dotColor="#bdc9c4"
-              bg={COLORS.tileA}
-            />
-            <StackCard
-              title="Compliance by Design"
-              subtitle="Surface obligations, monitor exposure."
-              cta="→"
-              dotColor="#768a8d"
-              bg={COLORS.tileB}
-              sx={{ mt: 2 }}
-            />
-            <StackCard
-              title="Operational Efficiency"
-              subtitle="Automate reviews, scale best-practices."
-              cta="→"
-              dotColor="#5d6f73"
-              bg={COLORS.tileC}
-              sx={{ mt: 2 }}
-            />
-          </Grid>
-
-          {/* Column B */}
-          <Grid
-            size={{ xs: 12, md: 4 }}
-            container
-            direction="column"
-            rowGap={2}
-          >
-            <MediaCard
-              label="Contract Review"
-              title="Risk-aware clause intelligence"
-              imageUrl="/images/contract-review.jpg"
-              href="/contract-review"
-            />
-            <MediaCard
-              label="Legal Research"
-              title="Precedents with citations"
-              imageUrl="/images/legal-research.jpg"
-              href="/chat"
-            />
-          </Grid>
-
-          {/* Column C */}
-          <Grid
-            size={{ xs: 12, md: 4 }}
-            container
-            direction="column"
-            rowGap={2}
-          >
-            <MediaCard
-              label="Compliance"
-              title="Continuous monitoring"
-              imageUrl="/images/compliance.jpg"
-              href="/chat"
-            />
-            <MediaCard
-              label="Workflows"
-              title="Faster client delivery"
-              imageUrl="/images/workflows.jpg"
-              href="#features"
-            />
-          </Grid>
-        </Grid>
-
-        {/* Wide feature row */}
-        <Grid
-          container
-          spacing={3}
-          alignItems="stretch"
-          sx={{ mt: { xs: 4, md: 5 } }}
-        >
-          {/* Video block */}
-          <Grid size={{ xs: 12, md: 5 }}>
-            <Card
-              sx={{
-                height: { xs: 260, md: 300 },
-                borderRadius: 4,
-                overflow: "hidden",
-                position: "relative",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
-                background: `linear-gradient(180deg, rgba(69,84,87,0.3) 0%, rgba(27,36,36,0.5) 100%), url('/images/hero-legal.jpg') center/cover no-repeat`,
-                border: `1px solid ${COLORS.panelBorder}`,
-              }}
-            >
-              {/* Play button, hashtags unchanged */}
-              {/* ... */}
-            </Card>
-          </Grid>
-
-          {/* Right descriptive panel */}
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Card
-              sx={{
-                height: { xs: "auto", md: 300 },
-                borderRadius: 4,
-                px: { xs: 3, md: 4 },
-                py: { xs: 3, md: 4 },
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                background: "#ffffffcc", // lighter flat bg
-                border: `1px solid ${COLORS.panelBorder}`,
-              }}
-            >
-              {/* Text + buttons unchanged */}
-            </Card>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
+  const [activeId, setActiveId] = React.useState<Feature["id"]>("context");
+  const active = React.useMemo(
+    () => FEATURES.find((f) => f.id === activeId) ?? FEATURES[0],
+    [activeId]
   );
-}
-
-/* Helpers */
-
-function StackCard({
-  title,
-  subtitle,
-  cta,
-  dotColor,
-  bg,
-  sx,
-}: {
-  title: string;
-  subtitle?: string;
-  cta: string;
-  dotColor: string;
-  bg: string;
-  sx?: object;
-}) {
-  return (
-    <Card
-      sx={{
-        borderRadius: 3,
-        boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
-        background: bg,
-        border: "1px solid rgba(67,75,77,0.6)",
-        ...sx,
-      }}
-    >
-      <CardActionArea disableRipple>
-        <CardContent
-          sx={{
-            py: 2.2,
-            px: 2.2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
-            <FiberManualRecordRoundedIcon
-              sx={{ fontSize: 14, color: dotColor }}
-            />
-            <Box>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 800, color: dotColor }}
-              >
-                {title}
-              </Typography>
-              {subtitle ? (
-                <Typography
-                  variant="caption"
-                  sx={{ color: "#a7a29e", display: "block" }}
-                >
-                  {subtitle}
-                </Typography>
-              ) : null}
-            </Box>
-          </Box>
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 2,
-              bgcolor: "rgba(240,248,255,0.12)",
-              display: "grid",
-              placeItems: "center",
-              color: "rgba(240,248,255,0.9)",
-              border: "1px solid rgba(67,75,77,0.6)",
-            }}
-          >
-            <Typography
-              variant="subtitle2"
-              sx={{ fontWeight: 800, color: dotColor }}
-            >
-              {cta}
-            </Typography>
-          </Box>
-        </CardContent>
-      </CardActionArea>
-    </Card>
-  );
-}
-
-function MediaCard({
-  label,
-  title,
-  imageUrl,
-  href,
-  onClick,
-}: {
-  label: string;
-  title: string;
-  imageUrl: string; // custom image path
-  href?: string; // route to push
-  onClick?: () => void; // optional override
-}) {
-  const router = useRouter();
-
-  const handleClick = () => {
-    if (onClick) return onClick();
-    if (href) router.push(href);
-  };
 
   return (
-    <Card
-      sx={{
-        borderRadius: 3,
-        overflow: "hidden",
-        position: "relative",
-        height: 170,
-        boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
-        background: `url('${imageUrl}') center/cover no-repeat`,
-        border: `1px solid ${COLORS.panelBorder}`,
-      }}
-    >
-      {/* overlay gradient for legibility */}
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
+    <section className="relative overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
           background:
-            "linear-gradient(180deg, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.55) 100%)",
+            "radial-gradient(80% 60% at 70% 10%, rgba(125,158,166,0.15) 0%, rgba(241,249,255,0) 60%), radial-gradient(60% 50% at 0% 100%, rgba(45,61,61,0.18) 0%, rgba(241,249,255,0) 60%)",
         }}
       />
-      <CardActionArea
-        onClick={handleClick}
-        aria-label={`${label} - ${title}`}
-        sx={{
-          position: "absolute",
-          inset: 0,
-          p: 2,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
-      >
-        <Chip
-          label={label}
-          size="small"
-          sx={{
-            bgcolor: COLORS.chipBg,
-            color: COLORS.chipText,
-            "& .MuiChip-label": { px: 1 },
-            border: `1px solid ${COLORS.panelBorder}`,
-          }}
-        />
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            gap: 1,
-          }}
+      <div className="mx-auto max-w-6xl px-6 py-20">
+        <motion.p
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.6 }}
+          className="text-sm tracking-wide text-lm-inkMuted/80"
         >
           <Typography
-            variant="subtitle1"
+            variant="overline"
             sx={{
-              color: "#f0f8ff",
-              fontWeight: 800,
-              lineHeight: 1.1,
-              maxWidth: "80%",
-              textShadow: "0 2px 6px rgba(0,0,0,0.45)",
+              color: "primary.main",
+              fontWeight: 700,
+              letterSpacing: 2,
             }}
           >
-            {title}
+            About LegalMind
           </Typography>
-          <IconButton
-            size="small"
+        </motion.p>
+
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.6 }}
+          className="mt-4 grid gap-4 md:max-w-3xl"
+        >
+          <Typography
+            variant="h2"
+            component="h1"
+            gutterBottom
             sx={{
-              bgcolor: "rgba(240,248,255,0.92)",
-              "&:hover": { bgcolor: COLORS.ctaHoverBg },
-              border: `1px solid ${COLORS.panelBorder}`,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              color: "secondary.main",
+              fontSize: { xs: "2rem", md: "2.75rem" },
+              lineHeight: 1.15,
             }}
-            onClick={handleClick}
-            aria-label="Open"
           >
-            <ArrowForwardRoundedIcon
-              sx={{
-                fontSize: 20,
-                color: "#000000",
-                "&:hover": { color: "#fafafa" },
-              }}
+            LegalMind reads the record, understands the law, and shows the why
+            behind every suggestion.
+          </Typography>
+          <p className="text-base leading-relaxed text-lm-inkMuted md:text-lg">
+            Explore the pillars below—each tile updates the live preview and
+            details panel on the right.
+          </p>
+        </motion.div>
+
+        {/* Two-column: left list of features, right preview */}
+        <LayoutGroup>
+          <div className="mt-12 grid items-start gap-8 md:grid-cols-2">
+            {/* Left: clickable feature cards */}
+            <div className="grid gap-6">
+              {FEATURES.map((f) => (
+                <FeatureOption
+                  key={f.id}
+                  feature={f}
+                  active={f.id === activeId}
+                  onSelect={() => setActiveId(f.id)}
+                />
+              ))}
+            </div>
+
+            {/* Right: sticky preview */}
+            <div className="relative">
+              <PreviewPanel active={active} />
+            </div>
+          </div>
+        </LayoutGroup>
+      </div>
+    </section>
+  );
+}
+
+function FeatureOption({
+  feature,
+  active,
+  onSelect,
+}: {
+  feature: Feature;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <motion.button
+      layout
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      className={[
+        "group relative w-full rounded-xl border bg-lm-bgAlt text-left shadow-lm transition-colors",
+        active
+          ? "border-lm-ink/20"
+          : "border-lm-border/60 hover:border-lm-ink/20",
+        "focus:outline-none focus:ring-2 focus:ring-lm-accent focus:ring-offset-2 focus:ring-offset-lm-bg",
+      ].join(" ")}
+    >
+      <motion.div
+        layout
+        className="relative h-40 overflow-hidden rounded-t-xl sm:h-44"
+      >
+        <Image
+          src={feature.img || "/placeholder.svg"}
+          alt=""
+          fill
+          className="object-cover opacity-95 transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+          priority={false}
+        />
+        <div
+          className={`pointer-events-none absolute inset-0 rounded-t-xl bg-gradient-to-tr ${
+            feature.tintFrom
+          } ${feature.tintVia ?? ""} to-transparent mix-blend-multiply`}
+        />
+      </motion.div>
+
+      <div className="flex items-start gap-3 p-5">
+        <div
+          className={[
+            "mt-1 h-5 w-5 shrink-0 rounded-full border",
+            active ? "bg-lm-ink border-lm-ink" : "border-lm-inkMuted/30",
+          ].join(" ")}
+        >
+          <AnimatePresence initial={false}>
+            {active && (
+              <motion.span
+                key="dot"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="grid h-full w-full place-items-center text-white"
+              >
+                <Check className="h-3.5 w-3.5" />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold text-lm-ink">
+              {feature.title}
+            </h3>
+            {active && (
+              <motion.div
+                layoutId="active-pill"
+                className="rounded-full bg-lm-ink px-2.5 py-0.5 text-xs text-white"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              >
+                Selected
+              </motion.div>
+            )}
+          </div>
+          <p className="mt-1 text-sm leading-relaxed text-lm-inkMuted">
+            {feature.desc}
+          </p>
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+function PreviewPanel({ active }: { active: Feature }) {
+  return (
+    <motion.div
+      layout
+      className="sticky top-24 overflow-hidden rounded-2xl border border-lm-border/60 bg-white shadow-lm"
+      transition={{ type: "spring", stiffness: 300, damping: 32 }}
+    >
+      {/* Image crossfade */}
+      <div className="relative h-80 w-full sm:h-[420px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active.id}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.01 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={active.img || "/placeholder.svg"}
+              alt={`${active.title} preview`}
+              fill
+              priority
+              className="object-cover"
             />
-          </IconButton>
-        </Box>
-      </CardActionArea>
-    </Card>
+            <div
+              className={`pointer-events-none absolute inset-0 bg-gradient-to-tr ${
+                active.tintFrom
+              } ${active.tintVia ?? ""} to-transparent mix-blend-multiply`}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Content area with slide/fade */}
+      <div className="space-y-2 p-6">
+        <AnimatePresence mode="wait">
+          <motion.h3
+            key={`title-${active.id}`}
+            initial={{ y: 8, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -6, opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="text-xl font-semibold text-lm-ink"
+          >
+            {active.title}
+          </motion.h3>
+        </AnimatePresence>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={`desc-${active.id}`}
+            initial={{ y: 8, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -6, opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut", delay: 0.05 }}
+            className="text-sm leading-relaxed text-lm-inkMuted"
+          >
+            {active.desc}
+          </motion.p>
+        </AnimatePresence>
+
+        <div className="pt-3">
+          <Button className="bg-lm-ink text-white hover:bg-lm-accent">
+            Learn more
+          </Button>
+        </div>
+      </div>
+    </motion.div>
   );
 }
