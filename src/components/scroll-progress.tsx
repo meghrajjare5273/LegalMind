@@ -37,7 +37,7 @@ export default function ScrollProgress() {
         height: 3,
         width: `${progress}%`,
         background:
-          "linear-gradient(90deg, rgba(255,68,68,1) 0%, rgba(255,107,107,1) 100%)",
+          "linear-gradient(90deg, rgba(67,75,77,1) 0%, rgba(93,111,115,1) 100%)",
         zIndex: 9999,
         transition: "width 120ms ease-out",
       }}

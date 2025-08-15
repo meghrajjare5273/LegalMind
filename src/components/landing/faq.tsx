@@ -68,7 +68,7 @@ export default function FAQSection() {
       ref={ref}
       sx={{
         py: { xs: 10, md: 15 },
-        background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
+        background: "linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%)", // Light subtle background
       }}
     >
       <Container maxWidth="lg">
@@ -104,7 +104,7 @@ export default function FAQSection() {
               }}
             >
               Frequently Asked{" "}
-              <Box component="span" sx={{ color: "primary.main" }}>
+              <Box component="span" sx={{ color: "#b08d28" }}>
                 Questions
               </Box>
             </Typography>
@@ -131,17 +131,21 @@ export default function FAQSection() {
                 expanded={expanded === `panel${index}`}
                 onChange={handleChange(`panel${index}`)}
                 sx={{
-                  mb: 2,
+                  mb: 2.5, // slightly more space between items
                   borderRadius: 2,
                   border: "1px solid",
                   borderColor:
-                    expanded === `panel${index}` ? "primary.main" : "grey.200",
+                    expanded === `panel${index}` ? "primary.main" : "grey.300",
+                  backgroundColor: "background.paper",
                   boxShadow:
                     expanded === `panel${index}`
-                      ? "0 8px 32px rgba(255, 68, 68, 0.15)"
-                      : "0 2px 8px rgba(0,0,0,0.05)",
+                      ? "0 6px 20px rgba(0,0,0,0.08)"
+                      : "0 2px 6px rgba(0,0,0,0.04)",
                   "&:before": { display: "none" },
                   transition: "all 0.3s ease",
+                  "&:hover": {
+                    boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                  },
                 }}
               >
                 <AccordionSummary
@@ -151,6 +155,7 @@ export default function FAQSection() {
                     "& .MuiAccordionSummary-content": {
                       alignItems: "center",
                       gap: 2,
+                      mb: 0.5, // tighter appearance
                     },
                   }}
                 >
@@ -182,11 +187,11 @@ export default function FAQSection() {
                     {faq.question}
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails sx={{ pt: 0, pb: 3 }}>
+                <AccordionDetails sx={{ pt: 0, pb: 2.5 }}>
                   <Typography
                     variant="body1"
                     color="text.secondary"
-                    sx={{ lineHeight: 1.7, fontSize: "1.1rem" }}
+                    sx={{ lineHeight: 1.7, fontSize: "1.05rem" }}
                   >
                     {faq.answer}
                   </Typography>

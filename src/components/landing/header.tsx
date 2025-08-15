@@ -44,6 +44,11 @@ export default function Header() {
     setMobileOpen(!mobileOpen);
   };
 
+  // GOLD PALETTE (from previous vivid gold approach)
+  const gold = "#d4af37"; // base gold
+  const bronze = "#b08d28"; // darker gold shadow
+  const brightGold = "#ffcc33"; // hover highlight
+
   return (
     <>
       <AppBar
@@ -54,7 +59,9 @@ export default function Header() {
             ? "rgba(255, 255, 255, 0.95)"
             : "transparent",
           backdropFilter: scrolled ? "blur(20px)" : "none",
-          borderBottom: scrolled ? "1px solid rgba(255, 68, 68, 0.1)" : "none",
+          borderBottom: scrolled
+            ? `1px solid ${gold}33` // gold with 20% opacity
+            : "none",
           transition: "all 0.3s ease",
         }}
       >
@@ -70,7 +77,7 @@ export default function Header() {
                 variant="h5"
                 sx={{
                   fontWeight: 700,
-                  color: scrolled ? "primary.main" : "white",
+                  color: scrolled ? gold : "white",
                   cursor: "pointer",
                   transition: "color 0.3s ease",
                 }}
@@ -98,7 +105,7 @@ export default function Header() {
                         fontWeight: 500,
                         textTransform: "none",
                         "&:hover": {
-                          color: "primary.main",
+                          color: gold,
                           backgroundColor: "transparent",
                         },
                         transition: "color 0.3s ease",
@@ -116,15 +123,16 @@ export default function Header() {
                 >
                   <Button
                     variant="contained"
-                    color="primary"
                     sx={{
+                      background: `linear-gradient(135deg, ${gold}, ${bronze})`,
                       borderRadius: 2,
                       textTransform: "none",
                       fontWeight: 600,
-                      boxShadow: "0 4px 16px rgba(255, 68, 68, 0.3)",
+                      boxShadow: `0 4px 16px ${gold}4D`, // gold with 30% opacity
                       "&:hover": {
+                        background: `linear-gradient(135deg, ${brightGold}, ${gold})`,
                         transform: "translateY(-2px)",
-                        boxShadow: "0 8px 25px rgba(255, 68, 68, 0.4)",
+                        boxShadow: `0 8px 25px ${gold}66`, // 40% opacity
                       },
                       transition: "all 0.3s ease",
                     }}
@@ -165,68 +173,73 @@ export default function Header() {
         </Container>
       </AppBar>
 
-      {/* Mobile Drawer - Updated for better mobile support */}
-<Drawer
-  aria-label="Navigation Menu"
-  anchor="right"
-  open={mobileOpen}
-  onClose={handleDrawerToggle}
-  sx={{
-    "& .MuiDrawer-paper": {
-      width: "min(280px, 85vw)", // Responsive width
-      backgroundColor: "white",
-      maxWidth: "100vw", // Prevent overflow
-    },
-    "& .MuiBackdrop-root": {
-      backdropFilter: "blur(4px)",
-    },
-  }}
->
-  <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
-    <IconButton
-      onClick={handleDrawerToggle}
-      aria-label="Close Navigation Menu"
-      sx={{
-        "&:hover": {
-          backgroundColor: "rgba(255, 68, 68, 0.1)",
-        },
-      }}
-    >
-      <Close />
-    </IconButton>
-  </Box>
-  <List>
-    {navigationItems.map((item) => (
-      <ListItem
-        key={item.label}
-        component="a"
-        href={item.href}
-        onClick={handleDrawerToggle}
+      {/* Mobile Drawer */}
+      <Drawer
+        aria-label="Navigation Menu"
+        anchor="right"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
         sx={{
-          "&:hover": {
-            backgroundColor: "rgba(255, 68, 68, 0.05)",
+          "& .MuiDrawer-paper": {
+            width: "min(280px, 85vw)",
+            backgroundColor: "white",
+          },
+          "& .MuiBackdrop-root": {
+            backdropFilter: "blur(4px)",
           },
         }}
       >
-        <ListItemText
-          primary={item.label}
-          sx={{ "& .MuiTypography-root": { fontWeight: 500 } }}
-        />
-      </ListItem>
-    ))}
-    <ListItem sx={{ pt: 2, px: 2 }}>
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
-      >
-        Start Free Trial
-      </Button>
-    </ListItem>
-  </List>
-</Drawer>
-
+        <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
+          <IconButton
+            onClick={handleDrawerToggle}
+            aria-label="Close Navigation Menu"
+            sx={{
+              "&:hover": {
+                backgroundColor: `${gold}1A`, // gold with 10% opacity
+              },
+            }}
+          >
+            <Close />
+          </IconButton>
+        </Box>
+        <List>
+          {navigationItems.map((item) => (
+            <ListItem
+              key={item.label}
+              component="a"
+              href={item.href}
+              onClick={handleDrawerToggle}
+              sx={{
+                "&:hover": {
+                  backgroundColor: `${gold}0D`, // gold with ~5% opacity
+                },
+              }}
+            >
+              <ListItemText
+                primary={item.label}
+                sx={{ "& .MuiTypography-root": { fontWeight: 500 } }}
+              />
+            </ListItem>
+          ))}
+          <ListItem sx={{ pt: 2, px: 2 }}>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{
+                background: `linear-gradient(135deg, ${gold}, ${bronze})`,
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 600,
+                "&:hover": {
+                  background: `linear-gradient(135deg, ${brightGold}, ${gold})`,
+                },
+              }}
+            >
+              Start Free Trial
+            </Button>
+          </ListItem>
+        </List>
+      </Drawer>
     </>
   );
 }
