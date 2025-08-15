@@ -363,6 +363,10 @@ main {
   will-change: transform;
 }
 
+.text-color-gold {
+  color: #b08d28;
+}
+
 /* Enhanced button hover effects */
 .btn-primary-enhanced {
   position: relative;
