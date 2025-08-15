@@ -8,7 +8,7 @@ import FAQSection from "@/components/landing/faq";
 
 export default function Home() {
   return (
-    <main>
+    <main className="min-h-screen">
       <Header />
       <HeroSection />
       <FeaturesCarousel />
