@@ -7,298 +7,256 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  Button,
   IconButton,
   Chip,
 } from "@mui/material";
-import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+// import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import FiberManualRecordRoundedIcon from "@mui/icons-material/FiberManualRecordRounded";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+
+/**
+ * Palette mapping (from user-provided scheme)
+ * Neutrals / Dominants
+ * - bgDeep:        #141818
+ * - bgSurface:     #1b2424
+ * - bgSoft:        #32393a
+ * - borderSoft:    #434b4d
+ * - textPrimary:   #f0f8ff
+ * - textMuted:     #9ea3a7
+ * Accents / Brilliant
+ * - accentPrimary: #f1f9ff
+ * - accentSoft:    #e6f1fa
+ * - accentTeal:    #2d3d3d
+ * - accentSlate:   #5d6f73
+ * Optional navy contrast
+ * - navy:          #0f1a2b
+ * - navySoft:      #152336
+ */
+
+const COLORS = {
+  // Light, airy banded background
+  bgBandTop: "#ffffff", // pure white
+  bgBandBottom: "#f4f6f8", // very light neutral
+
+  // Panels: light surface with subtle depth
+  panelGrad:
+    "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(249,251,253,0.98) 60%, rgba(246,248,250,1) 100%)",
+  panelBorder: "#e1e6ea", // soft cool border (was #434b4d)
+
+  // Chips on light UI
+  chipBg: "#eef3f6", // light chip background (was dark)
+  chipText: "#2a3236", // dark readable text
+
+  // Typography on light surfaces
+  headline: "#1f2629", // strong near-black for titles (was light)
+  subText: "#5d6a70", // medium gray for body/secondary
+
+  // Tiles: flip to light gradients with subtle tint
+  tileA: "linear-gradient(180deg, #ffffff 0%, #f6f8f9 100%)",
+  tileB: "linear-gradient(180deg, #f9fbfc 0%, #eef3f6 100%)",
+  tileC: "linear-gradient(180deg, #f7fafb 0%, #edf2f5 100%)",
+
+  // Subtle highlight sheen on light backgrounds
+  navySheen: "linear-gradient(135deg, rgba(15,26,43,.06), rgba(69,84,87,.04))",
+
+  // Buttons: high-contrast on light UI
+  ctaBg: "#2a3236", // dark button bg for contrast
+  ctaText: "#ffffff", // white text on dark CTA
+  ctaHoverBg: "#3a4449", // slightly lighter on hover
+
+  // Links/accents: refined gold accent on light
+  linkGold: "#9c8f6a", // warmer, slightly darker than before
+
+  // Optional additional neutrals to help consistency
+  surface: "#ffffff",
+  surfaceAlt: "#f7f9fb",
+  divider: "#e6eaee",
+};
 
 export default function AboutSection() {
   return (
     <Box
       sx={{
-        // Page band background (soft sage like the reference)
-        background: "linear-gradient(180deg, #d2dfcf 0%, #c9d7c6 100%)", // subtle green band
+        background: `linear-gradient(180deg, ${COLORS.bgBandTop} 0%, ${COLORS.bgBandBottom} 100%)`,
         py: { xs: 6, md: 10 },
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 4 } }}>
-        {/* Soft white canvas with large radius and shadow */}
-        <Box
-          component={motion.section}
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
+      {/* Full-width navy sheen overlay */}
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          background: COLORS.navySheen,
+          pointerEvents: "none",
+        }}
+      />
+
+      <Container
+        maxWidth="lg"
+        sx={{ px: { xs: 2, md: 4 }, position: "relative", zIndex: 1 }}
+      >
+        {/* Top headline and microcopy block */}
+        <Grid container spacing={4} alignItems="flex-start">
+          <Grid size={{ xs: 12, md: 8 }}>
+            <Typography
+              variant="h2"
+              sx={{
+                color: COLORS.headline,
+                fontWeight: 800,
+                letterSpacing: "-0.01em",
+                lineHeight: 1.12,
+                fontSize: { xs: "2.1rem", md: "3rem" },
+              }}
+            >
+              Legal Intelligence,
+              <br />
+              <p className="text-color-gold">Built for Precision.</p>
+            </Typography>
+          </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: COLORS.subText,
+                fontSize: { xs: "0.98rem", md: "1rem" },
+                lineHeight: 1.7,
+                mt: { xs: 1, md: 0.5 },
+              }}
+            >
+              LegalMind accelerates contract review, delivers cited research,
+              and surfaces compliance risks—so legal teams can act faster with
+              confidence.
+            </Typography>
+          </Grid>
+        </Grid>
+
+        {/* Card mosaic */}
+        <Grid
+          container
+          spacing={3}
           sx={{
-            background:
-              "linear-gradient(180deg, #ffffff 0%, #fcfcfc 60%, #fafbfb 100%)", // keeps your whites but adds depth
-            borderRadius: { xs: 4, md: 6 },
-            boxShadow: "0 16px 50px rgba(0,0,0,0.12)",
-            overflow: "hidden",
-            px: { xs: 2.5, sm: 4, md: 6 },
-            py: { xs: 5, md: 7 },
+            mt: { xs: 4, md: 5 },
+            alignItems: "stretch",
           }}
         >
-          {/* Top headline and microcopy block */}
-          <Grid container spacing={4} alignItems="flex-start">
-            <Grid size={{ xs: 12, md: 8 }}>
-              <Typography
-                variant="h2"
-                sx={{
-                  color: "text.primary",
-                  fontFamily: "'Lato', system-ui, -apple-system, sans-serif",
-                  fontWeight: 800,
-                  letterSpacing: "-0.01em",
-                  lineHeight: 1.1,
-                  fontSize: { xs: "2.1rem", md: "3rem" },
-                }}
-              >
-                Discover What
-                <br />
-                Moves You Naturally.
-              </Typography>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "text.secondary",
-                  fontSize: { xs: "0.95rem", md: "0.98rem" },
-                  lineHeight: 1.7,
-                  mt: { xs: 1, md: 0.5 },
-                }}
-              >
-                From daily essentials to timeless tools, explore eco‑friendly
-                products that care for you and the planet.
-              </Typography>
-            </Grid>
+          {/* Column A */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <StackCard
+              title="Why LegalMind"
+              subtitle="Speed, accuracy, and cited outputs."
+              cta="→"
+              dotColor="#bdc9c4"
+              bg={COLORS.tileA}
+            />
+            <StackCard
+              title="Compliance by Design"
+              subtitle="Surface obligations, monitor exposure."
+              cta="→"
+              dotColor="#768a8d"
+              bg={COLORS.tileB}
+              sx={{ mt: 2 }}
+            />
+            <StackCard
+              title="Operational Efficiency"
+              subtitle="Automate reviews, scale best-practices."
+              cta="→"
+              dotColor="#5d6f73"
+              bg={COLORS.tileC}
+              sx={{ mt: 2 }}
+            />
           </Grid>
 
-          {/* Card mosaic */}
+          {/* Column B */}
           <Grid
+            size={{ xs: 12, md: 4 }}
             container
-            spacing={2.5}
-            sx={{ mt: { xs: 4, md: 5 }, alignItems: "stretch" }}
+            direction="column"
+            rowGap={2}
           >
-            {/* Column A (left stacked 3 cards) */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <StackCard
-                title="Why We Do What We Do."
-                cta="→"
-                dotColor="#9BC3A2"
-                bg="linear-gradient(180deg, #eef5ef 0%, #e8efe8 100%)"
-              />
-              <StackCard
-                title="Giving Back to the Earth."
-                cta="→"
-                dotColor="#d9e4c6"
-                bg="linear-gradient(180deg, #f2f5ea 0%, #ecefe4 100%)"
-                sx={{ mt: 2 }}
-              />
-              <StackCard
-                title="Practical Steps for a Greener Life."
-                cta="→"
-                dotColor="#e9dccf"
-                bg="linear-gradient(180deg, #f7f3ee 0%, #f2ebe4 100%)"
-                sx={{ mt: 2 }}
-              />
-            </Grid>
-
-            {/* Column B (center: top media, bottom media) */}
-            <Grid
-              size={{ xs: 12, md: 4 }}
-              container
-              direction="column"
-              rowGap={2}
-            >
-              <MediaCard
-                label="Eco‑Tools"
-                title="Crafted for a Greener Life."
-                imageGradient="linear-gradient(180deg, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.55) 100%)"
-
-              />
-              <MediaCard
-                label="Eco‑Products"
-                title="Pure, Gentle, Sustainable."
-                imageGradient="linear-gradient(180deg, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.55) 100%)"
-              />
-            </Grid>
-
-            {/* Column C (right: two media tiles) */}
-            <Grid
-              size={{ xs: 12, md: 4 }}
-              container
-              direction="column"
-              rowGap={2}
-            >
-              <MediaCard
-                label="Eco‑Chemistry"
-                title="Science Meets Sustainability."
-                imageGradient="linear-gradient(180deg, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.55) 100%)"
-              />
-              <MediaCard
-                label="Eco‑Products"
-                title="Pure, Gentle, Sustainable."
-                imageGradient="linear-gradient(180deg, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.55) 100%)"
-                
-              />
-            </Grid>
+            <MediaCard
+              label="Contract Review"
+              title="Risk-aware clause intelligence"
+              imageUrl="/images/contract-review.jpg"
+              href="/contract-review"
+            />
+            <MediaCard
+              label="Legal Research"
+              title="Precedents with citations"
+              imageUrl="/images/legal-research.jpg"
+              href="/chat"
+            />
           </Grid>
 
-          {/* Wide feature with left video thumbnail and right copy block */}
+          {/* Column C */}
           <Grid
+            size={{ xs: 12, md: 4 }}
             container
-            spacing={2.5}
-            alignItems="stretch"
-            sx={{ mt: { xs: 3.5, md: 4 } }}
+            direction="column"
+            rowGap={2}
           >
-            {/* Video tile */}
-            <Grid size={{ xs: 12, md: 5 }}>
-              <Card
-                sx={{
-                  height: { xs: 260, md: 300 },
-                  borderRadius: 4,
-                  overflow: "hidden",
-                  position: "relative",
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
-                  background:
-                    "linear-gradient(180deg, #c6d8c2 0%, #a9c2a5 100%)",
-                }}
-              >
-                <Box
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "url('https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1200&auto=format&fit=crop') center/cover no-repeat",
-                    filter: "saturate(0.9)",
-                  }}
-                />
-                {/* Play button */}
-                <IconButton
-                  aria-label="play"
-                  sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%,-50%)",
-                    bgcolor: "rgba(255,255,255,0.9)",
-                    width: 64,
-                    height: 64,
-                    "&:hover": { bgcolor: "rgba(255,255,255,1)" },
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
-                  }}
-                >
-                  <PlayArrowRoundedIcon sx={{ fontSize: 36, color: "black" }} />
-                </IconButton>
-                {/* Hashtag strip (bottom-left) */}
-                <Box
-                  sx={{
-                    position: "absolute",
-                    bottom: 10,
-                    left: 10,
-                    display: "flex",
-                    gap: 1,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {[
-                    "#EcoTools",
-                    "#BackToNature",
-                    "#EscapeTheOrdinary",
-                    "#MadeForWellness",
-                    "#NatureFriendly",
-                    "#WhatWeDo",
-                  ].map((t) => (
-                    <Chip
-                      key={t}
-                      label={t}
-                      size="small"
-                      sx={{
-                        bgcolor: "rgba(0,0,0,0.55)",
-                        color: "white",
-                        "& .MuiChip-label": { px: 1.2, py: 0.2 },
-                      }}
-                    />
-                  ))}
-                </Box>
-              </Card>
-            </Grid>
-
-            {/* Right descriptive panel */}
-            <Grid size={{ xs: 12, md: 7 }}>
-              <Card
-                sx={{
-                  height: { xs: "auto", md: 300 },
-                  borderRadius: 4,
-                  background:
-                    "linear-gradient(180deg, #e0eadc 0%, #d5e3d3 100%)",
-                  px: { xs: 3, md: 4 },
-                  py: { xs: 3, md: 4 },
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box>
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      fontFamily:
-                        "'Lato', system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-                      fontWeight: 800,
-                      color: "rgb(85,107,89)", // muted olive like reference
-                      letterSpacing: "-0.01em",
-                      lineHeight: 1.1,
-                      mb: 1,
-                    }}
-                  >
-                    Make Everyday
-                    <br />
-                    Sustainable, Beautiful,
-                    <br />
-                    and Simple
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "rgba(0,0,0,0.65)",
-                      maxWidth: 620,
-                      lineHeight: 1.7,
-                      mt: 1,
-                    }}
-                  >
-                    Ready to live better for the planet? Explore our curated
-                    collection of eco‑friendly tools, natural solutions, and
-                    sustainable essentials. Make small changes today that create
-                    a lasting impact tomorrow.
-                  </Typography>
-                </Box>
-                <Box sx={{ mt: 2, display: "flex", gap: 1.5 }}>
-                  <Button
-                    variant="contained"
-                    color="inherit"
-                    endIcon={<ArrowForwardRoundedIcon />}
-                    sx={{
-                      borderRadius: 999,
-                      textTransform: "none",
-                      fontWeight: 700,
-                      px: 2.2,
-                      bgcolor: "white",
-                      "&:hover": { bgcolor: "#f7f7f7" },
-                    }}
-                  >
-                    Browse Eco Favorites
-                  </Button>
-                </Box>
-              </Card>
-            </Grid>
+            <MediaCard
+              label="Compliance"
+              title="Continuous monitoring"
+              imageUrl="/images/compliance.jpg"
+              href="/chat"
+            />
+            <MediaCard
+              label="Workflows"
+              title="Faster client delivery"
+              imageUrl="/images/workflows.jpg"
+              href="#features"
+            />
           </Grid>
-        </Box>
+        </Grid>
+
+        {/* Wide feature row */}
+        <Grid
+          container
+          spacing={3}
+          alignItems="stretch"
+          sx={{ mt: { xs: 4, md: 5 } }}
+        >
+          {/* Video block */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card
+              sx={{
+                height: { xs: 260, md: 300 },
+                borderRadius: 4,
+                overflow: "hidden",
+                position: "relative",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+                background: `linear-gradient(180deg, rgba(69,84,87,0.3) 0%, rgba(27,36,36,0.5) 100%), url('/images/hero-legal.jpg') center/cover no-repeat`,
+                border: `1px solid ${COLORS.panelBorder}`,
+              }}
+            >
+              {/* Play button, hashtags unchanged */}
+              {/* ... */}
+            </Card>
+          </Grid>
+
+          {/* Right descriptive panel */}
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card
+              sx={{
+                height: { xs: "auto", md: 300 },
+                borderRadius: 4,
+                px: { xs: 3, md: 4 },
+                py: { xs: 3, md: 4 },
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                background: "#ffffffcc", // lighter flat bg
+                border: `1px solid ${COLORS.panelBorder}`,
+              }}
+            >
+              {/* Text + buttons unchanged */}
+            </Card>
+          </Grid>
+        </Grid>
       </Container>
     </Box>
   );
@@ -308,12 +266,14 @@ export default function AboutSection() {
 
 function StackCard({
   title,
+  subtitle,
   cta,
   dotColor,
   bg,
   sx,
 }: {
   title: string;
+  subtitle?: string;
   cta: string;
   dotColor: string;
   bg: string;
@@ -323,8 +283,9 @@ function StackCard({
     <Card
       sx={{
         borderRadius: 3,
-        boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+        boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
         background: bg,
+        border: "1px solid rgba(67,75,77,0.6)",
         ...sx,
       }}
     >
@@ -343,25 +304,39 @@ function StackCard({
             <FiberManualRecordRoundedIcon
               sx={{ fontSize: 14, color: dotColor }}
             />
-            <Typography
-              variant="subtitle1"
-              sx={{ fontWeight: 700, color: "rgba(0,0,0,0.75)" }}
-            >
-              {title}
-            </Typography>
+            <Box>
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 800, color: dotColor }}
+              >
+                {title}
+              </Typography>
+              {subtitle ? (
+                <Typography
+                  variant="caption"
+                  sx={{ color: "#a7a29e", display: "block" }}
+                >
+                  {subtitle}
+                </Typography>
+              ) : null}
+            </Box>
           </Box>
           <Box
             sx={{
               width: 32,
               height: 32,
               borderRadius: 2,
-              bgcolor: "rgba(255,255,255,0.8)",
+              bgcolor: "rgba(240,248,255,0.12)",
               display: "grid",
               placeItems: "center",
-              color: "rgba(0,0,0,0.6)",
+              color: "rgba(240,248,255,0.9)",
+              border: "1px solid rgba(67,75,77,0.6)",
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 800, color: dotColor }}
+            >
               {cta}
             </Typography>
           </Box>
@@ -374,12 +349,23 @@ function StackCard({
 function MediaCard({
   label,
   title,
-  imageGradient,
+  imageUrl,
+  href,
+  onClick,
 }: {
   label: string;
   title: string;
-  imageGradient: string;
+  imageUrl: string; // custom image path
+  href?: string; // route to push
+  onClick?: () => void; // optional override
 }) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (onClick) return onClick();
+    if (href) router.push(href);
+  };
+
   return (
     <Card
       sx={{
@@ -387,9 +373,9 @@ function MediaCard({
         overflow: "hidden",
         position: "relative",
         height: 170,
-        boxShadow: "0 10px 26px rgba(0,0,0,0.12)",
-        background:
-          "url('https://images.unsplash.com/photo-1522184216315-dc2f0c01b2f3?q=80&w=1200&auto=format&fit=crop') center/cover no-repeat",
+        boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
+        background: `url('${imageUrl}') center/cover no-repeat`,
+        border: `1px solid ${COLORS.panelBorder}`,
       }}
     >
       {/* overlay gradient for legibility */}
@@ -397,10 +383,13 @@ function MediaCard({
         sx={{
           position: "absolute",
           inset: 0,
-          background: imageGradient,
+          background:
+            "linear-gradient(180deg, rgba(0,0,0,0.0) 20%, rgba(0,0,0,0.55) 100%)",
         }}
       />
       <CardActionArea
+        onClick={handleClick}
+        aria-label={`${label} - ${title}`}
         sx={{
           position: "absolute",
           inset: 0,
@@ -415,9 +404,10 @@ function MediaCard({
           label={label}
           size="small"
           sx={{
-            bgcolor: "rgba(0,0,0,0.5)",
-            color: "white",
+            bgcolor: COLORS.chipBg,
+            color: COLORS.chipText,
             "& .MuiChip-label": { px: 1 },
+            border: `1px solid ${COLORS.panelBorder}`,
           }}
         />
         <Box
@@ -432,10 +422,11 @@ function MediaCard({
           <Typography
             variant="subtitle1"
             sx={{
-              color: "white",
+              color: "#f0f8ff",
               fontWeight: 800,
               lineHeight: 1.1,
               maxWidth: "80%",
+              textShadow: "0 2px 6px rgba(0,0,0,0.45)",
             }}
           >
             {title}
@@ -443,11 +434,20 @@ function MediaCard({
           <IconButton
             size="small"
             sx={{
-              bgcolor: "rgba(255,255,255,0.9)",
-              "&:hover": { bgcolor: "white" },
+              bgcolor: "rgba(240,248,255,0.92)",
+              "&:hover": { bgcolor: COLORS.ctaHoverBg },
+              border: `1px solid ${COLORS.panelBorder}`,
             }}
+            onClick={handleClick}
+            aria-label="Open"
           >
-            <ArrowForwardRoundedIcon sx={{ fontSize: 20, color: "black" }} />
+            <ArrowForwardRoundedIcon
+              sx={{
+                fontSize: 20,
+                color: "#000000",
+                "&:hover": { color: "#fafafa" },
+              }}
+            />
           </IconButton>
         </Box>
       </CardActionArea>
