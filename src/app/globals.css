@@ -366,6 +366,9 @@ main {
 .text-color-gold {
   color: #b08d28;
 }
+.text-color-gold-100 {
+  color: #fff3cd;
+}
 
 /* Enhanced button hover effects */
 .btn-primary-enhanced {
