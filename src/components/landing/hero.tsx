@@ -1,9 +1,12 @@
 "use client";
 import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { motion } from "framer-motion";
-import { ArrowForward, PlayArrow } from "@mui/icons-material";
+import { ArrowForward } from "@mui/icons-material";
+import { TextEffect } from "../ui/motion-primitives/text-effect";
+import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
+  const router = useRouter();
   return (
     <Box
       sx={{
@@ -17,49 +20,9 @@ export default function HeroSection() {
         pt: 8, // Add padding top for header
       }}
     >
-      {/* Animated Background Elements */}
-      {/* <Box
-        component={motion.div}
-        initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-          rotate: 45,
-        }}
-        transition={{ duration: 2, ease: "easeOut" }}
-        sx={{
-          position: "absolute",
-          top: "10%",
-          right: "10%",
-          width: { xs: "200px", md: "400px" },
-          height: { xs: "200px", md: "400px" },
-          background: "rgba(255,255,255,0.1)",
-          borderRadius: "20px",
-          backdropFilter: "blur(10px)",
-        }}
-      /> */}
-
-      {/* Secondary geometric element */}
-      {/* <Box
-        component={motion.div}
-        initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1.5, delay: 0.5 }}
-        sx={{
-          position: "absolute",
-          bottom: "15%",
-          left: "15%",
-          width: { xs: "150px", md: "300px" },
-          height: { xs: "150px", md: "300px" },
-          background: "rgba(255,255,255,0.05)",
-          borderRadius: "50%",
-          backdropFilter: "blur(10px)",
-        }}
-      /> */}
-
       <Container maxWidth="lg">
         <Stack
-          spacing={6}
+          spacing={4} // Reduced from 6 to 4
           sx={{ maxWidth: "700px", zIndex: 2, position: "relative" }}
         >
           <motion.div
@@ -67,39 +30,102 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <Typography
-              variant="h1"
+            <Box
               sx={{
-                color: "white",
-                mb: 2,
-                textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                fontSize: { xs: "2.5rem", md: "3.5rem", lg: "4rem" },
+                lineHeight: 0.85,
+                display: "flex",
+                flexDirection: "column",
+                gap: 0,
               }}
             >
-              Inspired by{" "}
-              <Box
-                component="span"
-                sx={{ fontStyle: "italic", position: "relative" }}
+              {/* Line 1: Inspired by Legal */}
+              <Typography
+                variant="h1"
+                component="div"
+                sx={{
+                  color: "white",
+                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                  fontSize: { xs: "2.5rem", md: "3.5rem", lg: "4rem" },
+                  lineHeight: 0.9,
+                  mb: 1,
+                  height: "auto",
+                }}
               >
-                Legal Innovation
+                Inspired by{" "}
                 <Box
+                  component="span"
                   sx={{
-                    position: "absolute",
-                    bottom: -4,
-                    left: 0,
-                    right: 0,
-                    height: 3,
-                    background: "rgba(255,255,255,0.5)",
-                    borderRadius: 2,
+                    fontStyle: "italic",
+                    position: "relative",
+                    display: "inline-block",
                   }}
-                />
-              </Box>
-              ,<br />
-              Defined by{" "}
-              <Box component="span" sx={{ fontWeight: 800, color: "#fff3cd" }}>
-                Excellence
-              </Box>
-            </Typography>
+                >
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      bottom: 3,
+                      left: 0,
+                      right: 0,
+                      height: 3,
+                      background: "rgba(255,255,255,0.5)",
+                      borderRadius: 2,
+                    }}
+                  />
+                </Box>
+              </Typography>
+
+              {/* Line 2: Innovation, */}
+              <Typography
+                variant="h1"
+                component="div"
+                sx={{
+                  color: "white",
+                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                  fontSize: { xs: "2.5rem", md: "3.5rem", lg: "4rem" },
+                  lineHeight: 0.9,
+                  mb: 1.5,
+                  fontStyle: "italic",
+                  height: "auto",
+                }}
+              >
+                <TextEffect
+                  preset="blur"
+                  per="char"
+                  speedReveal={0.4}
+                  delay={0}
+                >
+                  Legal Innovation
+                </TextEffect>
+              </Typography>
+
+              {/* Line 3: Defined by Excellence */}
+              <Typography
+                variant="h1"
+                component="div"
+                sx={{
+                  color: "white",
+                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                  fontSize: { xs: "2.5rem", md: "3.5rem", lg: "4rem" },
+                  lineHeight: 0.9,
+                  mb: 1,
+                  height: "auto",
+                }}
+              >
+                Defined by{" "}
+                <Box
+                  component="span"
+                  sx={{
+                    fontWeight: 800,
+                    color: "#fff3cd",
+                    display: "inline-block",
+                  }}
+                >
+                  <TextEffect delay={1.2} preset="fade-in-blur" per="char">
+                    Excellence
+                  </TextEffect>
+                </Box>
+              </Typography>
+            </Box>
           </motion.div>
 
           <motion.div
@@ -112,8 +138,9 @@ export default function HeroSection() {
               sx={{
                 color: "rgba(255,255,255,0.9)",
                 fontSize: { xs: "1.125rem", md: "1.25rem" },
-                lineHeight: 1.6,
+                lineHeight: 1.5, // Reduced from 1.6 to 1.5
                 maxWidth: "600px",
+                mt: 2, // Added margin top for spacing control
               }}
             >
               Transform your legal practice with AI-powered document analysis,
@@ -129,6 +156,9 @@ export default function HeroSection() {
           >
             <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
               <Button
+                onClick={() => {
+                  router.push("/auth/sign-up");
+                }}
                 variant="contained"
                 size="large"
                 endIcon={<ArrowForward />}
@@ -147,13 +177,16 @@ export default function HeroSection() {
                   boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
                 }}
               >
-                Start Free Trial
+                Join LegalMind&copy;
               </Button>
 
               <Button
                 variant="outlined"
                 size="large"
-                startIcon={<PlayArrow />}
+                // startIcon={<PlayArrow />}
+                onClick={() => {
+                  router.push("/auth/sign-in");
+                }}
                 sx={{
                   borderColor: "rgba(255,255,255,0.5)",
                   color: "white",
@@ -169,7 +202,7 @@ export default function HeroSection() {
                   transition: "all 0.3s ease",
                 }}
               >
-                Watch Demo
+                Already a Member.?
               </Button>
             </Stack>
           </motion.div>
