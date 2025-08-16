@@ -1,16 +1,13 @@
 "use client";
-import {
-  Box,
-  Container,
-  Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Chip,
-} from "@mui/material";
+import { Box, Container, Typography, Chip } from "@mui/material";
 import { motion, useInView } from "framer-motion";
-import { ExpandMore } from "@mui/icons-material";
-import { useRef, useState } from "react";
+import { useRef } from "react";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/motion-primitives/accordion";
 
 const faqs = [
   {
@@ -52,14 +49,8 @@ const faqs = [
 ];
 
 export default function FAQSection() {
-  const [expanded, setExpanded] = useState<string | false>(false);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.1 });
-
-  const handleChange =
-    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
-      setExpanded(isExpanded ? panel : false);
-    };
 
   return (
     <Box
@@ -68,14 +59,14 @@ export default function FAQSection() {
       ref={ref}
       sx={{
         py: { xs: 10, md: 15 },
-        background: "linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%)", // Light subtle background
+        background: "linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%)",
       }}
     >
       <Container maxWidth="lg">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <Box sx={{ textAlign: "center", mb: 8 }}>
             <Typography
@@ -120,85 +111,70 @@ export default function FAQSection() {
         </motion.div>
 
         <Box sx={{ maxWidth: 800, mx: "auto" }}>
-          {faqs.map((faq, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <Accordion
-                expanded={expanded === `panel${index}`}
-                onChange={handleChange(`panel${index}`)}
-                sx={{
-                  mb: 2.5, // slightly more space between items
-                  borderRadius: 2,
-                  border: "1px solid",
-                  borderColor:
-                    expanded === `panel${index}` ? "primary.main" : "grey.300",
-                  backgroundColor: "background.paper",
-                  boxShadow:
-                    expanded === `panel${index}`
-                      ? "0 6px 20px rgba(0,0,0,0.08)"
-                      : "0 2px 6px rgba(0,0,0,0.04)",
-                  "&:before": { display: "none" },
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
-                  },
-                }}
+          <Accordion
+            className="flex w-full flex-col divide-y divide-zinc-200 dark:divide-zinc-700"
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+          >
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={index}
+                value={`faq-${index}`}
+                // If using divide-y, keep borders off the item
+                className="py-1"
               >
-                <AccordionSummary
-                  expandIcon={<ExpandMore />}
-                  sx={{
-                    py: 2,
-                    "& .MuiAccordionSummary-content": {
-                      alignItems: "center",
-                      gap: 2,
-                      mb: 0.5, // tighter appearance
-                    },
-                  }}
-                >
-                  <Chip
-                    label={faq.category}
-                    size="small"
-                    sx={{
-                      bgcolor:
-                        expanded === `panel${index}`
-                          ? "primary.main"
-                          : "grey.100",
-                      color:
-                        expanded === `panel${index}`
-                          ? "white"
-                          : "text.secondary",
-                      fontWeight: 600,
-                    }}
-                  />
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 600,
-                      color:
-                        expanded === `panel${index}`
-                          ? "primary.main"
-                          : "text.primary",
-                    }}
-                  >
-                    {faq.question}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ pt: 0, pb: 2.5 }}>
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{ lineHeight: 1.7, fontSize: "1.05rem" }}
-                  >
-                    {faq.answer}
-                  </Typography>
-                </AccordionDetails>
-              </Accordion>
-            </motion.div>
-          ))}
+                <AccordionTrigger className="w-full text-left px-4 md:px-5 py-3 text-zinc-950 dark:text-zinc-50">
+                  <div className="group flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Chip
+                        label={faq.category}
+                        size="small"
+                        className="shrink-0 group-data-[expanded]:bg-blue-600 group-data-[expanded]:text-white"
+                        sx={{
+                          bgcolor: "grey.100",
+                          color: "text.secondary",
+                          fontWeight: 600,
+                          transition:
+                            "background-color 200ms ease, color 200ms ease",
+                        }}
+                      />
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: 600, color: "text.primary" }}
+                        className="truncate group-data-[expanded]:text-blue-600"
+                      >
+                        {faq.question}
+                      </Typography>
+                    </div>
+                    <svg
+                      className="h-5 w-5 text-zinc-600 dark:text-zinc-300 transition-transform duration-200 group-data-[expanded]:rotate-180 will-change-transform shrink-0"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  </div>
+                </AccordionTrigger>
+
+                {/* Animated wrapper should NOT have padding; keep overflow-hidden */}
+                <AccordionContent className="overflow-hidden">
+                  {/* Static padding and spacing live here */}
+                  <div className="px-4 md:px-5 pb-4 pt-1">
+                    <Typography
+                      variant="body1"
+                      color="text.secondary"
+                      sx={{ lineHeight: 1.7, fontSize: "1.05rem" }}
+                    >
+                      {faq.answer}
+                    </Typography>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </Box>
       </Container>
     </Box>

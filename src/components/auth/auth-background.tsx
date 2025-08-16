@@ -15,7 +15,7 @@ export default function AuthBackground() {
           inset: 0,
           backgroundImage: isMobile
             ? "linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 50%, #ffa8a8 100%)"
-            : `url("../palace-4781577_1920.jpg")`,
+            : `url("../pexels-francesco-ungaro-998641.jpg")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           filter: isMobile ? "none" : "blur(3px)",
