@@ -11,6 +11,7 @@ import {
 import { motion } from "framer-motion";
 import CheckIcon from "@mui/icons-material/Check";
 import Image from "next/image";
+import { Tilt } from "@/components/ui/motion-primitives/tilt";
 
 const MotionPaper = motion(Paper);
 
@@ -194,204 +195,214 @@ export default function FeaturesSection() {
         <Grid container spacing={3} columns={12} sx={{ mb: 1 }}>
           {/* Replaced "code" card with product-relevant content */}
           <Grid size={{ xs: 12, md: 7 }}>
-            <MotionPaper
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.4 }}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
-                border: (t) => `1px solid ${t.palette.divider}`,
-                borderRadius: 3,
-              }}
-            >
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <Chip
-                  size="small"
-                  color="primary"
-                  icon={<CheckIcon />}
-                  label="Citations & compliance"
-                  sx={{ color: "#fff", fontWeight: 700 }}
-                />
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label="Jurisdiction aware"
-                />
-                <Chip size="small" variant="outlined" label="Redlines" />
-              </Stack>
-
-              <Box>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    mt: 1,
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
-                >
-                  Precision contract insights
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ mb: 2 }}
-                >
-                  Identify high‑risk clauses, get negotiation strategies, and
-                  generate enforceable alternatives with clear citations.
-                </Typography>
-
-                <Stack
-                  spacing={1}
-                  sx={{ color: "text.secondary", fontSize: 14 }}
-                >
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                    <CheckIcon fontSize="small" color="success" />
-                    <span>Risk scoring with HIGH / MEDIUM / LOW levels</span>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                    <CheckIcon fontSize="small" color="success" />
-                    <span>Clause replacements with jurisdictional notes</span>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                    <CheckIcon fontSize="small" color="success" />
-                    <span>One‑click overall summary and recommendations</span>
-                  </Box>
+            <Tilt rotationFactor={6} className="h-full">
+              <MotionPaper
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.4 }}
+                elevation={0}
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
+                  border: (t) => `1px solid ${t.palette.divider}`,
+                  borderRadius: 3,
+                }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Chip
+                    size="small"
+                    color="primary"
+                    icon={<CheckIcon />}
+                    label="Citations & compliance"
+                    sx={{ color: "#fff", fontWeight: 700 }}
+                  />
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label="Jurisdiction aware"
+                  />
+                  <Chip size="small" variant="outlined" label="Redlines" />
                 </Stack>
-              </Box>
-            </MotionPaper>
+
+                <Box>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      mt: 1,
+                      fontWeight: 700,
+                      fontSize: { xs: "1.25rem", md: "1.5rem" },
+                    }}
+                  >
+                    Precision contract insights
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}
+                  >
+                    Identify high‑risk clauses, get negotiation strategies, and
+                    generate enforceable alternatives with clear citations.
+                  </Typography>
+
+                  <Stack
+                    spacing={1}
+                    sx={{ color: "text.secondary", fontSize: 14 }}
+                  >
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                      <CheckIcon fontSize="small" color="success" />
+                      <span>Risk scoring with HIGH / MEDIUM / LOW levels</span>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                      <CheckIcon fontSize="small" color="success" />
+                      <span>Clause replacements with jurisdictional notes</span>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                      <CheckIcon fontSize="small" color="success" />
+                      <span>One‑click overall summary and recommendations</span>
+                    </Box>
+                  </Stack>
+                </Box>
+              </MotionPaper>
+            </Tilt>
           </Grid>
 
           <Grid size={{ xs: 12, md: 5 }}>
-            <MotionPaper
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.45, delay: 0.05 }}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
-                border: (t) => `1px solid ${t.palette.divider}`,
-                borderRadius: 3,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <TiltedFileDeck />
-              <Box sx={{ textAlign: "center" }}>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
-                >
-                  Seamless File Handling
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Upload PDFs and DOCX, parse CSV data, and keep everything
-                  organized. Your documents stay secure and accessible.
-                </Typography>
-              </Box>
-            </MotionPaper>
+            <Tilt rotationFactor={6} className="h-full">
+              <MotionPaper
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.45, delay: 0.05 }}
+                elevation={0}
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
+                  border: (t) => `1px solid ${t.palette.divider}`,
+                  borderRadius: 3,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <TiltedFileDeck />
+                <Box sx={{ textAlign: "center" }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: { xs: "1.25rem", md: "1.5rem" },
+                    }}
+                  >
+                    Seamless File Handling
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Upload PDFs and DOCX, parse CSV data, and keep everything
+                    organized. Your documents stay secure and accessible.
+                  </Typography>
+                </Box>
+              </MotionPaper>
+            </Tilt>
           </Grid>
         </Grid>
 
         {/* Row 2 */}
         <Grid container spacing={3} columns={12}>
           <Grid size={{ xs: 12, md: 5 }}>
-            <MotionPaper
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.4 }}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
-                border: (t) => `1px solid ${t.palette.divider}`,
-                borderRadius: 3,
-              }}
-            >
-              <Stack direction="row" spacing={1.5}>
-                <Chip size="small" label="Research" />
-                <Chip size="small" label="Citations" />
-                <Chip size="small" label="Context windows" />
-              </Stack>
-              <Box>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
-                >
-                  Specialized legal agents
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Contract review, legal research, and compliance agents tuned
-                  for your practice areas.
-                </Typography>
-              </Box>
-            </MotionPaper>
+            <Tilt rotationFactor={6} className="h-full">
+              <MotionPaper
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.4 }}
+                elevation={0}
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
+                  border: (t) => `1px solid ${t.palette.divider}`,
+                  borderRadius: 3,
+                }}
+              >
+                <Stack direction="row" spacing={1.5}>
+                  <Chip size="small" label="Research" />
+                  <Chip size="small" label="Citations" />
+                  <Chip size="small" label="Context windows" />
+                </Stack>
+                <Box>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: { xs: "1.25rem", md: "1.5rem" },
+                    }}
+                  >
+                    Specialized legal agents
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Contract review, legal research, and compliance agents tuned
+                    for your practice areas.
+                  </Typography>
+                </Box>
+              </MotionPaper>
+            </Tilt>
           </Grid>
 
           <Grid size={{ xs: 12, md: 7 }}>
-            <MotionPaper
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.45, delay: 0.05 }}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
-                border: (t) => `1px solid ${t.palette.divider}`,
-                borderRadius: 3,
-              }}
-            >
-              <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
-                <ModelsRow />
-              </Box>
-              <Box>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
+            <Tilt rotationFactor={6} className="h-full">
+              <MotionPaper
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.45, delay: 0.05 }}
+                elevation={0}
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
+                  border: (t) => `1px solid ${t.palette.divider}`,
+                  borderRadius: 3,
+                }}
+              >
+                <Box
+                  sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}
                 >
-                  Intelligent conversational AI
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Harness GPT‑4o, Claude 3.5, and Gemini 1.5 for contextual,
-                  cited guidance that accelerates drafting and strategy.
-                </Typography>
-              </Box>
-            </MotionPaper>
+                  <ModelsRow />
+                </Box>
+                <Box>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: { xs: "1.25rem", md: "1.5rem" },
+                    }}
+                  >
+                    Intelligent conversational AI
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Harness GPT‑4o, Claude 3.5, and Gemini 1.5 for contextual,
+                    cited guidance that accelerates drafting and strategy.
+                  </Typography>
+                </Box>
+              </MotionPaper>
+            </Tilt>
           </Grid>
         </Grid>
       </Container>

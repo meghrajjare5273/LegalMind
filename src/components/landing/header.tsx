@@ -146,8 +146,8 @@ export default function Header() {
   // Motion helpers respecting reduced motion
   const motionFast = prefersReducedMotion
     ? { initial: false, animate: {}, transition: {} }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    : { transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as any } };
+    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as any } };
 
   return (
     <>
