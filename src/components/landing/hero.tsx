@@ -77,7 +77,7 @@ export default function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-6 mt-2">
               <Button
                 onClick={() => {
-                  router.push("/auth/sign-up");
+                  router.push("/sign-up");
                 }}
                 className="bg-white text-gold hover:bg-white/90 px-4 py-3 text-[1.1rem] font-semibold hover:-translate-y-[3px] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-0 h-auto"
                 size="lg"
@@ -89,7 +89,7 @@ export default function HeroSection() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  router.push("/auth/sign-in");
+                  router.push("/sign-in");
                 }}
                 className="border-white/50 text-white hover:border-white hover:bg-white px-4 py-3 text-[1.1rem]  hover:-translate-y-[3px] transition-all duration-300 bg-transparent h-auto font-bold"
                 size="lg"
