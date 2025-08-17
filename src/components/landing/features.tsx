@@ -1,18 +1,12 @@
 "use client";
-import {
-  Box,
-  Container,
-  Paper,
-  Typography,
-  Chip,
-  Stack,
-  Grid,
-} from "@mui/material";
 import { motion } from "framer-motion";
-import CheckIcon from "@mui/icons-material/Check";
+import { Check } from "lucide-react";
 import Image from "next/image";
+import { Tilt } from "@/components/ui/motion-primitives/tilt";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
-const MotionPaper = motion(Paper);
+const MotionCard = motion(Card);
 
 const cardVariants = {
   hidden: { opacity: 0, y: 18 },
@@ -32,59 +26,32 @@ const Tile = ({
   zIndex: number;
   offsetX: number;
 }) => (
-  <Box
+  <div
     aria-label={`${label} tile`}
-    sx={{
-      width: { xs: 84, md: 108 },
-      height: { xs: 108, md: 132 },
-      borderRadius: 3,
+    className={`
+      w-[84px] md:w-[108px] h-[108px] md:h-[132px] 
+      rounded-xl text-white grid place-items-center 
+      font-extrabold tracking-wide text-lg md:text-xl
+      shadow-[0_12px_28px_rgba(0,0,0,0.18)] relative
+      border border-white/20
+    `}
+    style={{
       background: color,
-      color: "white",
-      display: "grid",
-      placeItems: "center",
-      fontWeight: 800,
-      letterSpacing: 1,
-      fontSize: { xs: 18, md: 22 },
       transform: `rotate(${rotate}deg) translateX(${offsetX}px)`,
-      boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
-      position: "relative",
       zIndex,
-      border: "1px solid rgba(255,255,255,0.18)",
     }}
   >
     {label}
-    <Box
-      sx={{
-        position: "absolute",
-        top: 0,
-        right: 0,
-        width: "32%",
-        height: "26%",
-        bgcolor: "rgba(255,255,255,0.25)",
-        borderBottomLeftRadius: 8,
-        clipPath: "polygon(0 0, 100% 0, 100% 100%)",
-      }}
-    />
-  </Box>
+    <div className="absolute top-0 right-0 w-[32%] h-[26%] bg-white/25 rounded-bl-lg [clip-path:polygon(0_0,100%_0,100%_100%)]" />
+  </div>
 );
 
 const TiltedFileDeck = () => (
-  <Box
-    sx={{
-      position: "relative",
-      width: { xs: 260, md: 340 },
-      height: { xs: 140, md: 170 },
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 0,
-      mx: "auto",
-    }}
-  >
+  <div className="relative w-[260px] md:w-[340px] h-[140px] md:h-[170px] flex items-center justify-center gap-0 mx-auto">
     <Tile label="CSV" color="#22c55e" rotate={-10} zIndex={3} offsetX={24} />
     <Tile label="PDF" color="#ef4444" rotate={8} zIndex={2} offsetX={-8} />
     <Tile label="DOC" color="#2563eb" rotate={-4} zIndex={1} offsetX={-40} />
-  </Box>
+  </div>
 );
 
 const ModelChip = ({
@@ -96,305 +63,204 @@ const ModelChip = ({
   active?: boolean;
   iconSrc?: string;
 }) => (
-  <Chip
-    label={
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {iconSrc ? (
-          <Image
-            src={iconSrc || "/placeholder.svg"}
-            alt={`${label} logo`}
-            width={16}
-            height={16}
-            style={{ display: "block" }}
-          />
-        ) : null}
-        <span>{label}</span>
-      </Box>
-    }
-    sx={{
-      px: 1.25,
-      height: 36,
-      borderRadius: 2,
-      fontWeight: 700,
-      letterSpacing: 0.2,
-      bgcolor: active ? "secondary.main" : "background.default",
-      color: active ? "#fff" : "text.secondary",
-      border: (t) =>
-        `1px solid ${active ? t.palette.secondary.main : t.palette.divider}`,
-    }}
-  />
+  <Badge
+    variant={active ? "default" : "secondary"}
+    className={`
+      px-3 h-9 rounded-lg font-bold tracking-wide
+      ${
+        active
+          ? "bg-slate-900 text-white border-slate-900"
+          : "bg-background text-muted-foreground border-border"
+      }
+    `}
+  >
+    <div className="flex items-center gap-2">
+      {iconSrc && (
+        <Image
+          src={iconSrc}
+          alt={`${label} logo`}
+          width={16}
+          height={16}
+          className="block"
+        />
+      )}
+      <span>{label}</span>
+    </div>
+  </Badge>
 );
 
 const ModelsRow = () => (
-  <Stack direction="row" spacing={1.5} flexWrap="wrap" aria-label="Models">
+  <div className="flex flex-wrap gap-3" aria-label="Models">
     <ModelChip label="AI Claude 3.5" iconSrc="/claude.svg" />
     <ModelChip label="GPT‑4o" iconSrc="/gpt.svg" />
     <ModelChip label="Gemini 2.0" iconSrc="/gemini.svg" />
-  </Stack>
+  </div>
 );
 
 export default function FeaturesSection() {
   return (
-    <Box
+    <section
       id="features"
-      component="section"
-      sx={{
-        py: { xs: 8, md: 12 },
-        background:
-          "radial-gradient(1200px 400px at 50% -200px, rgba(0,0,0,0.04), transparent), linear-gradient(180deg, #faf7f2 0%, #f6f3ee 100%)",
-        position: "relative",
-        isolation: "isolate",
+      className="py-16 md:py-24 relative isolate"
+      style={{
+        background: `
+          radial-gradient(1200px 400px at 50% -200px, rgba(0,0,0,0.04), transparent), 
+          linear-gradient(180deg, #faf7f2 0%, #f6f3ee 100%)
+        `,
       }}
     >
-      <Container maxWidth="lg">
+      <div className="container mx-auto px-4 max-w-6xl">
         {/* Section header */}
-        <Box
-          component={motion.div}
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.5 }}
-          sx={{ textAlign: "left", mb: { xs: 4, md: 6 } }}
+          className="text-left mb-8 md:mb-12"
         >
-          <Typography
-            variant="overline"
-            sx={{
-              color: "primary.main",
-              fontWeight: 700,
-              letterSpacing: 2,
-            }}
-          >
+          <p className="text-primary font-bold tracking-[0.2em] text-xs uppercase mb-2">
             POWERFUL FEATURES
-          </Typography>
-          <Typography
-            variant="h2"
-            component="h1"
-            gutterBottom
-            sx={{
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-              color: "secondary.main",
-              fontSize: { xs: "2rem", md: "2.75rem" },
-              lineHeight: 1.15,
-            }}
-          >
+          </p>
+          <h1 className="font-extrabold tracking-tight text-slate-900 text-4xl md:text-5xl leading-tight mb-4">
             Modern features that feel effortless
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ maxWidth: 700 }}
-          >
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl">
             Draft with confidence, upload securely, work with specialized
             agents, and chat with top models—purpose‑built for legal work.
-          </Typography>
-        </Box>
+          </p>
+        </motion.div>
 
-        {/* Row */}
-        <Grid container spacing={3} columns={12} sx={{ mb: 1 }}>
-          {/* Replaced "code" card with product-relevant content */}
-          <Grid size={{ xs: 12, md: 7 }}>
-            <MotionPaper
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.4 }}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
-                border: (t) => `1px solid ${t.palette.divider}`,
-                borderRadius: 3,
-              }}
-            >
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <Chip
-                  size="small"
-                  color="primary"
-                  icon={<CheckIcon />}
-                  label="Citations & compliance"
-                  sx={{ color: "#fff", fontWeight: 700 }}
-                />
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label="Jurisdiction aware"
-                />
-                <Chip size="small" variant="outlined" label="Redlines" />
-              </Stack>
+        {/* Row 1 */}
+        <div className="grid grid-cols-12 gap-6 mb-6">
+          <div className="col-span-12 md:col-span-7">
+            <Tilt rotationFactor={6} className="h-full">
+              <MotionCard
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.4 }}
+                className="p-6 h-full flex flex-col gap-4 bg-gradient-to-b from-white to-slate-50 border rounded-xl"
+              >
+                <div className="flex flex-wrap gap-3 items-center">
+                  <Badge className="bg-primary text-primary-foreground font-bold">
+                    <Check className="w-3 h-3 mr-1" />
+                    Citations & compliance
+                  </Badge>
+                  <Badge variant="outline">Jurisdiction aware</Badge>
+                  <Badge variant="outline">Redlines</Badge>
+                </div>
 
-              <Box>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    mt: 1,
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
-                >
-                  Precision contract insights
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ mb: 2 }}
-                >
-                  Identify high‑risk clauses, get negotiation strategies, and
-                  generate enforceable alternatives with clear citations.
-                </Typography>
+                <div>
+                  <h3 className="mt-2 font-bold text-xl md:text-2xl mb-2">
+                    Precision contract insights
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Identify high‑risk clauses, get negotiation strategies, and
+                    generate enforceable alternatives with clear citations.
+                  </p>
 
-                <Stack
-                  spacing={1}
-                  sx={{ color: "text.secondary", fontSize: 14 }}
-                >
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                    <CheckIcon fontSize="small" color="success" />
-                    <span>Risk scoring with HIGH / MEDIUM / LOW levels</span>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                    <CheckIcon fontSize="small" color="success" />
-                    <span>Clause replacements with jurisdictional notes</span>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                    <CheckIcon fontSize="small" color="success" />
-                    <span>One‑click overall summary and recommendations</span>
-                  </Box>
-                </Stack>
-              </Box>
-            </MotionPaper>
-          </Grid>
+                  <div className="space-y-2 text-muted-foreground text-sm">
+                    <div className="flex gap-2 items-center">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Risk scoring with HIGH / MEDIUM / LOW levels</span>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Clause replacements with jurisdictional notes</span>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>One‑click overall summary and recommendations</span>
+                    </div>
+                  </div>
+                </div>
+              </MotionCard>
+            </Tilt>
+          </div>
 
-          <Grid size={{ xs: 12, md: 5 }}>
-            <MotionPaper
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.45, delay: 0.05 }}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
-                border: (t) => `1px solid ${t.palette.divider}`,
-                borderRadius: 3,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <TiltedFileDeck />
-              <Box sx={{ textAlign: "center" }}>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
-                >
-                  Seamless File Handling
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Upload PDFs and DOCX, parse CSV data, and keep everything
-                  organized. Your documents stay secure and accessible.
-                </Typography>
-              </Box>
-            </MotionPaper>
-          </Grid>
-        </Grid>
+          <div className="col-span-12 md:col-span-5">
+            <Tilt rotationFactor={6} className="h-full">
+              <MotionCard
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.45, delay: 0.05 }}
+                className="p-6 h-full flex flex-col gap-4 bg-gradient-to-b from-white to-slate-50 border rounded-xl items-center justify-center"
+              >
+                <TiltedFileDeck />
+                <div className="text-center">
+                  <h3 className="font-bold text-xl md:text-2xl mb-2">
+                    Seamless File Handling
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Upload PDFs and DOCX, parse CSV data, and keep everything
+                    organized. Your documents stay secure and accessible.
+                  </p>
+                </div>
+              </MotionCard>
+            </Tilt>
+          </div>
+        </div>
 
         {/* Row 2 */}
-        <Grid container spacing={3} columns={12}>
-          <Grid size={{ xs: 12, md: 5 }}>
-            <MotionPaper
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.4 }}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
-                border: (t) => `1px solid ${t.palette.divider}`,
-                borderRadius: 3,
-              }}
-            >
-              <Stack direction="row" spacing={1.5}>
-                <Chip size="small" label="Research" />
-                <Chip size="small" label="Citations" />
-                <Chip size="small" label="Context windows" />
-              </Stack>
-              <Box>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
-                >
-                  Specialized legal agents
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Contract review, legal research, and compliance agents tuned
-                  for your practice areas.
-                </Typography>
-              </Box>
-            </MotionPaper>
-          </Grid>
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 md:col-span-5">
+            <Tilt rotationFactor={6} className="h-full">
+              <MotionCard
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.4 }}
+                className="p-6 h-full flex flex-col gap-4 bg-gradient-to-b from-white to-slate-50 border rounded-xl"
+              >
+                <div className="flex flex-wrap gap-3">
+                  <Badge variant="secondary">Research</Badge>
+                  <Badge variant="secondary">Citations</Badge>
+                  <Badge variant="secondary">Context windows</Badge>
+                </div>
+                <div>
+                  <h3 className="font-bold text-xl md:text-2xl mb-2">
+                    Specialized legal agents
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Contract review, legal research, and compliance agents tuned
+                    for your practice areas.
+                  </p>
+                </div>
+              </MotionCard>
+            </Tilt>
+          </div>
 
-          <Grid size={{ xs: 12, md: 7 }}>
-            <MotionPaper
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.45, delay: 0.05 }}
-              elevation={0}
-              sx={{
-                p: 3,
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                background: "linear-gradient(180deg, #ffffff, #fbfbfc)",
-                border: (t) => `1px solid ${t.palette.divider}`,
-                borderRadius: 3,
-              }}
-            >
-              <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
-                <ModelsRow />
-              </Box>
-              <Box>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
-                >
-                  Intelligent conversational AI
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Harness GPT‑4o, Claude 3.5, and Gemini 1.5 for contextual,
-                  cited guidance that accelerates drafting and strategy.
-                </Typography>
-              </Box>
-            </MotionPaper>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
+          <div className="col-span-12 md:col-span-7">
+            <Tilt rotationFactor={6} className="h-full">
+              <MotionCard
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.45, delay: 0.05 }}
+                className="p-6 h-full flex flex-col gap-4 bg-gradient-to-b from-white to-slate-50 border rounded-xl"
+              >
+                <div className="flex-grow flex items-center">
+                  <ModelsRow />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xl md:text-2xl mb-2">
+                    Intelligent conversational AI
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Harness GPT‑4o, Claude 3.5, and Gemini 1.5 for contextual,
+                    cited guidance that accelerates drafting and strategy.
+                  </p>
+                </div>
+              </MotionCard>
+            </Tilt>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

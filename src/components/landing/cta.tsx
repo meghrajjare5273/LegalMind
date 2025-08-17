@@ -1,145 +1,90 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import {
-  Box,
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-} from "@mui/material";
+
 import { motion } from "framer-motion";
-import { Send } from "@mui/icons-material";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export default function CTASection() {
-  const isEmailValid = true;
+  const [email, setEmail] = useState("");
+  const isEmailInvalid = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #000000 0%, #545d56 100%)",
-        py: 12,
-        color: "white",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Decorative shapes */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: -70,
-          right: -100,
-          width: 300,
-          height: 200,
-          background: "rgba(240, 248, 255, 0.07)",
-          borderRadius: "50%",
-          filter: "blur(24px)",
-          zIndex: 0,
-        }}
-      />
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+    <section className="relative overflow-hidden bg-gradient-to-tr from-black to-[#545d56] py-24 text-white">
+      {/* Decorative background shape */}
+      <div className="absolute -top-20 -right-28 h-52 w-72 rounded-full bg-[rgba(240,248,255,0.07)] blur-3xl z-0" />
+
+      <div className="relative z-10 mx-auto max-w-3xl px-4">
+        {/* Headings */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <Typography
-            variant="h2"
-            align="center"
-            gutterBottom
-            sx={{
-              fontWeight: 800,
-              letterSpacing: -1,
-              fontSize: { xs: "2.25rem", md: "3.4rem" },
-              mb: 2,
-              background: "linear-gradient(90deg, #f0f8ff 30%, #bbb7b4 70%)",
-              backgroundClip: "text",
-              color: "transparent",
-              WebkitBackgroundClip: "text",
-            }}
+          <h2
+            className="text-center font-extrabold leading-tight tracking-tight mb-2 
+              text-transparent bg-clip-text bg-gradient-to-r from-[#f0f8ff] to-[#bbb7b4]
+              text-[clamp(2.25rem,5vw,3.4rem)]"
           >
-            Let&apos;s Design Your Legal{" "}
-            <span style={{ fontStyle: "italic" }}>Future</span> Together
-          </Typography>
-          <Typography
-            variant="body1"
-            align="center"
-            sx={{
-              mb: 6,
-              fontSize: "1.25rem",
-              color: "#e6f1fa",
-              opacity: 0.9,
-            }}
-          >
+            Let&apos;s Design Your <span className="italic">Legal Future</span>{" "}
+            Together
+          </h2>
+          <p className="mb-8 text-center text-lg text-[#e6f1fa] opacity-90">
             Join thousands of legal professionals who trust LegalMind to
             streamline their practice and deliver better outcomes for their
             clients.
-          </Typography>
+          </p>
         </motion.div>
 
+        {/* Form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={2}
-            sx={{ maxWidth: 500, mx: "auto" }}
+          <form
+            className="flex flex-col md:flex-row gap-3 max-w-lg mx-auto"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!isEmailInvalid) {
+                alert("Subscribed with: " + email);
+              }
+            }}
           >
-            <TextField
-              placeholder="Enter your email address"
-              type="email"
-              label="Email Address"
-              required
-              variant="filled"
-              fullWidth
-              sx={{
-                backgroundColor: "rgba(180, 184, 187, 0.15)",
-                borderRadius: 2,
-                "& .MuiFilledInput-root": {
-                  backgroundColor: "rgba(180, 184, 187, 0.15)",
-                  "&:hover": {
-                    backgroundColor: "rgba(180, 184, 187, 0.25)",
-                  },
-                },
-                "& .MuiFilledInput-input": {
-                  color: "#f0f8ff",
-                  "&::placeholder": {
-                    color: "rgba(240, 248, 255, 0.7)",
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  color: "rgba(240, 248, 255, 0.8)",
-                },
-              }}
-            />
+            <div className="flex-1">
+              <Label htmlFor="email" className="sr-only">
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e: any) => setEmail(e.target.value)}
+                required
+                className="bg-[rgba(180,184,187,0.15)] text-[#f0f8ff] placeholder:text-[rgba(240,248,255,0.7)] 
+                  border-0 rounded-lg px-4 py-3 backdrop-blur-md focus:bg-[rgba(180,184,187,0.25)] focus:ring-2 
+                  focus:ring-[#f0f8ff] focus:outline-none"
+              />
+            </div>
+
             <Button
-              variant="contained"
-              endIcon={<Send />}
-              sx={{
-                backgroundColor: "#f1f9ff",
-                color: "#32393a",
-                minWidth: 140,
-                fontWeight: 700,
-                boxShadow: "0 4px 32px rgba(180, 184, 187, 0.4)",
-                "&:hover": {
-                  backgroundColor: "#bdc9c4",
-                  color: "#141818",
-                  transform: "translateY(-4px) scale(1.04)",
-                },
-                transition: "all 0.3s cubic-bezier(.4,0,.2,1)",
-              }}
               type="submit"
-              disabled={isEmailValid}
-              aria-label="Subscribe to newletter with email"
+              disabled={isEmailInvalid}
+              aria-label="Subscribe to newsletter with email"
+              className="min-w-[140px] font-bold bg-[#f1f9ff] text-[#32393a] shadow-[0_4px_32px_rgba(180,184,187,0.4)]
+                transition-all duration-300 hover:bg-[#bdc9c4] hover:text-[#141818] hover:-translate-y-1 hover:scale-105
+                disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Get Started
+              Get Started →
             </Button>
-          </Stack>
+          </form>
         </motion.div>
-      </Container>
-    </Box>
+      </div>
+    </section>
   );
 }

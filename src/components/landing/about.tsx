@@ -8,11 +8,10 @@ import {
   LayoutGroup,
   type Variants,
 } from "framer-motion";
-// import { Card } from "@/components/ui/card";
+import { Tilt } from "@/components/ui/motion-primitives/tilt";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import * as React from "react";
-import { Typography } from "@mui/material";
 
 type Feature = {
   id: string;
@@ -59,10 +58,29 @@ const fadeUp: Variants = {
 
 export default function AboutSection() {
   const [activeId, setActiveId] = React.useState<Feature["id"]>("context");
+  const [shouldScroll, setShouldScroll] = React.useState(false);
+  const previewRef = React.useRef<HTMLDivElement>(null);
+  const hasMountedRef = React.useRef(false);
+
   const active = React.useMemo(
     () => FEATURES.find((f) => f.id === activeId) ?? FEATURES[0],
     [activeId]
   );
+
+  React.useEffect(() => {
+    if (shouldScroll && hasMountedRef.current && previewRef.current) {
+      previewRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+    hasMountedRef.current = true;
+  }, [activeId, shouldScroll]);
+
+  const handleFeatureSelect = (featureId: Feature["id"]) => {
+    setActiveId(featureId);
+    setShouldScroll(true); // Enable scrolling for this change
+  };
 
   return (
     <section className="relative overflow-hidden">
@@ -82,16 +100,9 @@ export default function AboutSection() {
           viewport={{ once: true, amount: 0.6 }}
           className="text-sm tracking-wide text-lm-inkMuted/80"
         >
-          <Typography
-            variant="overline"
-            sx={{
-              color: "primary.main",
-              fontWeight: 700,
-              letterSpacing: 2,
-            }}
-          >
+          <span className="text-primary font-bold tracking-[0.125em] uppercase text-sm">
             About LegalMind
-          </Typography>
+          </span>
         </motion.p>
 
         <motion.div
@@ -101,21 +112,10 @@ export default function AboutSection() {
           viewport={{ once: true, amount: 0.6 }}
           className="mt-4 grid gap-4 md:max-w-3xl"
         >
-          <Typography
-            variant="h2"
-            component="h1"
-            gutterBottom
-            sx={{
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-              color: "secondary.main",
-              fontSize: { xs: "2rem", md: "2.75rem" },
-              lineHeight: 1.15,
-            }}
-          >
+          <h1 className="text-secondary-foreground font-extrabold tracking-tight text-3xl md:text-5xl leading-[1.15] mb-4">
             LegalMind reads the record, understands the law, and shows the why
             behind every suggestion.
-          </Typography>
+          </h1>
           <p className="text-base leading-relaxed text-lm-inkMuted md:text-lg">
             Explore the pillars below—each tile updates the live preview and
             details panel on the right.
@@ -124,7 +124,7 @@ export default function AboutSection() {
 
         {/* Two-column: left list of features, right preview */}
         <LayoutGroup>
-          <div className="mt-12 grid items-start gap-8 md:grid-cols-2">
+          <div className="mt-12 grid items-center gap-8 md:grid-cols-2">
             {/* Left: clickable feature cards */}
             <div className="grid gap-6">
               {FEATURES.map((f) => (
@@ -132,13 +132,16 @@ export default function AboutSection() {
                   key={f.id}
                   feature={f}
                   active={f.id === activeId}
-                  onSelect={() => setActiveId(f.id)}
+                  onSelect={() => handleFeatureSelect(f.id)}
                 />
               ))}
             </div>
 
             {/* Right: sticky preview */}
-            <div className="relative">
+            <div
+              className="relative flex items-center justify-center min-h-[600px]"
+              ref={previewRef}
+            >
               <PreviewPanel active={active} />
             </div>
           </div>
@@ -158,81 +161,83 @@ function FeatureOption({
   onSelect: () => void;
 }) {
   return (
-    <motion.button
-      layout
-      type="button"
-      onClick={onSelect}
-      aria-pressed={active}
-      className={[
-        "group relative w-full rounded-xl border bg-lm-bgAlt text-left shadow-lm transition-colors",
-        active
-          ? "border-lm-ink/20"
-          : "border-lm-border/60 hover:border-lm-ink/20",
-        "focus:outline-none focus:ring-2 focus:ring-lm-accent focus:ring-offset-2 focus:ring-offset-lm-bg",
-      ].join(" ")}
-    >
-      <motion.div
+    <Tilt rotationFactor={6} isRevese>
+      <motion.button
         layout
-        className="relative h-40 overflow-hidden rounded-t-xl sm:h-44"
+        type="button"
+        onClick={onSelect}
+        aria-pressed={active}
+        className={[
+          "group relative w-full rounded-xl border bg-lm-bgAlt text-left shadow-lm transition-colors",
+          active
+            ? "border-lm-ink/20"
+            : "border-lm-border/60 hover:border-lm-ink/20",
+          "focus:outline-none focus:ring-2 focus:ring-lm-accent focus:ring-offset-2 focus:ring-offset-lm-bg",
+        ].join(" ")}
       >
-        <Image
-          src={feature.img || "/placeholder.svg"}
-          alt=""
-          fill
-          className="object-cover opacity-95 transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          priority={false}
-        />
-        <div
-          className={`pointer-events-none absolute inset-0 rounded-t-xl bg-gradient-to-tr ${
-            feature.tintFrom
-          } ${feature.tintVia ?? ""} to-transparent mix-blend-multiply`}
-        />
-      </motion.div>
-
-      <div className="flex items-start gap-3 p-5">
-        <div
-          className={[
-            "mt-1 h-5 w-5 shrink-0 rounded-full border",
-            active ? "bg-lm-ink border-lm-ink" : "border-lm-inkMuted/30",
-          ].join(" ")}
+        <motion.div
+          layout
+          className="relative h-40 overflow-hidden rounded-t-xl sm:h-44"
         >
-          <AnimatePresence initial={false}>
-            {active && (
-              <motion.span
-                key="dot"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="grid h-full w-full place-items-center text-white"
-              >
-                <Check className="h-3.5 w-3.5" />
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </div>
+          <Image
+            src={feature.img || "/placeholder.svg"}
+            alt=""
+            fill
+            className="object-cover opacity-95 transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            priority={false}
+          />
+          <div
+            className={`pointer-events-none absolute inset-0 rounded-t-xl bg-gradient-to-tr ${
+              feature.tintFrom
+            } ${feature.tintVia ?? ""} to-transparent mix-blend-multiply`}
+          />
+        </motion.div>
 
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-lm-ink">
-              {feature.title}
-            </h3>
-            {active && (
-              <motion.div
-                layoutId="active-pill"
-                className="rounded-full bg-lm-ink px-2.5 py-0.5 text-xs text-white"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              >
-                Selected
-              </motion.div>
-            )}
+        <div className="flex items-start gap-3 p-5">
+          <div
+            className={[
+              "mt-1 h-5 w-5 shrink-0 rounded-full border",
+              active ? "bg-lm-ink border-lm-ink" : "border-lm-inkMuted/30",
+            ].join(" ")}
+          >
+            <AnimatePresence initial={false}>
+              {active && (
+                <motion.span
+                  key="dot"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="grid h-full w-full place-items-center text-white"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
-          <p className="mt-1 text-sm leading-relaxed text-lm-inkMuted">
-            {feature.desc}
-          </p>
+
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-lm-ink">
+                {feature.title}
+              </h3>
+              {active && (
+                <motion.div
+                  layoutId="active-pill"
+                  className="rounded-full bg-lm-ink px-2.5 py-0.5 text-xs text-white"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                >
+                  Selected
+                </motion.div>
+              )}
+            </div>
+            <p className="mt-1 text-sm leading-relaxed text-lm-inkMuted">
+              {feature.desc}
+            </p>
+          </div>
         </div>
-      </div>
-    </motion.button>
+      </motion.button>
+    </Tilt>
   );
 }
 
@@ -240,11 +245,11 @@ function PreviewPanel({ active }: { active: Feature }) {
   return (
     <motion.div
       layout
-      className="sticky top-24 overflow-hidden rounded-2xl border border-lm-border/60 bg-white shadow-lm"
+      className="w-full max-w-md overflow-hidden rounded-2xl border border-lm-border/60 bg-white shadow-lm"
       transition={{ type: "spring", stiffness: 300, damping: 32 }}
     >
       {/* Image crossfade */}
-      <div className="relative h-80 w-full sm:h-[420px]">
+      <div className="relative h-64 w-full sm:h-80">
         <AnimatePresence mode="wait">
           <motion.div
             key={active.id}
@@ -270,7 +275,6 @@ function PreviewPanel({ active }: { active: Feature }) {
         </AnimatePresence>
       </div>
 
-      {/* Content area with slide/fade */}
       <div className="space-y-2 p-6">
         <AnimatePresence mode="wait">
           <motion.h3

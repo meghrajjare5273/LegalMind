@@ -1,43 +1,83 @@
 "use client";
 
-import { Box, useTheme, useMediaQuery } from "@mui/material";
-import type { ReactNode } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { ThemeToggle } from "../theme-toggle";
+import SignInForm from "./sign-in-form";
+import SignUpForm from "./sign-up-form";
 
-interface AuthContainerProps {
-  children: ReactNode;
-}
+export default function AuthContainer() {
+  const pathname = usePathname();
+  const [isSignIn, setIsSignIn] = useState(pathname === "/sign-in");
 
-export default function AuthContainer({ children }: AuthContainerProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  useEffect(() => {
+    setIsSignIn(pathname === "/sign-in");
+  }, [pathname]);
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 300 : -300,
+      opacity: 0,
+    }),
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        maxWidth: {
-          xs: "100%", // Full width on mobile
-          sm: "500px",
-          md: "900px",
-          lg: "1100px",
-          xl: "1200px",
-        },
-        height: {
-          xs: "100vh", // Full viewport height on mobile
-          sm: "95vh",
-          md: "90vh",
-        },
-        mx: "auto", // This centers the container
-        px: { xs: 0, sm: 2, md: 3, lg: 4 }, // No padding on mobile
-        py: { xs: 0, sm: 3, md: 4, lg: 5 }, // No padding on mobile
-        position: "relative",
-        zIndex: 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center", // Ensure content is centered
-      }}
-    >
-      {children}
-    </Box>
+    <div className="relative w-full h-full flex items-center justify-center">
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-md relative px-4">
+        <AnimatePresence mode="wait" custom={isSignIn ? 1 : -1}>
+          <motion.div
+            key={isSignIn ? "signin" : "signup"}
+            custom={isSignIn ? 1 : -1}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 },
+            }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipe = swipePower(offset.x, velocity.x);
+
+              if (swipe < -swipeConfidenceThreshold) {
+                setIsSignIn(false);
+              } else if (swipe > swipeConfidenceThreshold) {
+                setIsSignIn(true);
+              }
+            }}
+            className="w-full"
+          >
+            {isSignIn ? (
+              <SignInForm onSwitchToSignUp={() => setIsSignIn(false)} />
+            ) : (
+              <SignUpForm onSwitchToSignIn={() => setIsSignIn(true)} />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
   );
 }
