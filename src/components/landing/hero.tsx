@@ -1,93 +1,40 @@
 "use client";
-import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import { motion } from "framer-motion";
-import { ArrowForward } from "@mui/icons-material";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { TextEffect } from "../ui/motion-primitives/text-effect";
 import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
   const router = useRouter();
   return (
-    <Box
-      sx={{
-        backgroundImage: `url("../pexels-sora-shimazaki-5668473.jpg")`,
+    <div
+      className="min-h-screen flex items-center relative overflow-hidden pt-16 bg-card"
+      style={{
+        backgroundImage: 'url("../pexels-sora-shimazaki-5668473.jpg")',
         imageResolution: "initial",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        position: "relative",
-        overflow: "hidden",
-        pt: 8, // Add padding top for header
       }}
     >
-      <Container maxWidth="lg">
-        <Stack
-          spacing={4} // Reduced from 6 to 4
-          sx={{ maxWidth: "700px", zIndex: 2, position: "relative" }}
-        >
+      {/* MUI Container maxWidth="lg" equivalent */}
+      <div className="w-full max-w-[1200px] mx-auto px-6">
+        <div className="flex flex-col space-y-6 max-w-[700px] relative z-10 font-['Roboto','-apple-system','BlinkMacSystemFont','Segoe_UI',sans-serif]">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <Box
-              sx={{
-                lineHeight: 0.85,
-                display: "flex",
-                flexDirection: "column",
-                gap: 0,
-              }}
-            >
+            <div className="leading-[0.85] flex flex-col gap-0">
               {/* Line 1: Inspired by Legal */}
-              <Typography
-                variant="h1"
-                component="div"
-                sx={{
-                  color: "white",
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "2.5rem", md: "3.5rem", lg: "4rem" },
-                  lineHeight: 0.9,
-                  mb: 1,
-                  height: "auto",
-                }}
-              >
+              <h1 className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-2 h-auto font-bold">
                 Inspired by{" "}
-                <Box
-                  component="span"
-                  sx={{
-                    fontStyle: "italic",
-                    position: "relative",
-                    display: "inline-block",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: 3,
-                      left: 0,
-                      right: 0,
-                      height: 3,
-                      background: "rgba(255,255,255,0.5)",
-                      borderRadius: 2,
-                    }}
-                  />
-                </Box>
-              </Typography>
+                <span className="italic relative inline-block font-bold">
+                  Legal
+                  {/* <div className="absolute bottom-[3px] left-0 right-0 h-[3px] bg-white/50 rounded-sm" /> */}
+                </span>
+              </h1>
 
-              {/* Line 2: Innovation, */}
-              <Typography
-                variant="h1"
-                component="div"
-                sx={{
-                  color: "white",
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "2.5rem", md: "3.5rem", lg: "4rem" },
-                  lineHeight: 0.9,
-                  mb: 1.5,
-                  fontStyle: "italic",
-                  height: "auto",
-                }}
-              >
+              {/* Line 2: Innovation */}
+              <h1 className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-3 italic h-auto font-bold">
                 <TextEffect
                   preset="blur"
                   per="char"
@@ -96,36 +43,18 @@ export default function HeroSection() {
                 >
                   Legal Innovation
                 </TextEffect>
-              </Typography>
+              </h1>
 
               {/* Line 3: Defined by Excellence */}
-              <Typography
-                variant="h1"
-                component="div"
-                sx={{
-                  color: "white",
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "2.5rem", md: "3.5rem", lg: "4rem" },
-                  lineHeight: 0.9,
-                  mb: 1,
-                  height: "auto",
-                }}
-              >
+              <h1 className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-2 h-auto font-bold">
                 Defined by{" "}
-                <Box
-                  component="span"
-                  sx={{
-                    fontWeight: 800,
-                    color: "#fff3cd",
-                    display: "inline-block",
-                  }}
-                >
+                <span className="font-extrabold text-[#fff3cd] inline-block">
                   <TextEffect delay={1.2} preset="fade-in-blur" per="char">
                     Excellence
                   </TextEffect>
-                </Box>
-              </Typography>
-            </Box>
+                </span>
+              </h1>
+            </div>
           </motion.div>
 
           <motion.div
@@ -133,20 +62,11 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <Typography
-              variant="body1"
-              sx={{
-                color: "rgba(255,255,255,0.9)",
-                fontSize: { xs: "1.125rem", md: "1.25rem" },
-                lineHeight: 1.5, // Reduced from 1.6 to 1.5
-                maxWidth: "600px",
-                mt: 2, // Added margin top for spacing control
-              }}
-            >
+            <p className="text-white/90 text-[1.125rem] md:text-[1.25rem] leading-[1.5] max-w-[600px] mt-4 font-normal">
               Transform your legal practice with AI-powered document analysis,
               intelligent research, and lightning-fast compliance monitoring.
               LegalMind brings precision and speed to every legal decision.
-            </Typography>
+            </p>
           </motion.div>
 
           <motion.div
@@ -154,60 +74,32 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
+            <div className="flex flex-col sm:flex-row gap-6 mt-2">
               <Button
                 onClick={() => {
                   router.push("/auth/sign-up");
                 }}
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForward />}
-                sx={{
-                  backgroundColor: "white",
-                  color: "primary.main",
-                  px: 4,
-                  py: 1.5,
-                  fontSize: "1.1rem",
-                  fontWeight: 600,
-                  "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.9)",
-                    transform: "translateY(-3px)",
-                  },
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-                }}
+                className="bg-white text-gold hover:bg-white/90 px-4 py-3 text-[1.1rem] font-semibold hover:-translate-y-[3px] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-0 h-auto"
+                size="lg"
               >
                 Join LegalMind&copy;
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
 
               <Button
-                variant="outlined"
-                size="large"
-                // startIcon={<PlayArrow />}
+                variant="outline"
                 onClick={() => {
                   router.push("/auth/sign-in");
                 }}
-                sx={{
-                  borderColor: "rgba(255,255,255,0.5)",
-                  color: "white",
-                  px: 4,
-                  py: 1.5,
-                  fontSize: "1.1rem",
-                  fontWeight: 500,
-                  "&:hover": {
-                    borderColor: "white",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    transform: "translateY(-3px)",
-                  },
-                  transition: "all 0.3s ease",
-                }}
+                className="border-white/50 text-white hover:border-white hover:bg-white px-4 py-3 text-[1.1rem]  hover:-translate-y-[3px] transition-all duration-300 bg-transparent h-auto font-bold"
+                size="lg"
               >
                 Already a Member.?
               </Button>
-            </Stack>
+            </div>
           </motion.div>
-        </Stack>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }

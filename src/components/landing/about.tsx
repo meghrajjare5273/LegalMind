@@ -12,7 +12,6 @@ import { Tilt } from "@/components/ui/motion-primitives/tilt";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import * as React from "react";
-import { Typography } from "@mui/material";
 
 type Feature = {
   id: string;
@@ -101,16 +100,9 @@ export default function AboutSection() {
           viewport={{ once: true, amount: 0.6 }}
           className="text-sm tracking-wide text-lm-inkMuted/80"
         >
-          <Typography
-            variant="overline"
-            sx={{
-              color: "primary.main",
-              fontWeight: 700,
-              letterSpacing: 2,
-            }}
-          >
+          <span className="text-primary font-bold tracking-[0.125em] uppercase text-sm">
             About LegalMind
-          </Typography>
+          </span>
         </motion.p>
 
         <motion.div
@@ -120,21 +112,10 @@ export default function AboutSection() {
           viewport={{ once: true, amount: 0.6 }}
           className="mt-4 grid gap-4 md:max-w-3xl"
         >
-          <Typography
-            variant="h2"
-            component="h1"
-            gutterBottom
-            sx={{
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-              color: "secondary.main",
-              fontSize: { xs: "2rem", md: "2.75rem" },
-              lineHeight: 1.15,
-            }}
-          >
+          <h1 className="text-secondary-foreground font-extrabold tracking-tight text-3xl md:text-5xl leading-[1.15] mb-4">
             LegalMind reads the record, understands the law, and shows the why
             behind every suggestion.
-          </Typography>
+          </h1>
           <p className="text-base leading-relaxed text-lm-inkMuted md:text-lg">
             Explore the pillars below—each tile updates the live preview and
             details panel on the right.

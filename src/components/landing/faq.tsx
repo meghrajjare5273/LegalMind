@@ -1,7 +1,7 @@
 "use client";
-import { Box, Container, Typography, Chip } from "@mui/material";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
   AccordionItem,
@@ -53,64 +53,32 @@ export default function FAQSection() {
   const inView = useInView(ref, { once: true, amount: 0.1 });
 
   return (
-    <Box
+    <section
       id="faq"
-      component="section"
       ref={ref}
-      sx={{
-        py: { xs: 10, md: 15 },
-        background: "linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%)",
-      }}
+      className="py-20 md:py-32 bg-gradient-to-b from-gray-50 to-gray-100"
     >
-      <Container maxWidth="lg">
+      <div className="container max-w-6xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <Box sx={{ textAlign: "center", mb: 8 }}>
-            <Typography
-              variant="overline"
-              sx={{
-                color: "primary.main",
-                fontWeight: 700,
-                letterSpacing: 2,
-                mb: 2,
-                display: "block",
-              }}
-            >
+          <div className="text-center mb-16">
+            <span className="text-black font-bold tracking-[0.2em] text-sm uppercase block mb-4">
               QUESTIONS YOU MAY HAVE
-            </Typography>
-            <Typography
-              variant="h2"
-              component="h2"
-              gutterBottom
-              sx={{
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                color: "secondary.main",
-                fontSize: { xs: "2.5rem", md: "3.5rem" },
-                lineHeight: 1.1,
-                mb: 3,
-              }}
-            >
-              Frequently Asked{" "}
-              <Box component="span" sx={{ color: "#b08d28" }}>
-                Questions
-              </Box>
-            </Typography>
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{ maxWidth: 600, mx: "auto", fontSize: "1.2rem" }}
-            >
+            </span>
+            <h2 className="font-extrabold tracking-tight text-slate-800 text-4xl md:text-6xl leading-tight mb-6">
+              Frequently Asked <span className="text-gold">Questions</span>
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto text-xl leading-relaxed">
               Everything you need to know about LegalMind and how it can
               transform your legal practice.
-            </Typography>
-          </Box>
+            </p>
+          </div>
         </motion.div>
 
-        <Box sx={{ maxWidth: 800, mx: "auto" }}>
+        <div className="max-w-4xl mx-auto">
           <Accordion
             className="flex w-full flex-col divide-y divide-zinc-200 dark:divide-zinc-700"
             transition={{ duration: 0.22, ease: "easeInOut" }}
@@ -119,31 +87,20 @@ export default function FAQSection() {
               <AccordionItem
                 key={index}
                 value={`faq-${index}`}
-                // If using divide-y, keep borders off the item
                 className="py-1"
               >
                 <AccordionTrigger className="w-full text-left px-4 md:px-5 py-3 text-zinc-950 dark:text-zinc-50">
                   <div className="group flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <Chip
-                        label={faq.category}
-                        size="small"
-                        className="shrink-0 group-data-[expanded]:bg-blue-600 group-data-[expanded]:text-white"
-                        sx={{
-                          bgcolor: "grey.100",
-                          color: "text.secondary",
-                          fontWeight: 600,
-                          transition:
-                            "background-color 200ms ease, color 200ms ease",
-                        }}
-                      />
-                      <Typography
-                        variant="h6"
-                        sx={{ fontWeight: 600, color: "text.primary" }}
-                        className="truncate group-data-[expanded]:text-blue-600"
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 bg-slate-100 text-slate-600 font-semibold text-xs group-data-[expanded]:bg-gold group-data-[expanded]:text-white transition-colors duration-200"
                       >
+                        {faq.category}
+                      </Badge>
+                      <h6 className="font-semibold text-slate-900 truncate group-data-[expanded]:text-black transition-colors duration-200 text-lg">
                         {faq.question}
-                      </Typography>
+                      </h6>
                     </div>
                     <svg
                       className="h-5 w-5 text-zinc-600 dark:text-zinc-300 transition-transform duration-200 group-data-[expanded]:rotate-180 will-change-transform shrink-0"
@@ -159,24 +116,18 @@ export default function FAQSection() {
                   </div>
                 </AccordionTrigger>
 
-                {/* Animated wrapper should NOT have padding; keep overflow-hidden */}
                 <AccordionContent className="overflow-hidden">
-                  {/* Static padding and spacing live here */}
                   <div className="px-4 md:px-5 pb-4 pt-1">
-                    <Typography
-                      variant="body1"
-                      color="text.secondary"
-                      sx={{ lineHeight: 1.7, fontSize: "1.05rem" }}
-                    >
+                    <p className="text-slate-600 leading-relaxed text-lg">
                       {faq.answer}
-                    </Typography>
+                    </p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </section>
   );
 }

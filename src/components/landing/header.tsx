@@ -1,34 +1,34 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Box,
-  IconButton,
-  Drawer,
-  List,
-  ListItemText,
-  useMediaQuery,
-  useTheme,
-  Container,
-  Tooltip,
-  Chip,
-  Avatar,
-  Fade,
-  ListItemButton,
-} from "@mui/material";
-import {
-  Menu,
-  Close,
-  LocationOn,
-  Schedule,
-  Phone,
-  Email,
-} from "@mui/icons-material";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Menu,
+  MapPin as LocationOn,
+  Clock as Schedule,
+  Phone,
+  Mail as Email,
+} from "lucide-react";
+
+// ShadcnUI imports
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 // Keep outside component to avoid re-creation
 const NAV_ITEMS = Object.freeze([
@@ -47,11 +47,29 @@ const NAV_ITEMS = Object.freeze([
 ]);
 
 export default function Header() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const prefersReducedMotion = useMediaQuery(
-    "(prefers-reduced-motion: reduce)"
-  );
+  const [isMobile, setIsMobile] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Check for mobile and reduced motion preference
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkReducedMotion = () =>
+      setPrefersReducedMotion(
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      );
+
+    checkMobile();
+    checkReducedMotion();
+
+    window.addEventListener("resize", checkMobile);
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    mediaQuery.addEventListener("change", checkReducedMotion);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+      mediaQuery.removeEventListener("change", checkReducedMotion);
+    };
+  }, []);
 
   // State
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -146,42 +164,58 @@ export default function Header() {
   // Motion helpers respecting reduced motion
   const motionFast = prefersReducedMotion
     ? { initial: false, animate: {}, transition: {} }
-    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as any } };
+    : { transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as any } };
 
   return (
-    <>
-      <AppBar
-        position="fixed"
-        elevation={0}
-        sx={{
-          backgroundColor: scrolled ? "rgba(255,255,255,0.9)" : "transparent",
-          // Avoid heavy blur when not needed; reduce blur intensity
-          backdropFilter: scrolled ? "blur(12px) saturate(160%)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(12px) saturate(160%)" : "none",
-          borderBottom: scrolled
-            ? `1px solid ${colors.gold}40`
-            : "1px solid rgba(255,255,255,0.08)",
-          transition: "background-color 240ms ease, border-color 240ms ease",
-          boxShadow: "none",
+    <TooltipProvider>
+      {/* Custom CSS for dynamic colors */}
+      <style jsx>{`
+        .gold-text {
+          color: ${colors.gold};
+        }
+        .gold-bg {
+          background-color: ${colors.gold}14;
+        }
+        .gold-border {
+          border-color: ${colors.gold}30;
+        }
+        .gold-hover:hover {
+          color: ${colors.brightGold};
+        }
+        .gold-gradient {
+          background: linear-gradient(135deg, ${colors.gold}, ${colors.bronze});
+        }
+        .gold-gradient-hover:hover {
+          background: linear-gradient(
+            135deg,
+            ${colors.brightGold},
+            ${colors.gold}
+          );
+        }
+      `}</style>
+
+      <motion.header
+        initial={prefersReducedMotion ? undefined : { opacity: 0, y: -20 }}
+        animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={
+          prefersReducedMotion ? undefined : { duration: 0.6, ease: "easeOut" }
+        }
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
+          scrolled
+            ? "bg-white/90 backdrop-blur-[12px] backdrop-saturate-[160%] border-b"
+            : "bg-transparent border-b border-white/8"
+        )}
+        style={{
+          borderBottomColor: scrolled
+            ? `${colors.gold}40`
+            : "rgba(255,255,255,0.08)",
         }}
       >
-        <Container maxWidth="xl">
-          <Toolbar
-            sx={{
-              justifyContent: "space-around",
-              py: 1.25,
-              px: { xs: 1, sm: 2 },
-              gap: 2,
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: { xs: 1, sm: 2 },
-              }}
-            >
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex items-center justify-between py-5 px-4 sm:px-8 gap-8">
+            {/* Logo and Info Section */}
+            <div className="flex items-center gap-4 sm:gap-8">
               <motion.div
                 initial={
                   prefersReducedMotion ? undefined : { opacity: 0, x: -12 }
@@ -191,29 +225,22 @@ export default function Header() {
                 }
                 {...motionFast}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography
-                    role="link"
+                <div className="flex items-center gap-4">
+                  <h1
+                    role="button"
+                    tabIndex={0}
                     aria-label="Go to top"
-                    variant="h6"
-                    sx={{
-                      fontWeight: 700,
-                      color: scrolled
-                        ? colors.gold
-                        : theme.palette.common.white,
-                      cursor: "pointer",
-                      letterSpacing: 0.2,
-                      transition: "color 180ms ease, transform 180ms ease",
-                      "&:hover": {
-                        color: colors.brightGold,
-                        transform: { sm: "scale(1.02)" },
-                      },
-                    }}
+                    className={cn(
+                      "text-xl font-bold cursor-pointer tracking-wide transition-all duration-300 hover:scale-105",
+                      scrolled ? "gold-text" : "text-white",
+                      "gold-hover"
+                    )}
                     onClick={goTop}
+                    onKeyDown={(e) => e.key === "Enter" && goTop()}
                   >
                     LegalMind
-                  </Typography>
-                </Box>
+                  </h1>
+                </div>
               </motion.div>
 
               {!isMobile && (
@@ -226,76 +253,73 @@ export default function Header() {
                   }
                   {...motionFast}
                 >
-                  <Box
-                    sx={{ display: "flex", alignItems: "center", gap: 1.25 }}
-                  >
-                    <Tooltip title="Our Location" arrow>
-                      <Chip
-                        icon={
-                          <LocationOn sx={{ fontSize: "16px !important" }} />
-                        }
-                        label="Pune"
-                        size="small"
-                        sx={{
-                          backgroundColor: scrolled
-                            ? `${colors.gold}14`
-                            : "rgba(255,255,255,0.16)",
-                          color: scrolled
-                            ? colors.gold
-                            : theme.palette.common.white,
-                          border: `1px solid ${
+                  <div className="flex items-center gap-5">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "flex items-center gap-1 px-3 py-1 font-semibold backdrop-blur-sm transition-all duration-200",
                             scrolled
-                              ? colors.gold + "30"
-                              : "rgba(255,255,255,0.24)"
-                          }`,
-                          backdropFilter: "blur(6px)",
-                          "&:hover": {
+                              ? "text-white border-white/40 hover:bg-white/15"
+                              : "bg-white/16 text-white border-white/24 hover:bg-white/24"
+                          )}
+                          style={{
                             backgroundColor: scrolled
-                              ? `${colors.gold}24`
-                              : "rgba(255,255,255,0.24)",
-                          },
-                          fontWeight: 600,
-                        }}
-                      />
+                              ? `${colors.gold}14`
+                              : undefined,
+                            color: scrolled ? colors.gold : undefined,
+                            borderColor: scrolled
+                              ? `${colors.gold}30`
+                              : undefined,
+                          }}
+                        >
+                          <LocationOn className="w-4 h-4" />
+                          Pune
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Our Location</p>
+                      </TooltipContent>
                     </Tooltip>
-                    <Tooltip title="Current Time" arrow>
-                      <Chip
-                        icon={<Schedule sx={{ fontSize: "16px !important" }} />}
-                        label={formattedTime}
-                        size="small"
-                        sx={{
-                          backgroundColor: scrolled
-                            ? `${colors.gold}14`
-                            : "rgba(255,255,255,0.16)",
-                          color: scrolled
-                            ? colors.gold
-                            : theme.palette.common.white,
-                          border: `1px solid ${
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "flex items-center gap-1 px-3 py-1 font-semibold backdrop-blur-sm font-mono tabular-nums",
                             scrolled
-                              ? colors.gold + "30"
-                              : "rgba(255,255,255,0.24)"
-                          }`,
-                          backdropFilter: "blur(6px)",
-                          fontFamily: "var(--font-app, inherit), monospace",
-                          fontVariantNumeric: "tabular-nums",
-                          fontWeight: 600,
-                        }}
-                        aria-live="polite"
-                      />
+                              ? "text-white border-white/40"
+                              : "bg-white/16 text-white border-white/24"
+                          )}
+                          style={{
+                            backgroundColor: scrolled
+                              ? `${colors.gold}14`
+                              : undefined,
+                            color: scrolled ? colors.gold : undefined,
+                            borderColor: scrolled
+                              ? `${colors.gold}30`
+                              : undefined,
+                          }}
+                          aria-live="polite"
+                        >
+                          <Schedule className="w-4 h-4" />
+                          {formattedTime}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Current Time</p>
+                      </TooltipContent>
                     </Tooltip>
-                  </Box>
+                  </div>
                 </motion.div>
               )}
-            </Box>
+            </div>
 
+            {/* Desktop Navigation */}
             {!isMobile && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: { sm: 1, md: 2 },
-                }}
-              >
+              <nav className="flex items-center gap-2 md:gap-8">
                 {NAV_ITEMS.map((item, index) => (
                   <motion.div
                     key={item.label}
@@ -310,284 +334,304 @@ export default function Header() {
                       delay: prefersReducedMotion ? 0 : index * 0.06,
                     }}
                   >
-                    <Tooltip
-                      title={item.description}
-                      arrow
-                      TransitionComponent={Fade}
-                      TransitionProps={{ timeout: 200 }}
-                    >
-                      <Button
-                        component={Link}
-                        href={item.href}
-                        aria-current={isActive(item.href) ? "page" : undefined}
-                        sx={{
-                          color: scrolled
-                            ? "text.primary"
-                            : theme.palette.common.white,
-                          fontWeight: 600,
-                          textTransform: "none",
-                          position: "relative",
-                          px: 1.5,
-                          py: 0.75,
-                          borderRadius: 2,
-                          letterSpacing: 0.1,
-                          "&:hover": {
-                            color: colors.gold,
-                            backgroundColor: scrolled
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          className={cn(
+                            "relative px-6 py-3 font-semibold text-base tracking-wide rounded-lg transition-all duration-200",
+                            scrolled ? "text-gray-900" : "text-white",
+                            "hover:scale-[1.02]",
+                            isActive(item.href) &&
+                              "after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-[70%] after:h-0.5 after:transition-all"
+                          )}
+                          style={
+                            {
+                              "--hover-color": colors.gold,
+                              "--hover-bg": scrolled
+                                ? `${colors.gold}10`
+                                : "rgba(255,255,255,0.08)",
+                            } as React.CSSProperties
+                          }
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = colors.gold;
+                            e.currentTarget.style.backgroundColor = scrolled
                               ? `${colors.gold}10`
-                              : "rgba(255,255,255,0.08)",
-                          },
-                          "&:after": {
-                            content: '""',
-                            position: "absolute",
-                            bottom: 4,
-                            left: "50%",
-                            width: isActive(item.href) ? "70%" : 0,
-                            height: 2,
-                            backgroundColor: colors.gold,
-                            transform: "translateX(-50%)",
-                            transition: "width 200ms ease",
-                          },
-                          "@media (hover: none)": {
-                            "&:hover": { backgroundColor: "transparent" },
-                          },
-                        }}
-                      >
-                        {item.label}
-                      </Button>
+                              : "rgba(255,255,255,0.08)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = scrolled
+                              ? "#111827"
+                              : "#ffffff";
+                            e.currentTarget.style.backgroundColor =
+                              "transparent";
+                          }}
+                          aria-current={
+                            isActive(item.href) ? "page" : undefined
+                          }
+                        >
+                          <Link href={item.href}>{item.label}</Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{item.description}</p>
+                      </TooltipContent>
                     </Tooltip>
                   </motion.div>
                 ))}
-              </Box>
+              </nav>
             )}
 
+            {/* Mobile Section */}
             {isMobile && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Chip
-                  label={formattedTime}
-                  size="small"
-                  sx={{
-                    backgroundColor: scrolled
-                      ? `${colors.gold}14`
-                      : "rgba(255,255,255,0.16)",
-                    color: scrolled ? colors.gold : theme.palette.common.white,
-                    fontFamily: "var(--font-app, inherit), monospace",
-                    fontVariantNumeric: "tabular-nums",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
+              <div className="flex items-center gap-4">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "font-mono tabular-nums text-xs font-semibold",
+                    scrolled
+                      ? "text-white border-white/40"
+                      : "bg-white/16 text-white border-white/24"
+                  )}
+                  style={{
+                    backgroundColor: scrolled ? `${colors.gold}14` : undefined,
+                    color: scrolled ? colors.gold : undefined,
+                    borderColor: scrolled ? `${colors.gold}30` : undefined,
                   }}
                   aria-live="polite"
-                />
-                <Tooltip title="Open Menu" arrow>
-                  <IconButton
-                    color="inherit"
-                    aria-label="Open navigation menu"
-                    onClick={handleDrawerToggle}
-                    sx={{
-                      color: scrolled
-                        ? "text.primary"
-                        : theme.palette.common.white,
-                      backgroundColor: scrolled
-                        ? `${colors.gold}14`
-                        : "rgba(255,255,255,0.16)",
-                      border: `1px solid ${
-                        scrolled ? colors.gold + "30" : "rgba(255,255,255,0.24)"
-                      }`,
-                      "&:hover": {
-                        backgroundColor: scrolled
-                          ? `${colors.gold}22`
-                          : "rgba(255,255,255,0.22)",
-                      },
-                      transition: "background-color 160ms ease",
-                    }}
-                  >
-                    <Menu />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+                >
+                  {formattedTime}
+                </Badge>
+
+                <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                  <SheetTrigger asChild>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className={cn(
+                            "transition-all duration-200",
+                            scrolled
+                              ? "text-gray-900 border-white/40"
+                              : "bg-white/16 text-white border-white/24 hover:bg-white/22"
+                          )}
+                          style={{
+                            backgroundColor: scrolled
+                              ? `${colors.gold}14`
+                              : undefined,
+                            borderColor: scrolled
+                              ? `${colors.gold}30`
+                              : undefined,
+                          }}
+                          aria-label="Open navigation menu"
+                          onClick={handleDrawerToggle}
+                        >
+                          <Menu className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Open Menu</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SheetTrigger>
+
+                  <AnimatePresence>
+                    {mobileOpen && (
+                      <SheetContent
+                        side="right"
+                        className="w-80 bg-white/96 backdrop-blur-2xl border-l"
+                        style={{ borderLeftColor: `${colors.gold}30` }}
+                      >
+                        <SheetHeader
+                          className="border-b pb-4"
+                          style={{ borderBottomColor: `${colors.gold}20` }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              className="w-7 h-7"
+                              style={{
+                                background: `linear-gradient(135deg, ${colors.gold}, ${colors.bronze})`,
+                              }}
+                            >
+                              <AvatarFallback className="text-white font-bold text-sm">
+                                L
+                              </AvatarFallback>
+                            </Avatar>
+                            <SheetTitle
+                              style={{ color: colors.gold }}
+                              className="font-bold"
+                            >
+                              LegalMind
+                            </SheetTitle>
+                          </div>
+                        </SheetHeader>
+
+                        <nav className="pt-4">
+                          {NAV_ITEMS.map((item, index) => (
+                            <motion.div
+                              key={item.label}
+                              initial={
+                                prefersReducedMotion
+                                  ? undefined
+                                  : { opacity: 0, x: 12 }
+                              }
+                              animate={
+                                prefersReducedMotion
+                                  ? undefined
+                                  : { opacity: 1, x: 0 }
+                              }
+                              transition={{
+                                duration: 0.25,
+                                delay: prefersReducedMotion ? 0 : index * 0.05,
+                              }}
+                            >
+                              <Button
+                                asChild
+                                variant="ghost"
+                                className="w-full justify-start rounded-lg mb-1 p-3 h-auto hover:translate-x-1 transition-all duration-200"
+                                style={
+                                  {
+                                    "--hover-bg": `${colors.gold}14`,
+                                  } as React.CSSProperties
+                                }
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = `${colors.gold}14`;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    "transparent";
+                                }}
+                                aria-current={
+                                  isActive(item.href) ? "page" : undefined
+                                }
+                                onClick={() => setMobileOpen(false)}
+                              >
+                                <Link href={item.href}>
+                                  <div className="text-left">
+                                    <div className="font-semibold">
+                                      {item.label}
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      {item.description}
+                                    </div>
+                                  </div>
+                                </Link>
+                              </Button>
+                            </motion.div>
+                          ))}
+
+                          <motion.div
+                            className="pt-10 px-3"
+                            initial={
+                              prefersReducedMotion
+                                ? undefined
+                                : { opacity: 0, y: 10 }
+                            }
+                            animate={
+                              prefersReducedMotion
+                                ? undefined
+                                : { opacity: 1, y: 0 }
+                            }
+                            transition={{ duration: 0.3, delay: 0.2 }}
+                          >
+                            <Button
+                              className="w-full text-white font-bold py-5 rounded-xl transition-all duration-300 hover:shadow-lg"
+                              style={
+                                {
+                                  background: `linear-gradient(135deg, ${colors.gold}, ${colors.bronze})`,
+                                  "--hover-bg": `linear-gradient(135deg, ${colors.brightGold}, ${colors.gold})`,
+                                  "--hover-shadow": `0 8px 24px ${colors.gold}4d`,
+                                } as React.CSSProperties
+                              }
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = `linear-gradient(135deg, ${colors.brightGold}, ${colors.gold})`;
+                                e.currentTarget.style.boxShadow = `0 8px 24px ${colors.gold}4d`;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = `linear-gradient(135deg, ${colors.gold}, ${colors.bronze})`;
+                                e.currentTarget.style.boxShadow = "";
+                              }}
+                            >
+                              Start Free Trial
+                            </Button>
+                          </motion.div>
+
+                          <motion.div
+                            className="pt-10 px-3 mt-8 border-t"
+                            style={{ borderTopColor: `${colors.gold}20` }}
+                            initial={
+                              prefersReducedMotion ? undefined : { opacity: 0 }
+                            }
+                            animate={
+                              prefersReducedMotion ? undefined : { opacity: 1 }
+                            }
+                            transition={{ duration: 0.3, delay: 0.4 }}
+                          >
+                            <p className="text-xs text-gray-500 mb-4">
+                              Quick Contact
+                            </p>
+                            <div className="flex gap-4">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="hover:bg-opacity-10 transition-colors duration-200"
+                                    style={{ color: colors.gold }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = `${colors.gold}14`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor =
+                                        "transparent";
+                                    }}
+                                    aria-label="Call"
+                                  >
+                                    <Phone className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Call us</p>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="hover:bg-opacity-10 transition-colors duration-200"
+                                    style={{ color: colors.gold }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = `${colors.gold}14`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor =
+                                        "transparent";
+                                    }}
+                                    aria-label="Email"
+                                  >
+                                    <Email className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Email us</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </motion.div>
+                        </nav>
+                      </SheetContent>
+                    )}
+                  </AnimatePresence>
+                </Sheet>
+              </div>
             )}
-          </Toolbar>
-        </Container>
-      </AppBar>
-
-      <AnimatePresence initial={false}>
-        {mobileOpen && (
-          <Drawer
-            aria-label="Navigation Menu"
-            anchor="right"
-            open
-            onClose={handleDrawerToggle}
-            ModalProps={{ keepMounted: true }}
-            sx={{
-              "& .MuiDrawer-paper": {
-                width: "min(320px, 90vw)",
-                backgroundColor: "rgba(255,255,255,0.96)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                borderLeft: `1px solid ${colors.gold}30`,
-              },
-              "& .MuiBackdrop-root": {
-                backdropFilter: "blur(6px)",
-                backgroundColor: "rgba(0,0,0,0.28)",
-              },
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                p: 2,
-                borderBottom: `1px solid ${colors.gold}20`,
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Avatar
-                  sx={{
-                    width: 28,
-                    height: 28,
-                    background: `linear-gradient(135deg, ${colors.gold}, ${colors.bronze})`,
-                    fontSize: "0.875rem",
-                    fontWeight: 700,
-                  }}
-                >
-                  L
-                </Avatar>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 700, color: colors.gold }}
-                >
-                  LegalMind
-                </Typography>
-              </Box>
-              <Tooltip title="Close Menu" arrow>
-                <IconButton
-                  onClick={handleDrawerToggle}
-                  aria-label="Close navigation menu"
-                  sx={{
-                    "&:hover": {
-                      backgroundColor: `${colors.gold}15`,
-                    },
-                    transition: "background-color 160ms ease",
-                  }}
-                >
-                  <Close />
-                </IconButton>
-              </Tooltip>
-            </Box>
-
-            <List sx={{ pt: 1 }}>
-              {NAV_ITEMS.map((item, index) => (
-                <motion.div
-                  key={item.label}
-                  initial={
-                    prefersReducedMotion ? undefined : { opacity: 0, x: 12 }
-                  }
-                  animate={
-                    prefersReducedMotion ? undefined : { opacity: 1, x: 0 }
-                  }
-                  transition={{
-                    duration: 0.25,
-                    delay: prefersReducedMotion ? 0 : index * 0.05,
-                  }}
-                >
-                  <Link
-                    href={item.href}
-                    onClick={handleDrawerToggle}
-                    passHref
-                    legacyBehavior
-                  >
-                    <ListItemButton
-                      component="a"
-                      sx={{
-                        borderRadius: 2,
-                        mx: 1,
-                        mb: 0.25,
-                        "&:hover": {
-                          backgroundColor: `${colors.gold}14`,
-                          transform: { sm: "translateX(6px)" },
-                        },
-                        transition:
-                          "background-color 160ms ease, transform 160ms ease",
-                      }}
-                      aria-current={isActive(item.href) ? "page" : undefined}
-                    >
-                      <ListItemText
-                        primaryTypographyProps={{ fontWeight: 600 }}
-                        primary={item.label}
-                        secondary={item.description}
-                        sx={{
-                          "& .MuiTypography-body2": {
-                            color: "text.secondary",
-                            fontSize: "0.8rem",
-                          },
-                        }}
-                      />
-                    </ListItemButton>
-                  </Link>
-                </motion.div>
-              ))}
-
-              <Box sx={{ pt: 2.5, px: 2 }}>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  sx={{
-                    background: `linear-gradient(135deg, ${colors.gold}, ${colors.bronze})`,
-                    borderRadius: 3,
-                    textTransform: "none",
-                    fontWeight: 700,
-                    py: 1.25,
-                    "&:hover": {
-                      background: `linear-gradient(135deg, ${colors.brightGold}, ${colors.gold})`,
-                      boxShadow: `0 8px 24px ${colors.gold}4d`,
-                    },
-                    transition: "background 180ms ease, box-shadow 180ms ease",
-                  }}
-                >
-                  Start Free Trial
-                </Button>
-              </Box>
-
-              <Box
-                sx={{
-                  px: 2,
-                  pt: 2.5,
-                  mt: 2,
-                  borderTop: `1px solid ${colors.gold}20`,
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{ color: "text.secondary", mb: 1, display: "block" }}
-                >
-                  Quick Contact
-                </Typography>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <Tooltip title="Call us" arrow>
-                    <IconButton
-                      size="small"
-                      sx={{ color: colors.gold }}
-                      aria-label="Call"
-                    >
-                      <Phone fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Email us" arrow>
-                    <IconButton
-                      size="small"
-                      sx={{ color: colors.gold }}
-                      aria-label="Email"
-                    >
-                      <Email fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-            </List>
-          </Drawer>
-        )}
-      </AnimatePresence>
-    </>
+          </div>
+        </div>
+      </motion.header>
+    </TooltipProvider>
   );
 }
