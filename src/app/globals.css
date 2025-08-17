@@ -124,6 +124,13 @@
   }
 }
 
+.bg-or-light {
+  background-color: color-mix(in oklab, #f0f8ff 30%, transparent);
+  &:is(.dark *) {
+    background-color: color-mix(in oklab, #141818 30%, transparent);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -38,12 +38,12 @@ export default function AuthContainer() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
-      <div className="fixed top-6 right-6 z-50">
+    <div className="relative w-full h-full flex items-center justify-center">
+      <div className="absolute top-4 right-4 z-50">
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-md relative p-2 overflow-visible">
+      <div className="w-full max-w-md relative px-4">
         <AnimatePresence mode="wait" custom={isSignIn ? 1 : -1}>
           <motion.div
             key={isSignIn ? "signin" : "signup"}

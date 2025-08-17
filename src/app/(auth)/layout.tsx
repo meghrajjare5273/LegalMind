@@ -17,17 +17,8 @@ export default function AuthLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <div className="min-h-screen bg-gradient-to-br from-[#f0f8ff] to-[#e6f1fa] dark:from-[#141818] dark:to-[#222929]">
-        {/* Background Pattern */}
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23768a8d' fillOpacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-          aria-hidden="true"
-        />
-
-        <div className="relative flex min-h-screen">
+      <div className="h-screen overflow-hidden bg-gradient-to-br from-[#f0f8ff] to-[#e6f1fa] dark:from-[#141818] dark:to-[#222929]">
+        <div className="relative flex h-full">
           {/* Left side - Image/Branding */}
           <motion.div
             className="hidden lg:flex lg:flex-1 relative overflow-hidden"
@@ -69,7 +60,7 @@ export default function AuthLayout({
 
           {/* Right side - Auth Form */}
           <motion.div
-            className="flex-1 lg:flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative"
+            className="flex-1 lg:flex-1 flex flex-col px-4 sm:px-6 lg:px-8 relative"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
@@ -77,12 +68,18 @@ export default function AuthLayout({
             {/* Backdrop blur layer */}
             <div className="absolute inset-0 bg-[#f0f8ff]/30 dark:bg-[#141818]/30 backdrop-blur-sm" />
 
-            <div className="w-full max-w-md relative z-10">{children}</div>
+            <div className="flex-1 flex items-center justify-center relative z-10 py-8">
+              <div className="w-full max-w-md h-full overflow-y-hidden overflow-x-hidden">
+                <div className="min-h-full flex items-center justify-center py-4">
+                  {children}
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
 
         {/* Floating elements */}
-        <div
+        {/* <div
           className="absolute inset-0 overflow-hidden pointer-events-none"
           aria-hidden="true"
         >
@@ -112,7 +109,7 @@ export default function AuthLayout({
               repeatType: "reverse",
             }}
           />
-        </div>
+        </div> */}
       </div>
       <Toaster />
     </ThemeProvider>
