@@ -192,6 +192,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
       animate="visible"
       className="w-full space-y-4 py-2"
     >
+      {/* <div className="bg-white/60 dark:bg-black/60 backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-white/10 shadow-2xl"> */}
       {/* Logo */}
       <motion.div variants={itemVariants} className="text-center">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-[#2d3d3d] to-[#768a8d] dark:from-[#5d6f73] dark:to-[#e6f1fa] bg-clip-text text-transparent">
@@ -228,9 +229,9 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             <g
               id="Icons"
               stroke="none"
-              stroke-width="1"
+              strokeWidth="1"
               fill="none"
-              fill-rule="evenodd"
+              fillRule="evenodd"
             >
               <g id="Color-" transform="translate(-401.000000, -860.000000)">
                 <g id="Google" transform="translate(401.000000, 860.000000)">
@@ -429,7 +430,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
           Already have an account?{" "}
           <button
             onClick={onSwitchToSignIn}
-            className="font-medium text-[#2d3d3d] hover:text-[#768a8d] dark:text-[#bdc9c4] dark:hover:text-[#e6f1fa] transition-colors"
+            className="font-medium text-[#2d3d3d] hover:text-[#768a8d] dark:text-[#bdc9c4] dark:hover:text-[#e6f1fa] transition-colors hover:cursor-pointer"
           >
             Sign in
           </button>
@@ -455,6 +456,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
           </Link>
         </p>
       </motion.div>
+      {/* </div> */}
     </motion.div>
   );
 }

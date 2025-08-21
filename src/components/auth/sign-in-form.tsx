@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 // Zod validation schemas
 const signInSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -217,9 +217,9 @@ export default function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
             <g
               id="Icons"
               stroke="none"
-              stroke-width="1"
+              strokeWidth="1"
               fill="none"
-              fill-rule="evenodd"
+              fillRule="evenodd"
             >
               <g id="Color-" transform="translate(-401.000000, -860.000000)">
                 <g id="Google" transform="translate(401.000000, 860.000000)">
@@ -324,7 +324,7 @@ export default function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
-              className={`h-12 pl-10 pr-10 bg-[#f0f8ff]/30 dark:bg-[#32393a]/30 border-[#b4b8bb]/30 dark:border-[#818684]/30 transition-colors focus:ring-2 focus:ring-[#2d3d3d]/20 dark:focus:ring-[#5d6f73]/20 ${
+              className={`h-12 pl-10 pr-10 bg-[#f0f8ff]/30 dark:bg-[#32393a]/30 border-[#b4b8bb]/30 dark:border-[#818684]/30 transition-colors focus:ring-2  focus:ring-[#2d3d3d]/20 dark:focus:ring-[#5d6f73]/20 ${
                 errors.password ? "border-red-500 focus:border-red-500" : ""
               }`}
             />
@@ -406,7 +406,7 @@ export default function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
           Don&apos;t have an account?{" "}
           <button
             onClick={onSwitchToSignUp}
-            className="font-medium text-[#2d3d3d] hover:text-[#768a8d] dark:text-[#bdc9c4] dark:hover:text-[#e6f1fa] transition-colors"
+            className="font-medium text-[#2d3d3d] hover:text-[#768a8d] dark:text-[#bdc9c4] dark:hover:text-[#e6f1fa] transition-colors hover:cursor-pointer"
           >
             Sign up
           </button>
