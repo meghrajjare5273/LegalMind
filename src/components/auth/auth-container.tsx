@@ -1,41 +1,31 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import { ThemeToggle } from "../theme-toggle";
 import SignInForm from "./sign-in-form";
 import SignUpForm from "./sign-up-form";
+import { useRouter } from "next/navigation";
 
-export default function AuthContainer() {
-  const pathname = usePathname();
-  const [isSignIn, setIsSignIn] = useState(pathname === "/sign-in");
+type WhichForm = "signin" | "signup";
 
-  useEffect(() => {
-    setIsSignIn(pathname === "/sign-in");
-  }, [pathname]);
+export default function AuthContainer({ whichForm }: { whichForm: WhichForm }) {
+  const router = useRouter();
 
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 300 : -300,
-      opacity: 0,
+  const slideVariants = useMemo(
+    () => ({
+      enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+      center: { zIndex: 1, x: 0, opacity: 1 },
+      exit: (dir: number) => ({
+        zIndex: 0,
+        x: dir < 0 ? 300 : -300,
+        opacity: 0,
+      }),
     }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 300 : -300,
-      opacity: 0,
-    }),
-  };
+    []
+  );
 
-  const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset: number, velocity: number) => {
-    return Math.abs(offset) * velocity;
-  };
+  const dir = whichForm === "signin" ? 1 : -1;
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
@@ -44,10 +34,10 @@ export default function AuthContainer() {
       </div>
 
       <div className="w-full max-w-md relative px-4">
-        <AnimatePresence mode="wait" custom={isSignIn ? 1 : -1}>
+        <AnimatePresence mode="wait" custom={dir}>
           <motion.div
-            key={isSignIn ? "signin" : "signup"}
-            custom={isSignIn ? 1 : -1}
+            key={whichForm}
+            custom={dir}
             variants={slideVariants}
             initial="enter"
             animate="center"
@@ -56,24 +46,12 @@ export default function AuthContainer() {
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 },
             }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={(e, { offset, velocity }) => {
-              const swipe = swipePower(offset.x, velocity.x);
-
-              if (swipe < -swipeConfidenceThreshold) {
-                setIsSignIn(false);
-              } else if (swipe > swipeConfidenceThreshold) {
-                setIsSignIn(true);
-              }
-            }}
             className="w-full"
           >
-            {isSignIn ? (
-              <SignInForm onSwitchToSignUp={() => setIsSignIn(false)} />
+            {whichForm === "signin" ? (
+              <SignInForm onSwitchToSignUp={() => router.push("/sign-up")} />
             ) : (
-              <SignUpForm onSwitchToSignIn={() => setIsSignIn(true)} />
+              <SignUpForm onSwitchToSignIn={() => router.push("/sign-in")} />
             )}
           </motion.div>
         </AnimatePresence>
