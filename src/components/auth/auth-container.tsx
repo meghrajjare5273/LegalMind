@@ -2,10 +2,11 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useMemo } from "react";
-import { ThemeToggle } from "../theme-toggle";
 import SignInForm from "./sign-in-form";
 import SignUpForm from "./sign-up-form";
 import { useRouter } from "next/navigation";
+import { AnimatedThemeToggler } from "../magicui/animated-theme-toggler";
+
 
 type WhichForm = "signin" | "signup";
 
@@ -30,7 +31,7 @@ export default function AuthContainer({ whichForm }: { whichForm: WhichForm }) {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="absolute top-4 right-4 z-50">
-        <ThemeToggle />
+        <AnimatedThemeToggler />
       </div>
 
       <div className="w-full max-w-md relative px-4">

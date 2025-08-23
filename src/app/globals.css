@@ -118,6 +118,10 @@
 .text-gold-100 {
   color: #fff3cd;
 }
+
+.mobile-bg-white {
+  background-color: #ececec;
+}
 .group-data-\[expanded\]\:bg-gold {
   &:is(:where(.group)[data-expanded] *) {
     background-color: #b08d28;
@@ -151,3 +155,8 @@
     }
   }
 }
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+

@@ -1,637 +1,537 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+
+import type React from "react";
+import { useState, useEffect } from "react";
 import {
   Menu,
-  MapPin as LocationOn,
-  Clock as Schedule,
-  Phone,
-  Mail as Email,
+  FileText,
+  Users,
+  Shield,
+  BookOpen,
+  User,
+  LogOut,
+  Settings,
+  ChevronDown,
 } from "lucide-react";
-
-// ShadcnUI imports
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { authClient } from "@/lib/auth-client";
+import { User as UserType } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
-// Keep outside component to avoid re-creation
-const NAV_ITEMS = Object.freeze([
-  {
-    label: "Features",
-    href: "#features",
-    description: "Explore our powerful features",
-  },
-  { label: "About", href: "#about", description: "Learn about our mission" },
-  {
-    label: "Solutions",
-    href: "#solutions",
-    description: "Discover our solutions",
-  },
-  { label: "Contact", href: "#contact", description: "Get in touch with us" },
-]);
+const Shimmer = ({ className = "" }: { className?: string }) => (
+  <div
+    className={`animate-pulse bg-gray-300 dark:bg-gray-700 rounded ${className}`}
+    aria-hidden="true"
+  />
+);
 
-export default function Header() {
-  const [isMobile, setIsMobile] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  // Check for mobile and reduced motion preference
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    const checkReducedMotion = () =>
-      setPrefersReducedMotion(
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      );
-
-    checkMobile();
-    checkReducedMotion();
-
-    window.addEventListener("resize", checkMobile);
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    mediaQuery.addEventListener("change", checkReducedMotion);
-
-    return () => {
-      window.removeEventListener("resize", checkMobile);
-      mediaQuery.removeEventListener("change", checkReducedMotion);
-    };
-  }, []);
-
-  // State
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
-
-  // Stable color tokens and computed styles
-  const colors = useMemo(() => {
-    const gold = "#d4af37";
-    const bronze = "#b08d28";
-    const brightGold = "#ffcc33";
-    return { gold, bronze, brightGold };
-  }, []);
-
-  // Format time only when 'now' changes
-  const formattedTime = useMemo(() => {
-    return new Date(now).toLocaleTimeString("en-US", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  }, [now]);
-
-  // Time updater with page visibility optimization
-  useEffect(() => {
-    let intervalId: number | null = null;
-
-    const start = () => {
-      if (intervalId == null) {
-        intervalId = window.setInterval(() => setNow(Date.now()), 1000);
-      }
-    };
-    const stop = () => {
-      if (intervalId != null) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-    };
-
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") start();
-      else stop();
-    };
-
-    start();
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => {
-      stop();
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, []);
-
-  // Scroll handler, passive + rAF throttle
-  const rafRef = useRef<number | null>(null);
-  const lastScrollY = useRef<number>(0);
+const useSession = () => {
+  const [session, setSession] = useState<UserType | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const onScroll = () => {
-      lastScrollY.current = window.scrollY;
-      if (rafRef.current == null) {
-        rafRef.current = requestAnimationFrame(() => {
-          setScrolled(lastScrollY.current > 50);
-          rafRef.current = null;
-        });
+    const getSession = async () => {
+      // setLoading(true)
+      const session = await authClient.getSession();
+      if (session.data) {
+        setSession(session.data);
+        setLoading(false);
+      } else {
+        setSession(null);
+        setLoading(false);
       }
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    getSession();
+  }, []);
+
+  return { data: session, loadingUser: loading };
+};
+
+const Navbar: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { data: session, loadingUser: loadingUser } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
     };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleDrawerToggle = useCallback(() => {
-    setMobileOpen((v) => !v);
-  }, []);
+  const services = [
+    {
+      title: "Contract Analysis",
+      description: "AI-powered contract review and risk scoring",
+      href: "/services/contracts",
+      icon: <FileText className="h-5 w-5" />,
+    },
+    {
+      title: "Legal Research",
+      description: "Comprehensive precedent research and citations",
+      href: "/services/research",
+      icon: <BookOpen className="h-5 w-5" />,
+    },
+    {
+      title: "Compliance Monitoring",
+      description: "Automated compliance and regulation tracking",
+      href: "/services/compliance",
+      icon: <Shield className="h-5 w-5" />,
+    },
+    {
+      title: "Case Management",
+      description: "Organize and streamline case workflows",
+      href: "/services/cases",
+      icon: <Users className="h-5 w-5" />,
+    },
+  ];
 
-  const goTop = useCallback(() => {
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, []);
-
-  // Active section detection (basic: matches hash)
-  const activeHash = typeof window !== "undefined" ? window.location.hash : "";
-  const isActive = useCallback(
-    (href: string) => href === activeHash,
-    [activeHash]
-  );
-
-  // Motion helpers respecting reduced motion
-  const motionFast = prefersReducedMotion
-    ? { initial: false, animate: {}, transition: {} }
-    : { transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as any } };
+  const resources = [
+    {
+      title: "Documentation",
+      description: "Developer & user guides",
+      href: "/docs",
+    },
+    {
+      title: "Templates",
+      description: "Ready-to-use legal templates",
+      href: "/templates",
+    },
+    {
+      title: "Case Studies",
+      description: "Real-world success stories",
+      href: "/case-studies",
+    },
+    {
+      title: "Blog",
+      description: "Insights & updates from LegalMind",
+      href: "/blog",
+    },
+  ];
 
   return (
-    <TooltipProvider>
-      {/* Custom CSS for dynamic colors */}
-      <style jsx>{`
-        .gold-text {
-          color: ${colors.gold};
-        }
-        .gold-bg {
-          background-color: ${colors.gold}14;
-        }
-        .gold-border {
-          border-color: ${colors.gold}30;
-        }
-        .gold-hover:hover {
-          color: ${colors.brightGold};
-        }
-        .gold-gradient {
-          background: linear-gradient(135deg, ${colors.gold}, ${colors.bronze});
-        }
-        .gold-gradient-hover:hover {
-          background: linear-gradient(
-            135deg,
-            ${colors.brightGold},
-            ${colors.gold}
-          );
-        }
-      `}</style>
-
-      <motion.header
-        initial={prefersReducedMotion ? undefined : { opacity: 0, y: -20 }}
-        animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-        transition={
-          prefersReducedMotion ? undefined : { duration: 0.6, ease: "easeOut" }
-        }
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
-          scrolled
-            ? "bg-white/90 backdrop-blur-[12px] backdrop-saturate-[160%] border-b"
-            : "bg-transparent border-b border-white/8"
-        )}
-        style={{
-          borderBottomColor: scrolled
-            ? `${colors.gold}40`
-            : "rgba(255,255,255,0.08)",
-        }}
-      >
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center justify-between py-5 px-4 sm:px-8 gap-8">
-            {/* Logo and Info Section */}
-            <div className="flex items-center gap-4 sm:gap-8">
-              <motion.div
-                initial={
-                  prefersReducedMotion ? undefined : { opacity: 0, x: -12 }
-                }
-                animate={
-                  prefersReducedMotion ? undefined : { opacity: 1, x: 0 }
-                }
-                {...motionFast}
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4 px-6 md:px-12 ${
+        isScrolled
+          ? "bg-white/95 backdrop-blur-md border-b border-gray-200"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link href="/" className="group flex items-center space-x-1">
+              <span
+                className="font-bold text-2xl tracking-tighter font-space"
+                style={{ color: "#b08d28" }}
               >
-                <div className="flex items-center gap-4">
-                  <h1
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Go to top"
-                    className={cn(
-                      "text-xl font-bold cursor-pointer tracking-wide transition-all duration-300 hover:scale-105",
-                      scrolled ? "gold-text" : "text-white",
-                      "gold-hover"
-                    )}
-                    onClick={goTop}
-                    onKeyDown={(e) => e.key === "Enter" && goTop()}
-                  >
-                    LegalMind
-                  </h1>
-                </div>
-              </motion.div>
+                Legal
+              </span>
+              <span
+                className={`font-bold text-2xl tracking-tighter font-space transition-colors duration-300 ${
+                  isScrolled ? "text-gray-900" : "text-white"
+                }`}
+              >
+                Mind
+              </span>
+            </Link>
+          </div>
 
-              {!isMobile && (
-                <motion.div
-                  initial={
-                    prefersReducedMotion ? undefined : { opacity: 0, x: -8 }
-                  }
-                  animate={
-                    prefersReducedMotion ? undefined : { opacity: 1, x: 0 }
-                  }
-                  {...motionFast}
-                >
-                  <div className="flex items-center gap-5">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "flex items-center gap-1 px-3 py-1 font-semibold backdrop-blur-sm transition-all duration-200",
-                            scrolled
-                              ? "text-white border-white/40 hover:bg-white/15"
-                              : "bg-white/16 text-white border-white/24 hover:bg-white/24"
-                          )}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {/* Services Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setHoveredItem("services")}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <Link
+                href="#services"
+                className={`transition-all duration-300 font-space flex items-center gap-1 text-base font-medium ${
+                  isScrolled
+                    ? "text-gray-900 hover:text-gray-700"
+                    : "text-white hover:opacity-80"
+                }`}
+              >
+                Services
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </Link>
+
+              {hoveredItem === "services" && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[600px] bg-white border border-gray-200 rounded-lg shadow-xl p-4 animate-fadeIn">
+                  <div className="grid grid-cols-2 gap-3">
+                    {services.map((service) => (
+                      <Link
+                        key={service.title}
+                        href={service.href}
+                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 border border-transparent hover:border-gray-200"
+                      >
+                        <div
+                          className="p-2 rounded-md"
                           style={{
-                            backgroundColor: scrolled
-                              ? `${colors.gold}14`
-                              : undefined,
-                            color: scrolled ? colors.gold : undefined,
-                            borderColor: scrolled
-                              ? `${colors.gold}30`
-                              : undefined,
+                            color: "#b08d28",
+                            backgroundColor: "rgba(176, 141, 40, 0.1)",
                           }}
                         >
-                          <LocationOn className="w-4 h-4" />
-                          Pune
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Our Location</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "flex items-center gap-1 px-3 py-1 font-semibold backdrop-blur-sm font-mono tabular-nums",
-                            scrolled
-                              ? "text-white border-white/40"
-                              : "bg-white/16 text-white border-white/24"
-                          )}
-                          style={{
-                            backgroundColor: scrolled
-                              ? `${colors.gold}14`
-                              : undefined,
-                            color: scrolled ? colors.gold : undefined,
-                            borderColor: scrolled
-                              ? `${colors.gold}30`
-                              : undefined,
-                          }}
-                          aria-live="polite"
-                        >
-                          <Schedule className="w-4 h-4" />
-                          {formattedTime}
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Current Time</p>
-                      </TooltipContent>
-                    </Tooltip>
+                          {service.icon}
+                        </div>
+                        <div>
+                          <div className="text-gray-900 font-semibold text-base font-space mb-1">
+                            {service.title}
+                          </div>
+                          <p className="text-gray-600 text-sm leading-relaxed font-space">
+                            {service.description}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                </motion.div>
+                </div>
               )}
             </div>
 
-            {/* Desktop Navigation */}
-            {!isMobile && (
-              <nav className="flex items-center gap-2 md:gap-8">
-                {NAV_ITEMS.map((item, index) => (
-                  <motion.div
-                    key={item.label}
-                    initial={
-                      prefersReducedMotion ? undefined : { opacity: 0, y: -10 }
-                    }
-                    animate={
-                      prefersReducedMotion ? undefined : { opacity: 1, y: 0 }
-                    }
-                    transition={{
-                      duration: 0.35,
-                      delay: prefersReducedMotion ? 0 : index * 0.06,
-                    }}
-                  >
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          asChild
-                          variant="ghost"
-                          className={cn(
-                            "relative px-6 py-3 font-semibold text-base tracking-wide rounded-lg transition-all duration-200",
-                            scrolled ? "text-gray-900" : "text-white",
-                            "hover:scale-[1.02]",
-                            isActive(item.href) &&
-                              "after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-[70%] after:h-0.5 after:transition-all"
-                          )}
-                          style={
-                            {
-                              "--hover-color": colors.gold,
-                              "--hover-bg": scrolled
-                                ? `${colors.gold}10`
-                                : "rgba(255,255,255,0.08)",
-                            } as React.CSSProperties
-                          }
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.color = colors.gold;
-                            e.currentTarget.style.backgroundColor = scrolled
-                              ? `${colors.gold}10`
-                              : "rgba(255,255,255,0.08)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.color = scrolled
-                              ? "#111827"
-                              : "#ffffff";
-                            e.currentTarget.style.backgroundColor =
-                              "transparent";
-                          }}
-                          aria-current={
-                            isActive(item.href) ? "page" : undefined
-                          }
-                        >
-                          <Link href={item.href}>{item.label}</Link>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{item.description}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </motion.div>
-                ))}
-              </nav>
-            )}
+            {/* Resources Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setHoveredItem("resources")}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <Link
+                href="#resources"
+                className={`transition-all duration-300 font-space flex items-center gap-1 text-base font-medium ${
+                  isScrolled
+                    ? "text-gray-900 hover:text-gray-700"
+                    : "text-white hover:opacity-80"
+                }`}
+              >
+                Resources
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </Link>
 
-            {/* Mobile Section */}
-            {isMobile && (
-              <div className="flex items-center gap-4">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "font-mono tabular-nums text-xs font-semibold",
-                    scrolled
-                      ? "text-white border-white/40"
-                      : "bg-white/16 text-white border-white/24"
-                  )}
-                  style={{
-                    backgroundColor: scrolled ? `${colors.gold}14` : undefined,
-                    color: scrolled ? colors.gold : undefined,
-                    borderColor: scrolled ? `${colors.gold}30` : undefined,
-                  }}
-                  aria-live="polite"
-                >
-                  {formattedTime}
-                </Badge>
-
-                <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-                  <SheetTrigger asChild>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className={cn(
-                            "transition-all duration-200",
-                            scrolled
-                              ? "text-gray-900 border-white/40"
-                              : "bg-white/16 text-white border-white/24 hover:bg-white/22"
-                          )}
-                          style={{
-                            backgroundColor: scrolled
-                              ? `${colors.gold}14`
-                              : undefined,
-                            borderColor: scrolled
-                              ? `${colors.gold}30`
-                              : undefined,
-                          }}
-                          aria-label="Open navigation menu"
-                          onClick={handleDrawerToggle}
-                        >
-                          <Menu className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Open Menu</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SheetTrigger>
-
-                  <AnimatePresence>
-                    {mobileOpen && (
-                      <SheetContent
-                        side="right"
-                        className="w-80 bg-white/96 backdrop-blur-2xl border-l"
-                        style={{ borderLeftColor: `${colors.gold}30` }}
+              {hoveredItem === "resources" && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[500px] bg-white border border-gray-200 rounded-lg shadow-xl p-4 animate-fadeIn">
+                  <div className="grid grid-cols-2 gap-3">
+                    {resources.map((resource) => (
+                      <Link
+                        key={resource.title}
+                        href={resource.href}
+                        className="block p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 border border-transparent hover:border-gray-200"
                       >
-                        <SheetHeader
-                          className="border-b pb-4"
-                          style={{ borderBottomColor: `${colors.gold}20` }}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Avatar
-                              className="w-7 h-7"
-                              style={{
-                                background: `linear-gradient(135deg, ${colors.gold}, ${colors.bronze})`,
-                              }}
-                            >
-                              <AvatarFallback className="text-white font-bold text-sm">
-                                L
-                              </AvatarFallback>
-                            </Avatar>
-                            <SheetTitle
-                              style={{ color: colors.gold }}
-                              className="font-bold"
-                            >
-                              LegalMind
-                            </SheetTitle>
-                          </div>
-                        </SheetHeader>
+                        <div className="text-gray-900 font-semibold text-base font-space mb-1">
+                          {resource.title}
+                        </div>
+                        <p className="text-gray-600 text-sm font-space">
+                          {resource.description}
+                        </p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
-                        <nav className="pt-4">
-                          {NAV_ITEMS.map((item, index) => (
-                            <motion.div
-                              key={item.label}
-                              initial={
-                                prefersReducedMotion
-                                  ? undefined
-                                  : { opacity: 0, x: 12 }
-                              }
-                              animate={
-                                prefersReducedMotion
-                                  ? undefined
-                                  : { opacity: 1, x: 0 }
-                              }
-                              transition={{
-                                duration: 0.25,
-                                delay: prefersReducedMotion ? 0 : index * 0.05,
-                              }}
-                            >
-                              <Button
-                                asChild
-                                variant="ghost"
-                                className="w-full justify-start rounded-lg mb-1 p-3 h-auto hover:translate-x-1 transition-all duration-200"
-                                style={
-                                  {
-                                    "--hover-bg": `${colors.gold}14`,
-                                  } as React.CSSProperties
-                                }
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = `${colors.gold}14`;
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor =
-                                    "transparent";
-                                }}
-                                aria-current={
-                                  isActive(item.href) ? "page" : undefined
-                                }
-                                onClick={() => setMobileOpen(false)}
-                              >
-                                <Link href={item.href}>
-                                  <div className="text-left">
-                                    <div className="font-semibold">
-                                      {item.label}
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                      {item.description}
-                                    </div>
-                                  </div>
-                                </Link>
-                              </Button>
-                            </motion.div>
-                          ))}
+            {/* Simple Links */}
+            <Link
+              href="/pricing"
+              className={`transition-all duration-300 font-space text-base font-medium ${
+                isScrolled
+                  ? "text-gray-900 hover:text-gray-700"
+                  : "text-white hover:opacity-80"
+              }`}
+            >
+              Pricing
+            </Link>
+            <Link
+              href="/about"
+              className={`transition-all duration-300 font-space text-base font-medium ${
+                isScrolled
+                  ? "text-gray-900 hover:text-gray-700"
+                  : "text-white hover:opacity-80"
+              }`}
+            >
+              About
+            </Link>
 
-                          <motion.div
-                            className="pt-10 px-3"
-                            initial={
-                              prefersReducedMotion
-                                ? undefined
-                                : { opacity: 0, y: 10 }
-                            }
-                            animate={
-                              prefersReducedMotion
-                                ? undefined
-                                : { opacity: 1, y: 0 }
-                            }
-                            transition={{ duration: 0.3, delay: 0.2 }}
-                          >
-                            <Button
-                              className="w-full text-white font-bold py-5 rounded-xl transition-all duration-300 hover:shadow-lg"
-                              style={
-                                {
-                                  background: `linear-gradient(135deg, ${colors.gold}, ${colors.bronze})`,
-                                  "--hover-bg": `linear-gradient(135deg, ${colors.brightGold}, ${colors.gold})`,
-                                  "--hover-shadow": `0 8px 24px ${colors.gold}4d`,
-                                } as React.CSSProperties
-                              }
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = `linear-gradient(135deg, ${colors.brightGold}, ${colors.gold})`;
-                                e.currentTarget.style.boxShadow = `0 8px 24px ${colors.gold}4d`;
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = `linear-gradient(135deg, ${colors.gold}, ${colors.bronze})`;
-                                e.currentTarget.style.boxShadow = "";
-                              }}
-                            >
-                              Start Free Trial
-                            </Button>
-                          </motion.div>
-
-                          <motion.div
-                            className="pt-10 px-3 mt-8 border-t"
-                            style={{ borderTopColor: `${colors.gold}20` }}
-                            initial={
-                              prefersReducedMotion ? undefined : { opacity: 0 }
-                            }
-                            animate={
-                              prefersReducedMotion ? undefined : { opacity: 1 }
-                            }
-                            transition={{ duration: 0.3, delay: 0.4 }}
-                          >
-                            <p className="text-xs text-gray-500 mb-4">
-                              Quick Contact
-                            </p>
-                            <div className="flex gap-4">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="hover:bg-opacity-10 transition-colors duration-200"
-                                    style={{ color: colors.gold }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.backgroundColor = `${colors.gold}14`;
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor =
-                                        "transparent";
-                                    }}
-                                    aria-label="Call"
-                                  >
-                                    <Phone className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Call us</p>
-                                </TooltipContent>
-                              </Tooltip>
-
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="hover:bg-opacity-10 transition-colors duration-200"
-                                    style={{ color: colors.gold }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.backgroundColor = `${colors.gold}14`;
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor =
-                                        "transparent";
-                                    }}
-                                    aria-label="Email"
-                                  >
-                                    <Email className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Email us</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-                          </motion.div>
-                        </nav>
-                      </SheetContent>
-                    )}
-                  </AnimatePresence>
-                </Sheet>
-              </div>
+            {loadingUser}
+            {/* Session-based Avatar/Sign In */}
+            {loadingUser ? (
+              <Button
+                variant="ghost"
+                className="relative h-10 w-10 rounded-full p-0"
+                disabled
+              >
+                <div className="h-10 w-10 rounded-full">
+                  <Shimmer className="h-10 w-10 rounded-full" />
+                </div>
+              </Button>
+            ) : session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full p-0"
+                  >
+                    <Avatar className="h-10 w-10 border-2 border-gray-700">
+                      <AvatarImage
+                        src={session.user.image || "/default-avatar.png"}
+                        alt={session.user?.name || "User"}
+                      />
+                      <AvatarFallback className="bg-gray-800 text-white">
+                        {session.user?.name?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-56 bg-white"
+                  align="end"
+                  forceMount
+                >
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none text-gray-900">
+                        {session.user?.name}
+                      </p>
+                      <p className="text-xs leading-none text-gray-600">
+                        {session.user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2 text-gray-700"
+                    >
+                      <User className="h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/settings"
+                      className="flex items-center gap-2 text-gray-700"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Button
+                      variant="link"
+                      onClick={async () => {
+                        await authClient.signOut();
+                        router.refresh();
+                      }}
+                      className="flex items-center gap-2 text-gray-700"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                asChild
+                className="bg-white hover:bg-gray-100 text-black px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105 font-space font-medium"
+              >
+                <Link href="/sign-in">Sign In</Link>
+              </Button>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10"
+                >
+                  <Menu size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="w-[300px] p-0 mobile-bg-white text-gray-900 border-gray-200 dark:bg-black dark:text-white dark:border-gray-800"
+              >
+                <div className="flex flex-col h-full">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-6 border-b border-gray-800">
+                    <Link
+                      href="/"
+                      className="flex items-center space-x-1"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span
+                        className="font-bold text-xl tracking-tighter font-space"
+                        style={{ color: "#b08d28" }}
+                      >
+                        Legal
+                      </span>
+                      <span className="text-gray-900 font-bold text-xl tracking-tighter font-space">
+                        Mind
+                      </span>
+                    </Link>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex flex-col space-y-6">
+                      {/* Mobile Services */}
+                      <div className="space-y-3">
+                        <div className="text-gray-900 font-semibold font-space text-lg border-b border-gray-800 pb-2">
+                          Services
+                        </div>
+                        {services.map((service) => (
+                          <Link
+                            key={service.title}
+                            href={service.href}
+                            className="flex items-center gap-3 px-2 py-3 text-gray-800 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors duration-300 font-space"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <div
+                              className="p-2 rounded"
+                              style={{
+                                color: "#b08d28",
+                                backgroundColor: "rgba(176, 141, 40, 0.1)",
+                              }}
+                            >
+                              {service.icon}
+                            </div>
+                            <span className="text-base">{service.title}</span>
+                          </Link>
+                        ))}
+                      </div>
+
+                      {/* Mobile Resources */}
+                      <div className="space-y-3">
+                        <div className="text-gray-900 font-semibold font-space text-lg border-b border-gray-800 pb-2">
+                          Resources
+                        </div>
+                        {resources.map((resource) => (
+                          <Link
+                            key={resource.title}
+                            href={resource.href}
+                            className="block px-2 py-3 text-gray-800 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors duration-300 font-space text-base"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            {resource.title}
+                          </Link>
+                        ))}
+                      </div>
+
+                      <Link
+                        href="/pricing"
+                        className="text-gray-900 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors duration-300 py-3 px-2 font-space text-base"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Pricing
+                      </Link>
+                      <Link
+                        href="/about"
+                        className="text-gray-900 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors duration-300 py-3 px-2 font-space text-base"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        About
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-6 border-t border-gray-800">
+                    {session ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 px-2 py-2">
+                          <Avatar className="h-10 w-10 border-2 border-gray-700">
+                            <AvatarImage
+                              src={session.user?.image || "/default-avatar.png"}
+                              alt={session.user?.name || "User"}
+                            />
+                            <AvatarFallback className="bg-gray-800 text-white">
+                              {session.user?.name?.charAt(0) || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-gray-900 font-semibold text-base font-space">
+                              {session.user?.name}
+                            </p>
+                            <p className="text-gray-500 text-sm font-space">
+                              {session.user?.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Link
+                            href="/profile"
+                            className="flex items-center gap-3 px-2 py-2 text-gray-900 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors duration-300 font-space text-base"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <User className="h-4 w-4" />
+                            Profile
+                          </Link>
+                          <Link
+                            href="/settings"
+                            className="flex items-center gap-3 px-2 py-2 text-gray-900 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors duration-300 font-space text-base"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Settings className="h-4 w-4" />
+                            Settings
+                          </Link>
+                          <Button
+                            className="flex items-center gap-3 px-2 py-2 text-gray-900 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors duration-300 font-space text-base bg-transparent border-0"
+                            variant={"link"}
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              authClient.signOut();
+                            }}
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Sign Out
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        asChild
+                        className="bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-full transition-all duration-300 w-full font-space font-medium text-base"
+                      >
+                        <Link
+                          href="/sign-in"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Sign In
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-      </motion.header>
-    </TooltipProvider>
+      </div>
+    </nav>
   );
-}
+};
+
+export default Navbar;

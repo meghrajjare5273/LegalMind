@@ -17,7 +17,7 @@ export default function AuthLayout({
       attribute="class"
       defaultTheme="system"
       enableSystem
-      disableTransitionOnChange
+      // disableTransitionOnChange
     >
       {/* <CHANGE> Replace the gradient background with Aurora Background */}
       <AuroraBackground className="h-screen overflow-hidden dark:text-white">
