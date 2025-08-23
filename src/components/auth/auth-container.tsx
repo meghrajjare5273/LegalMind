@@ -5,7 +5,8 @@ import { useMemo } from "react";
 import SignInForm from "./sign-in-form";
 import SignUpForm from "./sign-up-form";
 import { useRouter } from "next/navigation";
-import { AnimatedThemeToggler } from "../magicui/animated-theme-toggler";
+import { AnimatedThemeToggler } from "../ui/magicui/animated-theme-toggler";
+// import { AnimatedThemeToggler } from "../magicui/animated-theme-toggler";
 
 
 type WhichForm = "signin" | "signup";
