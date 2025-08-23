@@ -7,6 +7,7 @@ import SignUpForm from "./sign-up-form";
 import { useRouter } from "next/navigation";
 import { AnimatedThemeToggler } from "../magicui/animated-theme-toggler";
 
+
 type WhichForm = "signin" | "signup";
 
 export default function AuthContainer({ whichForm }: { whichForm: WhichForm }) {
