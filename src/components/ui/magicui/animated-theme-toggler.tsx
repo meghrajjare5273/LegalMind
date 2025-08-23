@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useState, useRef } from "react";
 import { flushSync } from "react-dom";
 // import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
+import { Button } from "../button";
 
 type props = {
   className?: string;

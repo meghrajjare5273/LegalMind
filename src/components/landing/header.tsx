@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Menu,
   FileText,
@@ -64,6 +64,20 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { data: session, loadingUser: loadingUser } = useSession();
   const router = useRouter();
+  // const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const openMenu = (key: string) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setHoveredItem(key);
+  };
+
+  const scheduleClose = (key: string) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredItem((prev) => (prev === key ? null : prev));
+    }, 140); // 100–200ms feels good
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -135,16 +149,16 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/" className="group flex items-center space-x-1">
+          <div className="flex items-center gap-0 justify-center">
+            <Link href="/" className="group flex items-center">
               <span
-                className="font-bold text-2xl tracking-tighter font-space"
+                className="font-bold text-3xl tracking-tighter font-space"
                 style={{ color: "#b08d28" }}
               >
                 Legal
               </span>
               <span
-                className={`font-bold text-2xl tracking-tighter font-space transition-colors duration-300 ${
+                className={`font-bold text-3xl tracking-tighter font-space transition-colors space-x-0.5 duration-300 ${
                   isScrolled ? "text-gray-900" : "text-white"
                 }`}
               >
@@ -158,8 +172,8 @@ const Navbar: React.FC = () => {
             {/* Services Dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setHoveredItem("services")}
-              onMouseLeave={() => setHoveredItem(null)}
+              onMouseEnter={() => openMenu("services")}
+              onMouseLeave={() => scheduleClose("services")}
             >
               <Link
                 href="#services"
@@ -209,8 +223,8 @@ const Navbar: React.FC = () => {
             {/* Resources Dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setHoveredItem("resources")}
-              onMouseLeave={() => setHoveredItem(null)}
+              onMouseEnter={() => openMenu("resources")}
+              onMouseLeave={() => scheduleClose("resources")}
             >
               <Link
                 href="#resources"

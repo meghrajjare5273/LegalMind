@@ -41,6 +41,76 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Added design system color mappings for Tailwind */
+  --color-ds-surface: var(--ds-surface);
+  --color-ds-surface-soft: var(--ds-surface-soft);
+  --color-ds-ink: var(--ds-ink);
+  --color-ds-muted: var(--ds-muted);
+  --color-ds-border: var(--ds-border);
+  --color-ds-accent: var(--ds-accent);
+  --color-ds-gold: var(--ds-gold);
+  --color-ds-skeleton: var(--ds-skeleton);
+  --color-ds-teal: var(--ds-teal);
+  --color-ds-teal-700: var(--ds-teal-700);
+  --color-ds-orange: var(--ds-orange);
+  --color-ds-orange-700: var(--ds-orange-700);
+  --color-ds-orange-800: var(--ds-orange-800);
+
+  /* Added Framer Motion animation keyframes */
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.6s ease-out;
+  --animate-scale-in: scale-in 0.4s ease-out;
+  --animate-bounce-in: bounce-in 0.8s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes bounce-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 :root {
@@ -76,6 +146,22 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Updated design system with refined color palette from user's specification */
+  /* Dashboard palette - using muted grays and sophisticated tones */
+  --ds-surface: #f0f8ff; /* Brilliant color from palette */
+  --ds-surface-soft: #c2c6c9; /* Dominant color from palette */
+  --ds-ink: #222929; /* Primary dark from palette */
+  --ds-muted: #545d5e; /* Mid-tone from palette */
+  --ds-border: #b4b8bb; /* Light gray from palette */
+  --ds-skeleton: #9ea3a7; /* Skeleton loading color */
+  --ds-accent: #32393a; /* Accent dark tone */
+  --ds-gold: #b08d28; /* Gold color as specified */
+  --ds-teal: #14b8a6; /* Refined teal */
+  --ds-teal-700: #0f766e;
+  --ds-orange: #fb923c; /* Refined orange */
+  --ds-orange-700: #c2410c;
+  --ds-orange-800: #9a3412;
 }
 
 .dark {
@@ -110,6 +196,14 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Dark mode overrides using contrasting colors from palette */
+  --ds-surface: #141818; /* Dark surface */
+  --ds-surface-soft: #32393a; /* Slightly lighter dark */
+  --ds-ink: #f0f8ff; /* Light text on dark */
+  --ds-muted: #818684; /* Muted text */
+  --ds-border: #434b4d; /* Dark borders */
+  --ds-skeleton: #545d5e; /* Dark skeleton */
 }
 
 .text-gold {
@@ -155,8 +249,79 @@
     }
   }
 }
-::view-transition-old(root), ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
+/* Added utility classes for design system colors and animations */
+.bg-ds-surface {
+  background-color: var(--ds-surface);
+}
+.bg-ds-surface-soft {
+  background-color: var(--ds-surface-soft);
+}
+.text-ds-ink {
+  color: var(--ds-ink);
+}
+.text-ds-muted {
+  color: var(--ds-muted);
+}
+.border-ds-border {
+  border-color: var(--ds-border);
+}
+.bg-ds-accent {
+  background-color: var(--ds-accent);
+}
+.text-ds-gold {
+  color: var(--ds-gold);
+}
+.bg-ds-skeleton {
+  background-color: var(--ds-skeleton);
+}
+.bg-ds-teal {
+  background-color: var(--ds-teal);
+}
+.text-ds-teal-700 {
+  color: var(--ds-teal-700);
+}
+.bg-ds-orange {
+  background-color: var(--ds-orange);
+}
+.text-ds-orange-700 {
+  color: var(--ds-orange-700);
+}
+.text-ds-orange-800 {
+  color: var(--ds-orange-800);
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: var(--animate-fade-in);
+}
+.animate-slide-up {
+  animation: var(--animate-slide-up);
+}
+.animate-scale-in {
+  animation: var(--animate-scale-in);
+}
+.animate-bounce-in {
+  animation: var(--animate-bounce-in);
+}
+
+/* Interactive hover effects */
+.hover-lift {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.hover-glow {
+  transition: box-shadow 0.3s ease-out;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(176, 141, 40, 0.3);
+}
