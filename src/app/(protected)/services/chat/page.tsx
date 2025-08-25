@@ -1,218 +1,369 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect } from "react";
-import { Spotlight } from "@/components/ui/spotlight-new";
-import { TextGlitch } from "@/components/ui/text-glitch-effect";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Paperclip,
-  ImageIcon,
-  Send,
-  Scale,
-  FileText,
-  Users,
-  Building,
-} from "lucide-react";
-import { AnimatedThemeToggler } from "@/components/ui/magicui/animated-theme-toggler";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Menu, Plus, Trash2, Send, Loader2 } from "lucide-react";
 
-// Mock user data - replace with actual better-auth integration
-const useUser = () => {
-  const [user, setUser] = useState<{ name: string } | null>(null);
+interface Message {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  createdAt: string;
+  tokenCount?: number;
+}
 
-  useEffect(() => {
-    // Simulate fetching user data
-    // Replace this with actual better-auth client call
-    setUser({ name: "Ui Mahadi" });
-  }, []);
-
-  return user;
-};
-
-const legalPrompts = [
-  {
-    title: "Draft a contract for a business partnership",
-    description: "Create a comprehensive partnership agreement",
-    icon: FileText,
-  },
-  {
-    title: "Review employment law compliance",
-    description: "Analyze workplace policies and procedures",
-    icon: Users,
-  },
-  {
-    title: "Explain intellectual property rights",
-    description: "Understand patents, trademarks, and copyrights",
-    icon: Scale,
-  },
-  {
-    title: "Corporate governance best practices",
-    description: "Guide on board responsibilities and compliance",
-    icon: Building,
-  },
-];
+interface ChatSession {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function ChatPage() {
-  const user = useUser();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session");
+
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(
+    null
+  );
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [message, setMessage] = useState("");
-  const [charCount, setCharCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSessions, setShowSessions] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    if (value.length <= 1000) {
-      setMessage(value);
-      setCharCount(value.length);
+  // Load sessions on mount
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  // Load specific session if sessionId provided
+  useEffect(() => {
+    if (sessionId) {
+      loadSession(sessionId);
+    }
+  }, [sessionId]);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [currentSession?.messages]);
+
+  const loadSessions = async () => {
+    try {
+      const response = await fetch("/api/chat/sessions");
+      if (response.ok) {
+        const data = await response.json();
+        setSessions(data.sessions);
+      }
+    } catch (error) {
+      console.error("Error loading sessions:", error);
     }
   };
 
-  const handlePromptClick = (promptTitle: string) => {
-    setMessage(promptTitle);
-  };
-
-  const handleSubmit = () => {
-    if (message.trim()) {
-      // Handle message submission
-      console.log("Submitting message:", message);
-      // Add your chat logic here
+  const loadSession = async (id: string) => {
+    try {
+      const response = await fetch(`/api/chat/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentSession(data.session);
+      }
+    } catch (error) {
+      console.error("Error loading session:", error);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
+  const createNewSession = async () => {
+    try {
+      const response = await fetch("/api/chat/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "New Chat" }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentSession(data.session);
+        router.push(`/chat?session=${data.session.id}`);
+        await loadSessions();
+      }
+    } catch (error) {
+      console.error("Error creating session:", error);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!message.trim() || isLoading) return;
+
+    setIsLoading(true);
+    const userMessage = message;
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/rag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: userMessage,
+          sessionId: currentSession?.id,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // If new session was created, update URL and current session
+        if (data.sessionId && !currentSession) {
+          router.push(`/chat?session=${data.sessionId}`);
+        }
+
+        // Reload the session to get updated messages
+        if (data.sessionId) {
+          await loadSession(data.sessionId);
+          await loadSessions();
+        }
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteSession = async (id: string) => {
+    try {
+      const response = await fetch(`/api/chat/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setSessions(sessions.filter((s) => s.id !== id));
+        if (currentSession?.id === id) {
+          setCurrentSession(null);
+          router.push("/chat");
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting session:", error);
     }
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-background text-foreground overflow-hidden">
-      {/* Spotlight Background Effect */}
-      <div className="fixed inset-0 z-0">
-        <Spotlight />
-      </div>
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <div
+        className={`${
+          showSessions ? "w-80" : "w-16"
+        } transition-all duration-300 bg-card border-r flex flex-col`}
+      >
+        <div className="p-4 border-b">
+          <Button
+            onClick={() => setShowSessions(!showSessions)}
+            variant="ghost"
+            size="icon"
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
 
-      {/* Theme Toggle - Fixed Position */}
-      <div className="fixed top-4 right-4 z-50">
-        <AnimatedThemeToggler />
-      </div>
-
-      {/* Main Content Area */}
-      <div className="relative z-10 flex flex-col h-screen">
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto pb-32">
-          <div className="flex items-center justify-center min-h-full p-4 md:p-8">
-            <div className="max-w-4xl w-full space-y-8">
-              {/* Welcome Message with Glitch Effect */}
-              <div className="text-center space-y-4">
-                <div className="overflow-hidden">
-                  <TextGlitch
-                    text={`Hi there, ${user?.name || "Legal Professional"}`}
-                    className="text-3xl md:text-4xl lg:text-6xl font-bold text-muted-foreground"
-                    hoverText="How can I help you.?"
-                    delay={0}
-                  />
-                </div>
-                <h2 className="text-xl md:text-2xl lg:text-3xl text-muted-foreground font-medium">
-                  What legal matter can I help you with?
-                </h2>
-                <p className="text-muted-foreground/70 max-w-2xl mx-auto text-sm md:text-base">
-                  I&apos;m your AI Legal Assistant, ready to help with
-                  contracts, compliance, legal research, and professional
-                  guidance. Choose a prompt below or ask your own question.
-                </p>
-              </div>
-
-              {/* Legal Prompt Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-                {legalPrompts.map((prompt, index) => (
-                  <Card
-                    key={index}
-                    className="bg-card/50 border-border hover:border-primary/50 transition-all cursor-pointer p-4 group hover:shadow-lg backdrop-blur-sm"
-                    onClick={() => handlePromptClick(prompt.title)}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-colors">
-                        <prompt.icon className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-foreground mb-1">
-                          {prompt.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {prompt.description}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
+          {showSessions && (
+            <Button
+              onClick={createNewSession}
+              className="w-full mt-2 bg-transparent"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Chat
+            </Button>
+          )}
         </div>
 
-        {/* Fixed Input Area */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-border z-20">
-          <div className="p-4 md:p-6">
-            <div className="max-w-4xl mx-auto">
-              <div className="relative">
-                <Textarea
-                  placeholder="Ask about legal matters, contracts, compliance..."
-                  value={message}
-                  onChange={handleMessageChange}
-                  onKeyDown={handleKeyDown}
-                  className="min-h-[100px] md:min-h-[120px] bg-card/50 border-border text-foreground placeholder-muted-foreground resize-none pr-20 pb-16 backdrop-blur-sm"
-                />
-
-                {/* Input Controls - Bottom Left */}
-                <div className="absolute bottom-4 left-4 flex items-center space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-foreground h-8 w-8"
-                  >
-                    <Paperclip className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-foreground h-8 w-8"
-                  >
-                    <ImageIcon className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Send Button and Character Count - Bottom Right */}
-                <div className="absolute bottom-4 right-4 flex items-center space-x-3">
-                  <span className="text-xs text-muted-foreground">
-                    {charCount}/1000
-                  </span>
-                  <Button
-                    size="icon"
-                    onClick={handleSubmit}
-                    className="h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90"
-                    disabled={!message.trim()}
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Web Search Toggle */}
-              <div className="flex justify-end mt-2">
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-foreground text-sm"
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border border-muted-foreground rounded-sm" />
-                    <span>Search Web</span>
+        {showSessions && (
+          <ScrollArea className="flex-1 p-2">
+            {sessions.map((session) => (
+              <Card
+                key={session.id}
+                className={`p-3 mb-2 cursor-pointer hover:bg-accent ${
+                  currentSession?.id === session.id ? "bg-accent" : ""
+                }`}
+                onClick={() => {
+                  setCurrentSession(session);
+                  router.push(`/chat?session=${session.id}`);
+                }}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">
+                      {session.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(session.updatedAt).toLocaleDateString()}
+                    </p>
                   </div>
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSession(session.id);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </ScrollArea>
+        )}
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b bg-card">
+          <h1 className="text-lg font-semibold">
+            {currentSession?.title || "LegalMind AI Chat"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Ask questions about Indian law, contracts, and legal compliance
+          </p>
+        </div>
+
+        {/* Messages */}
+        <ScrollArea className="flex-1 p-4">
+          {!currentSession?.messages?.length && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold mb-2">
+                  Welcome to LegalMind AI
+                </h2>
+                <p className="text-muted-foreground mb-4">
+                  Start a conversation by asking a legal question
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-w-2xl">
+                  <Button
+                    variant="outline"
+                    className="text-left justify-start h-auto p-4 bg-transparent"
+                    onClick={() =>
+                      setMessage(
+                        "What are the key provisions of the Indian Contract Act?"
+                      )
+                    }
+                  >
+                    <div>
+                      <div className="font-medium">Contract Law</div>
+                      <div className="text-sm text-muted-foreground">
+                        Key provisions of Indian Contract Act
+                      </div>
+                    </div>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="text-left justify-start h-auto p-4 bg-transparent"
+                    onClick={() =>
+                      setMessage(
+                        "What are the fundamental rights under the Indian Constitution?"
+                      )
+                    }
+                  >
+                    <div>
+                      <div className="font-medium">Constitutional Law</div>
+                      <div className="text-sm text-muted-foreground">
+                        Fundamental rights and duties
+                      </div>
+                    </div>
+                  </Button>
+                </div>
               </div>
             </div>
+          )}
+
+          {currentSession?.messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex gap-4 mb-6 ${
+                msg.role === "user" ? "justify-end" : ""
+              }`}
+            >
+              {msg.role === "assistant" && (
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>AI</AvatarFallback>
+                </Avatar>
+              )}
+
+              <div
+                className={`max-w-[70%] ${
+                  msg.role === "user" ? "order-first" : ""
+                }`}
+              >
+                <Card
+                  className={`p-4 ${
+                    msg.role === "user"
+                      ? "bg-primary text-primary-foreground ml-auto"
+                      : "bg-card"
+                  }`}
+                >
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    {msg.content}
+                  </div>
+                  <div className="text-xs opacity-70 mt-2">
+                    {new Date(msg.createdAt).toLocaleTimeString()}
+                    {msg.tokenCount && (
+                      <span className="ml-2">• {msg.tokenCount} tokens</span>
+                    )}
+                  </div>
+                </Card>
+              </div>
+
+              {msg.role === "user" && (
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+              )}
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </ScrollArea>
+
+        {/* Input Area */}
+        <div className="p-4 border-t">
+          <div className="flex gap-2">
+            <Textarea
+              placeholder="Ask about legal matters, contracts, compliance..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              className="min-h-[100px] resize-none"
+              disabled={isLoading}
+            />
+            <Button
+              onClick={handleSubmit}
+              disabled={!message.trim() || isLoading}
+              className="self-end"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
           </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Press Enter to send, Shift+Enter for new line. Remember: This is an
+            AI assistant, not a replacement for professional legal advice.
+          </p>
         </div>
       </div>
     </div>
