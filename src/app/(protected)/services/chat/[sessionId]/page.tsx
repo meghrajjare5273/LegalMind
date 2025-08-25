@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,10 +25,10 @@ interface ChatSession {
   updatedAt: string;
 }
 
-export default function ChatPage() {
+export default function ChatSessionPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session");
+  const params = useParams();
+  const sessionId = params.sessionId as string;
 
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(
     null
@@ -44,7 +44,7 @@ export default function ChatPage() {
     loadSessions();
   }, []);
 
-  // Load specific session if sessionId provided
+  // Load specific session when sessionId changes
   useEffect(() => {
     if (sessionId) {
       loadSession(sessionId);
@@ -74,6 +74,9 @@ export default function ChatPage() {
       if (response.ok) {
         const data = await response.json();
         setCurrentSession(data.session);
+      } else if (response.status === 404) {
+        // Session not found, redirect to new chat
+        router.push("/services/chat");
       }
     } catch (error) {
       console.error("Error loading session:", error);
@@ -90,8 +93,7 @@ export default function ChatPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setCurrentSession(data.session);
-        router.push(`/services/chat?session=${data.session.id}`);
+        router.push(`/services/chat/${data.session.id}`);
         await loadSessions();
       }
     } catch (error) {
@@ -112,23 +114,25 @@ export default function ChatPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: userMessage,
-          sessionId: currentSession?.id,
+          sessionId: sessionId,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
 
-        // If new session was created, update URL and current session
-        if (data.sessionId && !currentSession) {
-          router.push(`/services/chat?session=${data.sessionId}`);
+        // If new session was created, navigate to it
+        if (data.sessionId && data.sessionId !== sessionId) {
+          router.push(`/services/chat/${data.sessionId}`);
+          return;
         }
 
-        // Reload the session to get updated messages
-        if (data.sessionId) {
-          await loadSession(data.sessionId);
-          await loadSessions();
-        }
+        // Reload the current session to get updated messages
+        await loadSession(sessionId);
+        await loadSessions();
+
+        // Force refresh the router to ensure UI updates
+        router.refresh();
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -146,8 +150,7 @@ export default function ChatPage() {
       if (response.ok) {
         setSessions(sessions.filter((s) => s.id !== id));
         if (currentSession?.id === id) {
-          setCurrentSession(null);
-          router.push("/chat");
+          router.push("/services/chat");
         }
       }
     } catch (error) {
@@ -155,6 +158,7 @@ export default function ChatPage() {
     }
   };
 
+  // Rest of your JSX remains the same as in the original file
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
@@ -194,7 +198,7 @@ export default function ChatPage() {
                 }`}
                 onClick={() => {
                   setCurrentSession(session);
-                  router.push(`/services/chat?session=${session.id}`);
+                  router.push(`/services/chat/${session.id}`);
                 }}
               >
                 <div className="flex justify-between items-start">
