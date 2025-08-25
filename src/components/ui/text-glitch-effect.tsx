@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -19,6 +20,7 @@ export function TextGlitch({
 }: TextEffectProps) {
   const textRef = useRef<HTMLHeadingElement>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [displayText, setDisplayText] = useState(text);
   const [displayHoverText, setDisplayHoverText] = useState(hoverText || text);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
