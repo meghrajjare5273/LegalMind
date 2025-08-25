@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-    id            String    @id
+    id            String        @id
     name          String
     email         String
     emailVerified Boolean
@@ -23,6 +23,7 @@ model User {
     updatedAt     DateTime
     sessions      Session[]
     accounts      Account[]
+    ChatSession   ChatSession[]
 
     @@unique([email])
     @@map("user")
@@ -71,4 +72,35 @@ model Verification {
     updatedAt  DateTime?
 
     @@map("verification")
+}
+
+model ChatSession {
+    id        String        @id @default(cuid())
+    title     String? // Auto-generated or user-provided title
+    userId    String
+    user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime      @default(now())
+    updatedAt DateTime      @updatedAt
+    messages  ChatMessage[]
+
+    @@map("chat_session")
+}
+
+model ChatMessage {
+    id         String      @id @default(cuid())
+    sessionId  String
+    session    ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+    role       MessageRole // "user" | "assistant" | "system"
+    content    String      @db.Text
+    tokenCount Int? // Track token usage
+    metadata   Json? // Store context sources, processing time, etc.
+    createdAt  DateTime    @default(now())
+
+    @@map("chat_message")
+}
+
+enum MessageRole {
+    user
+    assistant
+    system
 }
