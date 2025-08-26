@@ -1,5 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
+import { Spotlight } from "@/components/ui/spotlight";
 
 export const metadata: Metadata = {
   title: "AI Legal Assistant - Chat",
@@ -25,5 +26,15 @@ export default function ChatLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Full-screen Spotlight background */}
+      <div className="fixed inset-0 z-0">
+        <Spotlight />
+      </div>
+
+      {/* Chat content */}
+      <div className="relative z-10 min-h-screen">{children}</div>
+    </div>
+  );
 }
