@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 // import ScrollProgress from "@/components/scroll-progress";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -29,7 +30,10 @@ export default function RootLayout({
       <body className={inter.className} style={{ overflowX: "hidden" }}>
         {/* Scroll progress */}
         {/* <ScrollProgress /> */}
-        <div style={{ width: "100%", overflowX: "hidden" }}>{children}</div>
+        <div style={{ width: "100%", overflowX: "hidden" }}>
+          {children}
+          <SpeedInsights />
+        </div>
       </body>
     </html>
   );

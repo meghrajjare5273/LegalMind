@@ -353,6 +353,7 @@ const Navbar: React.FC = () => {
                       onClick={async () => {
                         await authClient.signOut();
                         router.refresh();
+                        window.location.reload();
                       }}
                       className="flex items-center gap-2 text-gray-700"
                     >

@@ -4,6 +4,14 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TextEffect } from "../ui/motion-primitives/text-effect";
 import { useRouter } from "next/navigation";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  weight: ["600", "700"],
+  style: ["italic", "normal"],
+  subsets: ["latin"],
+  preload: true,
+});
 
 export default function HeroSection() {
   const router = useRouter();
@@ -24,33 +32,45 @@ export default function HeroSection() {
             transition={{ duration: 0.8 }}
           >
             <div className="leading-[0.85] flex flex-col gap-0">
-              {/* Line 1: Inspired by Legal */}
-              <h1 className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-2 h-auto font-bold">
-                Inspired by{" "}
-                <span className="italic relative inline-block font-bold">
-                  Legal
-                  {/* <div className="absolute bottom-[3px] left-0 right-0 h-[3px] bg-white/50 rounded-sm" /> */}
-                </span>
-              </h1>
-
               {/* Line 2: Innovation */}
-              <h1 className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-3 italic h-auto font-bold">
+              {/* Line 1: Inspired by Legal */}
+              <h1
+                className={`${inter.className} text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-2 h-auto font-bold`}
+              >
+                Accesible and Precise
+                {/* <span className="italic relative inline-block font-bold">
+                  {/* Legal */}
+                {/* <div className="absolute bottom-[3px] left-0 right-0 h-[3px] bg-white/50 rounded-sm" /> */}
+                {/* </span> */}
+              </h1>
+              <h1
+                className={`text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-3 italic h-auto font-bold ${inter.className}`}
+              >
                 <TextEffect
                   preset="blur"
                   per="char"
                   speedReveal={0.4}
                   delay={0}
                 >
-                  Legal Innovation
+                  Legal Guidance
                 </TextEffect>
               </h1>
 
               {/* Line 3: Defined by Excellence */}
-              <h1 className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-2 h-auto font-bold">
-                Defined by{" "}
-                <span className="font-extrabold text-[#fff3cd] inline-block">
-                  <TextEffect delay={1.2} preset="fade-in-blur" per="char">
-                    Excellence
+              <h1
+                className={`${inter.className} text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-2 h-auto font-bold`}
+              >
+                Made{" "}
+                <span
+                  className={`font-extrabold text-[#fff3cd] inline-block ${inter.className} italic`}
+                >
+                  <TextEffect
+                    delay={1.2}
+                    preset="fade-in-blur"
+                    per="char"
+                    speedReveal={0.4}
+                  >
+                    Conversational
                   </TextEffect>
                 </span>
               </h1>

@@ -91,7 +91,7 @@ const ModelChip = ({
 
 const ModelsRow = () => (
   <div className="flex flex-wrap gap-3" aria-label="Models">
-    <ModelChip label="AI Claude 3.5" iconSrc="/claude.svg" />
+    <ModelChip label="Claude 3.5" iconSrc="/claude.svg" />
     <ModelChip label="GPT‑4o" iconSrc="/gpt.svg" />
     <ModelChip label="Gemini 2.0" iconSrc="/gemini.svg" />
   </div>
