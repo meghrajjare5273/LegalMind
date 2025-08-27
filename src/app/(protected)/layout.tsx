@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "@/contexts/session-context";
 import { FloatingNavigation } from "@/components/protected/floating-navigation";
+// import { AnimatedThemeToggler } from "@/components/ui/magicui/animated-theme-toggler";
 
 export const metadata: Metadata = {
   title: {
@@ -24,7 +25,13 @@ export default function DashboardLayout({
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <SessionProvider>
         <div className="min-h-screen bg-background">
-          <main className="container mx-auto px-4 py-8 pb-24">{children}</main>
+          <main
+            className="container mx-auto px-4 py-8 pb-24"
+            suppressHydrationWarning
+          >
+            {/* <AnimatedThemeToggler /> */}
+            {children}
+          </main>
           <FloatingNavigation />
         </div>
         <Toaster />

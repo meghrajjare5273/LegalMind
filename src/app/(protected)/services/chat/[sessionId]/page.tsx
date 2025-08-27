@@ -1,15 +1,14 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Menu, Plus, Trash2, ArrowLeft, MessageSquare } from "lucide-react";
 import { AIChatInput } from "@/components/ui/ai-chat-input";
 import { useSession } from "@/contexts/session-context";
 import { motion, AnimatePresence } from "framer-motion";
+import { AnimatedThemeToggler } from "@/components/ui/magicui/animated-theme-toggler";
 
 interface Message {
   id: string;
@@ -41,23 +40,6 @@ export default function ChatSessionPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSessions, setShowSessions] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Load sessions on mount
-  useEffect(() => {
-    loadSessions();
-  }, []);
-
-  // Load specific session when sessionId changes
-  useEffect(() => {
-    if (sessionId) {
-      loadSession(sessionId);
-    }
-  }, [sessionId]);
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [currentSession?.messages]);
 
   const loadSessions = async () => {
     try {
@@ -157,7 +139,7 @@ export default function ChatSessionPage() {
   };
 
   return (
-    <div className="min-h-screen flex pb-24">
+    <div className="min-h-screen flex pt-16 pb-6">
       {/* Sidebar */}
       <AnimatePresence>
         {showSessions && (
@@ -166,7 +148,7 @@ export default function ChatSessionPage() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -320, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed left-0 top-0 h-full w-80 z-40 bg-background/95 backdrop-blur-md border-r border-border/50 flex flex-col shadow-2xl"
+            className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-80 z-30 bg-background/95 backdrop-blur-md border-r border-border/50 flex flex-col shadow-2xl"
           >
             <div className="p-4 border-b border-border/50 flex items-center gap-2">
               <Button
@@ -180,7 +162,7 @@ export default function ChatSessionPage() {
 
               <Button
                 onClick={createNewSession}
-                className="flex-1"
+                className="flex-1 bg-transparent"
                 variant="outline"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -247,7 +229,8 @@ export default function ChatSessionPage() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="sticky top-0 z-30 p-4 bg-background/95 backdrop-blur-md border-b border-border/50">
+        <AnimatedThemeToggler />  
+        <div className="sticky top-16 z-20 p-4 bg-background/95 backdrop-blur-md border-b border-border/50">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
               <Button
@@ -274,7 +257,7 @@ export default function ChatSessionPage() {
 
         {/* Messages Area */}
         <ScrollArea className="flex-1 px-4">
-          <div className="max-w-4xl mx-auto py-4">
+          <div className="max-w-4xl mx-auto py-6">
             {/* Welcome message for empty sessions */}
             {!currentSession?.messages?.length && (
               <div className="flex items-center justify-center h-full py-20">
@@ -295,7 +278,7 @@ export default function ChatSessionPage() {
                   <div className="grid grid-cols-1 gap-3">
                     <Button
                       variant="outline"
-                      className="text-left justify-start h-auto p-4 hover:bg-accent/50"
+                      className="text-left justify-start h-auto p-4 hover:bg-accent/50 bg-transparent"
                       onClick={() =>
                         setMessage(
                           "What are the key provisions of the Indian Contract Act?"
@@ -311,7 +294,7 @@ export default function ChatSessionPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="text-left justify-start h-auto p-4 hover:bg-accent/50"
+                      className="text-left justify-start h-auto p-4 hover:bg-accent/50 bg-transparent"
                       onClick={() =>
                         setMessage(
                           "What are the fundamental rights under the Indian Constitution?"
@@ -337,51 +320,53 @@ export default function ChatSessionPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className={`flex gap-4 mb-8 ${
-                  msg.role === "user" ? "justify-end" : ""
+                className={`mb-8 ${
+                  msg.role === "user"
+                    ? "flex justify-end"
+                    : "flex justify-start"
                 }`}
               >
-                {msg.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-primary font-semibold text-sm">
-                      AI
-                    </span>
-                  </div>
-                )}
-
                 <div
-                  className={`max-w-[80%] ${
-                    msg.role === "user" ? "order-first" : ""
-                  }`}
+                  className={`max-w-[85%] ${
+                    msg.role === "user"
+                      ? "bg-primary/10 border border-primary/20"
+                      : "bg-muted/30 border border-border/30"
+                  } rounded-2xl p-4 backdrop-blur-sm`}
                 >
-                  <div
-                    className={`p-4 rounded-2xl ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground ml-auto"
-                        : "bg-muted/50 backdrop-blur-sm"
-                    }`}
-                  >
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <p className="whitespace-pre-wrap break-words m-0">
-                        {msg.content}
-                      </p>
-                    </div>
-                    <div className="text-xs opacity-70 mt-2 flex items-center gap-2">
-                      <span>
-                        {new Date(msg.createdAt).toLocaleTimeString()}
-                      </span>
-                      {msg.tokenCount && <span>• {msg.tokenCount} tokens</span>}
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                        msg.role === "user"
+                          ? "bg-primary"
+                          : "bg-muted-foreground"
+                      }`}
+                    />
+                    <div className="flex-1">
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <p className="whitespace-pre-wrap break-words m-0 text-foreground">
+                          {msg.content}
+                        </p>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-3 flex items-center gap-2">
+                        <span className="font-medium">
+                          {msg.role === "user"
+                            ? user?.name?.split(" ")[0] || "You"
+                            : "AI Assistant"}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {new Date(msg.createdAt).toLocaleTimeString()}
+                        </span>
+                        {msg.tokenCount && (
+                          <>
+                            <span>•</span>
+                            <span>{msg.tokenCount} tokens</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {msg.role === "user" && (
-                  <Avatar className="w-8 h-8 mt-1">
-                    <AvatarFallback className="bg-secondary text-xs">
-                      {user?.name?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
               </motion.div>
             ))}
             <div ref={messagesEndRef} />
@@ -411,7 +396,7 @@ export default function ChatSessionPage() {
         onClick={() => setShowSessions(!showSessions)}
         variant="outline"
         size="icon"
-        className="fixed left-4 top-4 z-50 hidden lg:flex shadow-lg"
+        className="fixed left-4 top-20 z-40 hidden lg:flex shadow-lg"
       >
         <Menu className="h-4 w-4" />
       </Button>
@@ -424,7 +409,7 @@ export default function ChatSessionPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowSessions(false)}
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            className="fixed inset-0 bg-black/50 z-20 lg:hidden"
           />
         )}
       </AnimatePresence>
