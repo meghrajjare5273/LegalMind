@@ -142,22 +142,24 @@ export const AIChatInput = ({
             title="Attach file"
             type="button"
             tabIndex={-1}
+            disabled
           >
             <Paperclip size={20} className="text-gray-600" />
           </button>
 
           {/* Text Input & Placeholder */}
-          <div className="relative flex-1">
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1 border-0 outline-0 rounded-md py-2 text-base bg-transparent w-full font-normal text-gray-900"
-              style={{ position: "relative", zIndex: 1 }}
-              onFocus={handleActivate}
-              disabled={isLoading}
-            />
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="flex-1 border-0 outline-0 rounded-md py-2 text-base bg-transparent w-full font-normal text-gray-900"
+            style={{ position: "relative", zIndex: 1 }}
+            onFocus={handleActivate}
+            disabled={isLoading}
+            aria-label="Message"
+          />
+          <div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
             <div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
               <AnimatePresence mode="wait">
                 {showPlaceholder && !isActive && !value && (
@@ -190,109 +192,111 @@ export const AIChatInput = ({
                 )}
               </AnimatePresence>
             </div>
-          </div>
-
-          <button
-            className="p-3 rounded-full hover:bg-gray-100 transition"
-            title="Voice input"
-            type="button"
-            tabIndex={-1}
-          >
-            <Mic size={20} className="text-gray-600" />
-          </button>
-
-          <button
-            className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full font-medium justify-center disabled:opacity-50"
-            title="Send"
-            type="button"
-            onClick={onSubmit}
-            disabled={isLoading || !value.trim()}
-          >
-            {isLoading ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Send size={18} />
-            )}
-          </button>
-        </div>
-
-        {/* Expanded Controls */}
-        <motion.div
-          className="w-full flex justify-start px-4 items-center text-sm"
-          variants={{
-            hidden: {
-              opacity: 0,
-              y: 20,
-              pointerEvents: "none" as const,
-              transition: { duration: 0.25 },
-            },
-            visible: {
-              opacity: 1,
-              y: 0,
-              pointerEvents: "auto" as const,
-              transition: { duration: 0.35, delay: 0.08 },
-            },
-          }}
-          initial="hidden"
-          animate={isActive || value ? "visible" : "hidden"}
-          style={{ marginTop: 8 }}
-        >
-          <div className="flex gap-3 items-center">
-            {/* Think Toggle */}
             <button
-              className={`flex items-center gap-1 px-4 py-2 rounded-full transition-all font-medium group ${
-                thinkActive
-                  ? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-              title="Think"
+              className="p-3 rounded-full hover:bg-gray-100 transition opacity-50 cursor-not-allowed"
+              title="Voice input"
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setThinkActive((a) => !a);
-              }}
+              aria-label="Voice input (coming soon)"
+              disabled
             >
-              <Lightbulb
-                className="group-hover:fill-yellow-300 transition-all"
-                size={18}
-              />
-              Think
+              <Mic size={20} className="text-gray-600" />
             </button>
 
-            {/* Deep Search Toggle */}
-            <motion.button
-              className={`flex items-center px-4 gap-1 py-2 rounded-full transition font-medium whitespace-nowrap overflow-hidden justify-start  ${
-                deepSearchActive
-                  ? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-              title="Deep Search"
+            <button
+              className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full font-medium justify-center disabled:opacity-50"
+              title="Send"
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeepSearchActive((a) => !a);
-              }}
-              initial={false}
-              animate={{
-                width: deepSearchActive ? 125 : 36,
-                paddingLeft: deepSearchActive ? 8 : 9,
-              }}
+              onClick={onSubmit}
+              disabled={isLoading || !value.trim()}
             >
-              <div className="flex-1">
-                <Globe size={18} />
-              </div>
-              <motion.span
-                className="pb-[2px]"
+              {isLoading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Send size={18} />
+              )}
+            </button>
+          </div>
+
+          {/* Expanded Controls */}
+          <motion.div
+            className="w-full flex justify-start px-4 items-center text-sm"
+            variants={{
+              hidden: {
+                opacity: 0,
+                y: 20,
+                pointerEvents: "none" as const,
+                transition: { duration: 0.25 },
+              },
+              visible: {
+                opacity: 1,
+                y: 0,
+                pointerEvents: "auto" as const,
+                transition: { duration: 0.35, delay: 0.08 },
+              },
+            }}
+            initial="hidden"
+            animate={isActive || value ? "visible" : "hidden"}
+            style={{ marginTop: 8 }}
+          >
+            <div className="flex gap-3 items-center">
+              {/* Think Toggle */}
+              <button
+                className={`flex items-center gap-1 px-4 py-2 rounded-full transition-all font-medium group ${
+                  thinkActive
+                    ? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+                title="Think"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setThinkActive((a) => !a);
+                }}
+                aria-pressed={thinkActive}
+              >
+                <Lightbulb
+                  className="group-hover:fill-yellow-300 transition-all"
+                  size={18}
+                />
+                Think
+              </button>
+
+              {/* Deep Search Toggle */}
+              <motion.button
+                className={`flex items-center px-4 gap-1 py-2 rounded-full transition font-medium whitespace-nowrap overflow-hidden justify-start  ${
+                  deepSearchActive
+                    ? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+                title="Deep Search"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeepSearchActive((a) => !a);
+                }}
                 initial={false}
                 animate={{
-                  opacity: deepSearchActive ? 1 : 0,
+                  width: deepSearchActive ? 125 : 36,
+                  paddingLeft: deepSearchActive ? 8 : 9,
                 }}
+                aria-pressed={deepSearchActive}
               >
-                Deep Search
-              </motion.span>
-            </motion.button>
-          </div>
-        </motion.div>
+                <div className="flex-1">
+                  <Globe size={18} />
+                </div>
+                <motion.span
+                  className="pb-[2px]"
+                  initial={false}
+                  animate={{
+                    opacity: deepSearchActive ? 1 : 0,
+                  }}
+                >
+                  Deep Search
+                </motion.span>
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );

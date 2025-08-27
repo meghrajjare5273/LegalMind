@@ -5,6 +5,7 @@ import {
   Target,
   TargetAndTransition,
   Transition,
+  Variants,
 } from "motion/react";
 
 export type TextRollProps = {
@@ -18,10 +19,12 @@ export type TextRollProps = {
     enter: {
       initial: Target | VariantLabels | boolean;
       animate: TargetAndTransition | VariantLabels;
+      variants?: Variants
     };
     exit: {
       initial: Target | VariantLabels | boolean;
       animate: TargetAndTransition | VariantLabels;
+      variants?: Variants
     };
   };
   onAnimationComplete?: () => void;
