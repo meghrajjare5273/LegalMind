@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-// <CHANGE> Import Aurora Background component
 import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export default function AuthLayout({
