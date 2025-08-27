@@ -1,7 +1,7 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Spotlight } from "@/components/ui/spotlight";
-import { SessionProvider } from "@/contexts/session-context";
+import { ChatSidebar } from "@/components/protected/chat/chat-sidebar";
 
 export const metadata: Metadata = {
   title: "AI Legal Assistant - Chat",
@@ -22,24 +22,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ChatLayout({
+// This version gives you more control over the layout structure
+export default function ChatLayoutAlternative({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <SessionProvider>
-      <div className="fixed flex flex-wrap justify-center inset-0 overflow-hidden">
-        {/* Spotlight effect - fixed positioning to cover entire viewport */}
-        <div className="absolute inset-0 pointer-events-none">
-          <Spotlight />
-        </div>
-
-        {/* Chat content container */}
-        <div className="fixed z-10 h-full flex flex-wrap overflow-y-hidden">
-          {children}
-        </div>
+    <div className="fixed inset-0 flex">
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <Spotlight />
       </div>
-    </SessionProvider>
+
+      {/* Sidebar container */}
+      <aside className="relative z-10 flex-shrink-0">
+        <ChatSidebar />
+      </aside>
+
+      {/* Main content area */}
+      <main className="relative z-10 flex-1 overflow-auto">{children}</main>
+    </div>
   );
 }
