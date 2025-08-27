@@ -4,19 +4,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Menu,
-  Plus,
-  Trash2,
-  Send,
-  Loader2,
-  ArrowLeft,
-  MessageSquare,
-} from "lucide-react";
+import { Menu, Plus, Trash2, ArrowLeft, MessageSquare } from "lucide-react";
+import { AIChatInput } from "@/components/ui/ai-chat-input";
+import { useSession } from "@/contexts/session-context";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: string;
@@ -38,6 +31,7 @@ export default function ChatSessionPage() {
   const router = useRouter();
   const params = useParams();
   const sessionId = params.sessionId as string;
+  const { user } = useSession();
 
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(
     null
@@ -84,7 +78,6 @@ export default function ChatSessionPage() {
         const data = await response.json();
         setCurrentSession(data.session);
       } else if (response.status === 404) {
-        // Session not found, redirect to new chat
         router.push("/services/chat");
       }
     } catch (error) {
@@ -130,17 +123,13 @@ export default function ChatSessionPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // If new session was created, navigate to it
         if (data.sessionId && data.sessionId !== sessionId) {
           router.push(`/services/chat/${data.sessionId}`);
           return;
         }
 
-        // Reload the current session to get updated messages
         await loadSession(sessionId);
         await loadSessions();
-
-        // Force refresh the router to ensure UI updates
         router.refresh();
       }
     } catch (error) {
@@ -168,24 +157,27 @@ export default function ChatSessionPage() {
   };
 
   return (
-    <div className="flex h-screen bg-transparent">
+    <div className="min-h-screen flex pb-24">
       {/* Sidebar */}
-      <div
-        className={`${
-          showSessions ? "w-80" : "w-16"
-        } transition-all duration-300 bg-background/80 backdrop-blur-sm border-r border-border/50 flex flex-col`}
-      >
-        <div className="p-4 border-b border-border/50 flex items-center gap-2">
-          <Button
-            onClick={() => setShowSessions(!showSessions)}
-            variant="ghost"
-            size="icon"
+      <AnimatePresence>
+        {showSessions && (
+          <motion.div
+            initial={{ x: -320, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -320, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed left-0 top-0 h-full w-80 z-40 bg-background/95 backdrop-blur-md border-r border-border/50 flex flex-col shadow-2xl"
           >
-            <Menu className="h-4 w-4" />
-          </Button>
+            <div className="p-4 border-b border-border/50 flex items-center gap-2">
+              <Button
+                onClick={() => setShowSessions(false)}
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
 
-          {showSessions && (
-            <>
               <Button
                 onClick={createNewSession}
                 className="flex-1"
@@ -203,211 +195,239 @@ export default function ChatSessionPage() {
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-            </>
-          )}
-        </div>
+            </div>
 
-        {showSessions && (
-          <ScrollArea className="flex-1 p-2">
-            {sessions.map((session) => (
-              <Card
-                key={session.id}
-                className={`p-3 mb-2 cursor-pointer hover:bg-accent/50 transition-colors bg-background/60 backdrop-blur-sm border-border/50 ${
-                  currentSession?.id === session.id
-                    ? "bg-accent/50 border-primary/50"
-                    : ""
-                }`}
-                onClick={() => router.push(`/services/chat/${session.id}`)}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <MessageSquare className="h-3 w-3 text-muted-foreground" />
-                      <p className="font-medium text-sm truncate">
-                        {session.title}
+            <ScrollArea className="flex-1 p-2">
+              {sessions.map((session) => (
+                <motion.div
+                  key={session.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`group p-3 mb-2 cursor-pointer hover:bg-accent/50 transition-colors rounded-lg border ${
+                    currentSession?.id === session.id
+                      ? "bg-accent/50 border-primary/50"
+                      : "border-border/30 hover:border-border"
+                  }`}
+                  onClick={() => {
+                    router.push(`/services/chat/${session.id}`);
+                    setShowSessions(false);
+                  }}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                        <p className="font-medium text-sm truncate">
+                          {session.title}
+                        </p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(session.updatedAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(session.updatedAt).toLocaleDateString()}
-                    </p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteSession(session.id);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteSession(session.id);
-                    }}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </ScrollArea>
+                </motion.div>
+              ))}
+            </ScrollArea>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="p-4 border-b border-border/50 bg-background/80 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold">
-                {currentSession?.title || "LegalMind AI Chat"}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Ask questions about Indian law, contracts, and legal compliance
-              </p>
+        <div className="sticky top-0 z-30 p-4 bg-background/95 backdrop-blur-md border-b border-border/50">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => setShowSessions(!showSessions)}
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
+
+              <div>
+                <h1 className="text-lg font-semibold">
+                  {currentSession?.title || "LegalMind AI Chat"}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Ask questions about Indian law, contracts, and legal
+                  compliance
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 p-4">
-          {/* Welcome message for empty sessions */}
-          {!currentSession?.messages?.length && (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-md">
-                <div className="mb-6">
-                  <Avatar className="h-16 w-16 mx-auto mb-4 bg-primary/10">
-                    <AvatarFallback className="text-2xl font-bold text-primary">
-                      LM
-                    </AvatarFallback>
-                  </Avatar>
-                  <h2 className="text-xl font-semibold mb-2">
-                    Welcome to LegalMind AI
-                  </h2>
-                  <p className="text-muted-foreground mb-6">
-                    Start a conversation by asking a legal question
-                  </p>
-                </div>
+        <ScrollArea className="flex-1 px-4">
+          <div className="max-w-4xl mx-auto py-4">
+            {/* Welcome message for empty sessions */}
+            {!currentSession?.messages?.length && (
+              <div className="flex items-center justify-center h-full py-20">
+                <div className="text-center max-w-md">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                      Continue Your Legal Discussion
+                    </h2>
+                    <p className="text-muted-foreground mb-8">
+                      Ask a follow-up question or start a new legal topic
+                    </p>
+                  </motion.div>
 
-                <div className="grid grid-cols-1 gap-3">
-                  <Button
-                    variant="outline"
-                    className="text-left justify-start h-auto p-4 bg-background/60 backdrop-blur-sm border-border/50"
-                    onClick={() =>
-                      setMessage(
-                        "What are the key provisions of the Indian Contract Act?"
-                      )
-                    }
-                  >
-                    <div>
-                      <div className="font-medium">Contract Law</div>
-                      <div className="text-sm text-muted-foreground">
-                        Key provisions of Indian Contract Act
+                  <div className="grid grid-cols-1 gap-3">
+                    <Button
+                      variant="outline"
+                      className="text-left justify-start h-auto p-4 hover:bg-accent/50"
+                      onClick={() =>
+                        setMessage(
+                          "What are the key provisions of the Indian Contract Act?"
+                        )
+                      }
+                    >
+                      <div>
+                        <div className="font-medium">Contract Law</div>
+                        <div className="text-sm text-muted-foreground">
+                          Key provisions of Indian Contract Act
+                        </div>
                       </div>
-                    </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="text-left justify-start h-auto p-4 bg-background/60 backdrop-blur-sm border-border/50"
-                    onClick={() =>
-                      setMessage(
-                        "What are the fundamental rights under the Indian Constitution?"
-                      )
-                    }
-                  >
-                    <div>
-                      <div className="font-medium">Constitutional Law</div>
-                      <div className="text-sm text-muted-foreground">
-                        Fundamental rights and duties
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="text-left justify-start h-auto p-4 hover:bg-accent/50"
+                      onClick={() =>
+                        setMessage(
+                          "What are the fundamental rights under the Indian Constitution?"
+                        )
+                      }
+                    >
+                      <div>
+                        <div className="font-medium">Constitutional Law</div>
+                        <div className="text-sm text-muted-foreground">
+                          Fundamental rights and duties
+                        </div>
                       </div>
-                    </div>
-                  </Button>
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Chat Messages */}
-          {currentSession?.messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-4 mb-6 ${
-                msg.role === "user" ? "justify-end" : ""
-              }`}
-            >
-              {msg.role === "assistant" && (
-                <Avatar className="h-8 w-8 mt-1">
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    LM
-                  </AvatarFallback>
-                </Avatar>
-              )}
-
-              <div
-                className={`max-w-[80%] ${
-                  msg.role === "user" ? "order-first" : ""
+            {/* Chat Messages */}
+            {currentSession?.messages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex gap-4 mb-8 ${
+                  msg.role === "user" ? "justify-end" : ""
                 }`}
               >
-                <Card
-                  className={`p-4 ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground ml-auto"
-                      : "bg-background/80 backdrop-blur-sm border-border/50"
+                {msg.role === "assistant" && (
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-primary font-semibold text-sm">
+                      AI
+                    </span>
+                  </div>
+                )}
+
+                <div
+                  className={`max-w-[80%] ${
+                    msg.role === "user" ? "order-first" : ""
                   }`}
                 >
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <p className="whitespace-pre-wrap break-words m-0">
-                      {msg.content}
-                    </p>
+                  <div
+                    className={`p-4 rounded-2xl ${
+                      msg.role === "user"
+                        ? "bg-primary text-primary-foreground ml-auto"
+                        : "bg-muted/50 backdrop-blur-sm"
+                    }`}
+                  >
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <p className="whitespace-pre-wrap break-words m-0">
+                        {msg.content}
+                      </p>
+                    </div>
+                    <div className="text-xs opacity-70 mt-2 flex items-center gap-2">
+                      <span>
+                        {new Date(msg.createdAt).toLocaleTimeString()}
+                      </span>
+                      {msg.tokenCount && <span>• {msg.tokenCount} tokens</span>}
+                    </div>
                   </div>
-                  <div className="text-xs opacity-70 mt-2 flex items-center gap-2">
-                    <span>{new Date(msg.createdAt).toLocaleTimeString()}</span>
-                    {msg.tokenCount && <span>• {msg.tokenCount} tokens</span>}
-                  </div>
-                </Card>
-              </div>
+                </div>
 
-              {msg.role === "user" && (
-                <Avatar className="h-8 w-8 mt-1">
-                  <AvatarFallback className="bg-secondary">U</AvatarFallback>
-                </Avatar>
-              )}
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
+                {msg.role === "user" && (
+                  <Avatar className="w-8 h-8 mt-1">
+                    <AvatarFallback className="bg-secondary text-xs">
+                      {user?.name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              </motion.div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-border/50 bg-background/80 backdrop-blur-sm">
-          <div className="flex gap-3">
-            <Textarea
-              placeholder="Ask about legal matters, contracts, compliance..."
+        <div className="sticky bottom-0 p-4 bg-background/95 backdrop-blur-md border-t border-border/50">
+          <div className="max-w-4xl mx-auto">
+            <AIChatInput
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
-              className="min-h-[60px] max-h-[120px] resize-none bg-transparent border-border/50 focus-visible:border-primary/50"
-              disabled={isLoading}
+              onChange={setMessage}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              placeholder="Continue your legal discussion..."
             />
-            <Button
-              onClick={handleSubmit}
-              disabled={!message.trim() || isLoading}
-              className="self-end px-4"
-              size="lg"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Press Enter to send • Remember: This is an AI assistant, not a
+              replacement for professional legal advice.
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Press Enter to send, Shift+Enter for new line. Remember: This is an
-            AI assistant, not a replacement for professional legal advice.
-          </p>
         </div>
       </div>
+
+      {/* Sidebar Toggle for Desktop */}
+      <Button
+        onClick={() => setShowSessions(!showSessions)}
+        variant="outline"
+        size="icon"
+        className="fixed left-4 top-4 z-50 hidden lg:flex shadow-lg"
+      >
+        <Menu className="h-4 w-4" />
+      </Button>
+
+      {/* Overlay */}
+      <AnimatePresence>
+        {showSessions && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowSessions(false)}
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
