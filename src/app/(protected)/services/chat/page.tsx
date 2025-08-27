@@ -89,7 +89,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col pt-16 pb-6 items-center justify-center ">
+    <div className="min-h-screen flex flex-col pt-16 pb-6 items-center justify-center">
       {/* Header Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pt-8 pb-12">
         <motion.div

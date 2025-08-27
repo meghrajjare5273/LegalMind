@@ -28,11 +28,10 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   return (
-    
     <SessionProvider>
-      <div className="relative min-h-screen overflow-hidden">
-        {/* Full-screen Spotlight background */}
-        <div className="fixed inset-0 z-0">
+      <div className="relative min-h-screen overflow-hidden bg-background">
+        {/* Subtle background effect */}
+        <div className="fixed inset-0 z-0 opacity-30">
           <Spotlight />
         </div>
 
