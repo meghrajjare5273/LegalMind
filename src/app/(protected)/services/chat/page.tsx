@@ -3,8 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Scale, FileText, Users, Gavel } from "lucide-react";
+// import { Scale, FileText, Users, Gavel } from "lucide-react";
 import { AIChatInput } from "@/components/ui/ai-chat-input";
 import { TextEffect } from "@/components/ui/motion-primitives/text-effect";
 import { TextRoll } from "@/components/ui/motion-primitives/text-roll";
@@ -46,41 +45,41 @@ export default function ChatPage() {
     }
   };
 
-  const suggestedQuestions = [
-    {
-      icon: <Scale className="w-5 h-5" />,
-      title: "Contract Law",
-      question: "What are the key provisions of the Indian Contract Act?",
-      description: "Learn about essential contract elements",
-      gradient: "from-blue-500 to-cyan-500",
-    },
-    {
-      icon: <FileText className="w-5 h-5" />,
-      title: "Constitutional Law",
-      question:
-        "What are the fundamental rights under the Indian Constitution?",
-      description: "Understand your constitutional rights",
-      gradient: "from-purple-500 to-pink-500",
-    },
-    {
-      icon: <Users className="w-5 h-5" />,
-      title: "Corporate Law",
-      question: "What are the compliance requirements for private companies?",
-      description: "Corporate governance and compliance",
-      gradient: "from-green-500 to-emerald-500",
-    },
-    {
-      icon: <Gavel className="w-5 h-5" />,
-      title: "Criminal Law",
-      question: "What are the stages of criminal proceedings in India?",
-      description: "Criminal justice process overview",
-      gradient: "from-orange-500 to-red-500",
-    },
-  ];
+  // const suggestedQuestions = [
+  //   {
+  //     icon: <Scale className="w-5 h-5" />,
+  //     title: "Contract Law",
+  //     question: "What are the key provisions of the Indian Contract Act?",
+  //     description: "Learn about essential contract elements",
+  //     gradient: "from-blue-500 to-cyan-500",
+  //   },
+  //   {
+  //     icon: <FileText className="w-5 h-5" />,
+  //     title: "Constitutional Law",
+  //     question:
+  //       "What are the fundamental rights under the Indian Constitution?",
+  //     description: "Understand your constitutional rights",
+  //     gradient: "from-purple-500 to-pink-500",
+  //   },
+  //   {
+  //     icon: <Users className="w-5 h-5" />,
+  //     title: "Corporate Law",
+  //     question: "What are the compliance requirements for private companies?",
+  //     description: "Corporate governance and compliance",
+  //     gradient: "from-green-500 to-emerald-500",
+  //   },
+  //   {
+  //     icon: <Gavel className="w-5 h-5" />,
+  //     title: "Criminal Law",
+  //     question: "What are the stages of criminal proceedings in India?",
+  //     description: "Criminal justice process overview",
+  //     gradient: "from-orange-500 to-red-500",
+  //   },
+  // ];
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center pb-24">
+      <div className="min-h-screen flex items-center justify-center pt-16 pb-6">
         <div className="animate-pulse">
           <div className="h-8 w-48 bg-muted rounded mb-4" />
           <div className="h-4 w-96 bg-muted rounded" />
@@ -90,7 +89,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col pb-24">
+    <div className="min-h-screen flex flex-col pt-16 pb-6 items-center justify-center ">
       {/* Header Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pt-8 pb-12">
         <motion.div
@@ -140,70 +139,41 @@ export default function ChatPage() {
           />
         </motion.div>
 
-        {/* Suggested Questions Grid */}
+        {/* Suggested Questions Grid
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.8 }}
-          className="w-full max-w-4xl px-4"
+          className="w-full max-w-6xl px-4"
         >
-          <h2 className="text-xl font-semibold mb-6 text-center text-muted-foreground">
-            Popular legal topics
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {suggestedQuestions.map((item, index) => (
-              <motion.button
+              <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 + index * 0.1, duration: 0.5 }}
+                transition={{ delay: 1 + index * 0.1, duration: 0.6 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="group cursor-pointer"
                 onClick={() => setMessage(item.question)}
-                className="group relative p-6 rounded-2xl bg-gradient-to-br from-background/80 to-background/40 backdrop-blur-sm border border-border/50 hover:border-border transition-all duration-300 text-left overflow-hidden hover:scale-105"
               >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
-                />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-4 mb-3">
-                    <div
-                      className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white shadow-lg`}
-                    >
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
+                <div className="p-6 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-300 h-full">
+                  <div
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-4 text-white group-hover:scale-110 transition-transform duration-300`}
+                  >
+                    {item.icon}
                   </div>
-                  <p className="text-sm text-muted-foreground/80 italic">
-                    &quot;{item.question}&quot;
+                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.description}
                   </p>
                 </div>
-              </motion.button>
+              </motion.div>
             ))}
           </div>
-        </motion.div>
-
-        {/* Disclaimer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 0.8 }}
-          className="mt-12 text-center max-w-3xl px-4"
-        >
-          <div className="p-4 rounded-xl bg-muted/30 backdrop-blur-sm border border-border/30">
-            <p className="text-sm text-muted-foreground">
-              <strong>Disclaimer:</strong> LegalMind AI provides general legal
-              information and should not be considered as professional legal
-              advice. Always consult with a qualified lawyer for specific legal
-              matters.
-            </p>
-          </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </div>
   );

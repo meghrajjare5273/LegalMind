@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import { Lightbulb, Mic, Globe, Paperclip, Send, Loader2 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, Variants } from "motion/react";
 
 const PLACEHOLDERS = [
   "Ask about Indian contract law provisions...",
@@ -71,26 +71,26 @@ export const AIChatInput = ({
     }
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     collapsed: {
       height: 68,
       boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)",
-      transition: { type: "spring", stiffness: 120, damping: 18 },
+      transition: { type: "spring" as const, stiffness: 120, damping: 18 },
     },
     expanded: {
       height: 128,
       boxShadow: "0 8px 32px 0 rgba(0,0,0,0.16)",
-      transition: { type: "spring", stiffness: 120, damping: 18 },
+      transition: { type: "spring" as const, stiffness: 120, damping: 18 },
     },
   };
 
-  const placeholderContainerVariants = {
+  const placeholderContainerVariants: Variants = {
     initial: {},
     animate: { transition: { staggerChildren: 0.025 } },
     exit: { transition: { staggerChildren: 0.015, staggerDirection: -1 } },
   };
 
-  const letterVariants = {
+  const letterVariants: Variants = {
     initial: {
       opacity: 0,
       filter: "blur(12px)",
@@ -103,7 +103,7 @@ export const AIChatInput = ({
       transition: {
         opacity: { duration: 0.25 },
         filter: { duration: 0.4 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
+        y: { type: "spring" as const, stiffness: 80, damping: 20 },
       },
     },
     exit: {
@@ -113,7 +113,7 @@ export const AIChatInput = ({
       transition: {
         opacity: { duration: 0.2 },
         filter: { duration: 0.3 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
+        y: { type: "spring" as const, stiffness: 80, damping: 20 },
       },
     },
   };
