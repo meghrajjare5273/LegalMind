@@ -3,11 +3,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AIChatInput } from "@/components/ui/ai-chat-input";
-import { TextEffect } from "@/components/ui/motion-primitives/text-effect";
-import { TextRoll } from "@/components/ui/motion-primitives/text-roll";
-import { useSession } from "@/contexts/session-context";
 import { motion } from "framer-motion";
+import { TextRoll } from "@/components/ui/motion-primitives/text-roll";
+import { TextEffect } from "@/components/ui/motion-primitives/text-effect";
+import { AIChatInput } from "@/components/ui/ai-chat-input";
+import { useSession } from "@/contexts/session-context";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -49,7 +49,7 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="h-full flex items-center justify-center">
         <div className="animate-pulse">
           <div className="h-8 w-48 bg-muted rounded mb-4" />
           <div className="h-4 w-96 bg-muted rounded" />
@@ -59,7 +59,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+    <div className="h-full flex flex-col items-center justify-center px-4">
       {/* Header Section */}
       <div className="flex-1 flex flex-col items-center justify-center max-w-4xl w-full">
         <motion.div
@@ -94,18 +94,19 @@ export default function ChatPage() {
           </div>
         </motion.div>
 
-        {/* Chat Input */}
+        {/* Input Section */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="w-full max-w-4xl mb-12"
+          transition={{ delay: 2, duration: 0.8 }}
+          className="w-full max-w-2xl"
         >
           <AIChatInput
             value={message}
             onChange={setMessage}
             onSubmit={handleSubmit}
             isLoading={isLoading}
+            placeholder="Ask me anything about Indian law..."
           />
         </motion.div>
       </div>
