@@ -112,7 +112,7 @@
     }
   }
 
-  --color-destructive-foreground: var(--destructive-foreground)
+  --color-destructive-foreground: var(--destructive-foreground);
 }
 
 :root {
@@ -206,7 +206,8 @@
   --ds-ink: #f0f8ff; /* Light text on dark */
   --ds-muted: #818684; /* Muted text */
   --ds-border: #434b4d; /* Dark borders */
-  --ds-skeleton: #545d5e; /* Dark skeleton */ --destructive-foreground: oklch(0.637 0.237 25.331);
+  --ds-skeleton: #545d5e; /* Dark skeleton */
+  --destructive-foreground: oklch(0.637 0.237 25.331);
 }
 
 .text-gold {
@@ -257,6 +258,25 @@
   animation: none;
   mix-blend-mode: normal;
 }
+
+/* Ensure proper scrollbar behavior */
+/* ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+} */
+
+/* ::-webkit-scrollbar-track {
+  background: transparent;
+} */
+/* 
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+} */
 
 /* Added utility classes for design system colors and animations */
 .bg-ds-surface {
@@ -327,4 +347,8 @@
 }
 .hover-glow:hover {
   box-shadow: 0 0 20px rgba(176, 141, 40, 0.3);
+}
+
+.chat-container {
+  overscroll-behavior: contain;
 }
