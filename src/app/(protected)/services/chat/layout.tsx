@@ -29,14 +29,12 @@ export default function ChatLayout({
 }) {
   return (
     <SessionProvider>
-      <div className="relative min-h-screen overflow-hidden bg-background">
-        {/* Subtle background effect */}
-        <div className="fixed inset-0 z-0 opacity-30">
-          <Spotlight />
-        </div>
-
+      <div className="relative min-h-screen bg-background ">
+        <Spotlight />
         {/* Chat content */}
-        <div className="relative z-10 min-h-screen">{children}</div>
+        <div className="relative z-10 min-h-screen overflow-hidden">
+          {children}
+        </div>
       </div>
     </SessionProvider>
   );
