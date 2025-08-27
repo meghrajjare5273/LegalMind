@@ -29,10 +29,14 @@ export default function ChatLayout({
 }) {
   return (
     <SessionProvider>
-      <div className="relative min-h-screen bg-background ">
-        <Spotlight />
-        {/* Chat content */}
-        <div className="relative z-10 min-h-screen overflow-hidden">
+      <div className="fixed flex flex-wrap justify-center inset-0 overflow-hidden">
+        {/* Spotlight effect - fixed positioning to cover entire viewport */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Spotlight />
+        </div>
+
+        {/* Chat content container */}
+        <div className="fixed z-10 h-full flex flex-wrap overflow-y-hidden">
           {children}
         </div>
       </div>

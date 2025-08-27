@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Menu, Plus, Trash2, ArrowLeft, MessageSquare } from "lucide-react";
 import { AIChatInput } from "@/components/ui/ai-chat-input";
 import { useSession } from "@/contexts/session-context";
@@ -79,6 +78,8 @@ export default function ChatSessionPage() {
   const [isLoadingSession, setIsLoadingSession] = useState(true);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // const isInitialScroll = useRef(true);
+  const previousMessageCount = useRef(0);
 
   useEffect(() => {
     if (sessionId) {
@@ -88,7 +89,14 @@ export default function ChatSessionPage() {
   }, [sessionId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const currentCount = currentSession?.messages?.length || 0;
+
+    // Only scroll if message count increased (new message added)
+    if (currentCount > previousMessageCount.current && currentCount > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+
+    previousMessageCount.current = currentCount;
   }, [currentSession?.messages]);
 
   const loadSessions = async () => {
@@ -119,7 +127,6 @@ export default function ChatSessionPage() {
         const data = await response.json();
         setCurrentSession(data.session);
       } else if (response.status === 404) {
-        // toast.error("Chat session not found");
         toast({
           title: "Error",
           variant: "destructive",
@@ -203,7 +210,6 @@ export default function ChatSessionPage() {
         await loadSession(sessionId);
         await loadSessions();
       } else {
-        // toast.error("Failed to send message");
         toast({
           title: "Error",
           variant: "destructive",
@@ -220,7 +226,6 @@ export default function ChatSessionPage() {
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      // toast.error("Failed to send message");
       toast({
         title: "Error",
         variant: "destructive",
@@ -250,7 +255,6 @@ export default function ChatSessionPage() {
         if (currentSession?.id === id) {
           router.push("/services/chat");
         }
-        // toast.success("Session deleted");
         toast({
           title: "Success",
           variant: "success",
@@ -259,7 +263,6 @@ export default function ChatSessionPage() {
       }
     } catch (error) {
       console.error("Error deleting session:", error);
-      // toast.error("Failed to delete session");
       toast({
         title: "Error",
         variant: "destructive",
@@ -269,7 +272,7 @@ export default function ChatSessionPage() {
   };
 
   return (
-    <div className="min-h-screen flex pt-16 pb-6">
+    <div className="h-full flex">
       {/* Sidebar */}
       <AnimatePresence>
         {showSessions && (
@@ -278,9 +281,9 @@ export default function ChatSessionPage() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -320, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-80 z-30 bg-background/95 backdrop-blur-md border-r border-border/50 flex flex-col shadow-2xl"
+            className="fixed left-0 top-0 h-full w-80 z-30 bg-background/95 backdrop-blur-md border-r border-border/50 flex flex-col shadow-2xl overscroll-behavior-contain"
           >
-            <div className="p-4 border-b border-border/50 flex items-center gap-2">
+            <div className="p-4 border-b border-border/50 flex items-center gap-2 flex-shrink-0">
               <Button
                 onClick={() => setShowSessions(false)}
                 variant="ghost"
@@ -309,7 +312,7 @@ export default function ChatSessionPage() {
               </Button>
             </div>
 
-            <ScrollArea className="flex-1 p-2">
+            <div className="flex-1 overflow-y-auto overscroll-behavior-contain p-2">
               {isLoadingSessions
                 ? Array.from({ length: 5 }).map((_, i) => (
                     <SessionSkeleton key={i} />
@@ -355,7 +358,7 @@ export default function ChatSessionPage() {
                       </div>
                     </motion.div>
                   ))}
-            </ScrollArea>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -363,7 +366,7 @@ export default function ChatSessionPage() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="sticky top-16 z-20 p-4 bg-background/95 backdrop-blur-md border-b border-border/50">
+        <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-md border-b border-border/50 z-20">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
               <Button
@@ -397,8 +400,8 @@ export default function ChatSessionPage() {
         </div>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 px-4">
-          <div className="max-w-4xl mx-auto py-6">
+        <div className="flex-1 overflow-y-auto overscroll-behavior-contain px-4 py-6">
+          <div className="max-w-4xl mx-auto">
             {isLoadingSession ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <MessageSkeleton key={i} />
@@ -549,10 +552,10 @@ export default function ChatSessionPage() {
               </>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Input Area */}
-        <div className="sticky bottom-0 p-4 bg-background/95 backdrop-blur-md border-t border-border/50">
+        <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-md border-t border-border/50">
           <div className="max-w-4xl mx-auto">
             <AIChatInput
               value={message}
