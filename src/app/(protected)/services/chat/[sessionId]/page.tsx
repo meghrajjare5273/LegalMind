@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type {
   ChatSession,
   Message,
-} from "@/components/protected/chat/chat-sidebar"; // Declare ChatSession and Message types
+} from "@/components/protected/chat/chat-sidebar";
 
 const MessageSkeleton = () => (
   <div className="mb-8 flex justify-start">
@@ -81,23 +81,24 @@ export default function ChatSessionPage() {
   };
 
   const handleSubmit = async () => {
-    if (!message.trim() || isLoading) return;
+    if (!message.trim() || isLoading || !currentSession) return;
 
     const userMessage = message;
     setMessage("");
     setIsLoading(true);
 
-    // Add user message to UI immediately
-    const tempUserMessage: Message = {
-      id: `temp-${Date.now()}`,
+    // Create user message object
+    const newUserMessage: Message = {
+      id: `user-${Date.now()}`,
       role: "user",
       content: userMessage,
       createdAt: new Date().toISOString(),
     };
 
+    // Add user message immediately (optimistic update)
     setCurrentSession((prev) => ({
       ...prev!,
-      messages: [...(prev?.messages || []), tempUserMessage],
+      messages: [...prev!.messages, newUserMessage],
     }));
 
     try {
@@ -111,9 +112,32 @@ export default function ChatSessionPage() {
       });
 
       if (response.ok) {
-        // Refresh the session to get the latest messages
-        await fetchCurrentSession();
+        const data = await response.json();
+
+        // Create assistant message object
+        const newAssistantMessage: Message = {
+          id: `assistant-${Date.now()}`,
+          role: "assistant",
+          content: data.response,
+          createdAt: new Date().toISOString(),
+          tokenCount: data.tokenUsage?.response,
+        };
+
+        // Add assistant message (optimistic update)
+        setCurrentSession((prev) => ({
+          ...prev!,
+          messages: [...prev!.messages, newAssistantMessage],
+          updatedAt: new Date().toISOString(),
+        }));
       } else {
+        // Remove the user message if the request failed
+        setCurrentSession((prev) => ({
+          ...prev!,
+          messages: prev!.messages.filter(
+            (msg) => msg.id !== newUserMessage.id
+          ),
+        }));
+
         console.error("Failed to send message");
         toast({
           title: "Error",
@@ -122,6 +146,12 @@ export default function ChatSessionPage() {
         });
       }
     } catch (error) {
+      // Remove the user message if the request failed
+      setCurrentSession((prev) => ({
+        ...prev!,
+        messages: prev!.messages.filter((msg) => msg.id !== newUserMessage.id),
+      }));
+
       console.error("Error sending message:", error);
       toast({
         title: "Error",
@@ -210,6 +240,30 @@ export default function ChatSessionPage() {
                   </div>
                 </motion.div>
               ))}
+
+              {/* Loading indicator for assistant response */}
+              {isLoading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex justify-start"
+                >
+                  <div className="max-w-[85%] bg-muted/30 border border-border/30 rounded-2xl p-4 backdrop-blur-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0 bg-primary" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                          <span className="text-sm text-muted-foreground">
+                            Assistant is typing...
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               <div ref={messagesEndRef} />
             </>
           )}
