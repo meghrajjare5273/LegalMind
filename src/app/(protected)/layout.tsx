@@ -24,7 +24,7 @@ export default function DashboardLayout({
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <SessionProvider>
-        <div className="min-h-screen bg-background">
+        <div className="md:min-h-screen bg-background overflow-auto">
           {children}
           <FloatingNavigation />
         </div>
