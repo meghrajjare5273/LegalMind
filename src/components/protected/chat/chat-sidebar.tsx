@@ -50,7 +50,11 @@ const SessionSkeleton = () => (
   </div>
 );
 
-export function ChatSidebar() {
+export function ChatSidebar({
+  variant = "auto",
+}: {
+  variant?: "auto" | "desktop" | "mobile";
+}) {
   const router = useRouter();
   const params = useParams();
   const sessionId = params?.sessionId as string;
@@ -63,6 +67,9 @@ export function ChatSidebar() {
     null
   );
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
+
+  const renderDesktop = variant !== "mobile";
+  const renderMobile = variant !== "desktop";
 
   // Fetch sessions on component mount
   useEffect(() => {
@@ -177,125 +184,129 @@ export function ChatSidebar() {
       ),
     },
   ];
-
   return (
     <div className="h-full">
-      <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-1 flex-col overflow-hidden">
-            {/* Logo */}
-            {open ? <Logo /> : <LogoIcon />}
-            {open ? <AnimatedThemeToggler /> : null}
+      {/* Desktop shell (hover-to-expand) */}
+      {renderDesktop && (
+        <Sidebar open={open} setOpen={setOpen}>
+          <SidebarBody className="justify-between gap-10">
+            <div className="flex flex-1 flex-col overflow-hidden">
+              {/* Logo */}
+              {open ? <Logo /> : <LogoIcon />}
+              {open ? <AnimatedThemeToggler /> : null}
 
-            {/* Navigation Links */}
-            <div className="mt-8 flex flex-col gap-2">
-              {links.map((link, idx) => (
-                <div key={idx} onClick={link.onClick}>
-                  <SidebarLink link={link} />
-                </div>
-              ))}
-            </div>
+              {/* Navigation Links */}
+              <div className="mt-8 flex flex-col gap-2">
+                {links.map((link, idx) => (
+                  <div key={idx} onClick={link.onClick}>
+                    <SidebarLink link={link} />
+                  </div>
+                ))}
+              </div>
 
-            {/* Chat History - Scrollable Section */}
-            <div className="mt-6 flex-1 overflow-hidden">
-              <motion.div
-                animate={{
-                  opacity: open ? 1 : 0,
-                  display: open ? "block" : "none",
-                }}
-                className="mb-4"
-              >
-                <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-200 px-2">
-                  Chat History
-                </h3>
-              </motion.div>
+              {/* Chat History - Scrollable Section */}
+              <div className="mt-6 flex-1 overflow-hidden">
+                <motion.div
+                  animate={{
+                    opacity: open ? 1 : 0,
+                    display: open ? "block" : "none",
+                  }}
+                  className="mb-4"
+                >
+                  <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-200 px-2">
+                    Chat History
+                  </h3>
+                </motion.div>
 
-              <div className="flex-1 overflow-y-auto overscroll-behavior-contain pr-2">
-                {isLoadingSessions
-                  ? Array.from({ length: 5 }).map((_, i) => (
-                      <SessionSkeleton key={i} />
-                    ))
-                  : sessions.map((session) => (
-                      <motion.div
-                        key={session.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={cn(
-                          "group p-3 mb-2 cursor-pointer hover:bg-accent/50 transition-colors rounded-lg border",
-                          currentSession?.id === session.id
-                            ? "bg-accent/50 border-primary/50"
-                            : "border-border/30 hover:border-border"
-                        )}
-                        onClick={() => {
-                          router.push(`/services/chat/${session.id}`);
-                          setOpen(false);
-                        }}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <IconMessageCircle className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1 overflow-y-auto overscroll-behavior-contain pr-2">
+                  {isLoadingSessions
+                    ? Array.from({ length: 5 }).map((_, i) => (
+                        <SessionSkeleton key={i} />
+                      ))
+                    : sessions.map((session) => (
+                        <motion.div
+                          key={session.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={cn(
+                            "group p-3 mb-2 cursor-pointer hover:bg-accent/50 transition-colors rounded-lg border",
+                            currentSession?.id === session.id
+                              ? "bg-accent/50 border-primary/50"
+                              : "border-border/30 hover:border-border"
+                          )}
+                          onClick={() => {
+                            router.push(`/services/chat/${session.id}`);
+                            setOpen(false);
+                          }}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <IconMessageCircle className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                <motion.p
+                                  animate={{
+                                    opacity: open ? 1 : 0,
+                                    display: open ? "block" : "none",
+                                  }}
+                                  className="font-medium text-sm truncate"
+                                >
+                                  {session.title}
+                                </motion.p>
+                              </div>
                               <motion.p
                                 animate={{
                                   opacity: open ? 1 : 0,
                                   display: open ? "block" : "none",
                                 }}
-                                className="font-medium text-sm truncate"
+                                className="text-xs text-muted-foreground"
                               >
-                                {session.title}
+                                {new Date(
+                                  session.updatedAt
+                                ).toLocaleDateString()}
                               </motion.p>
                             </div>
-                            <motion.p
+                            <motion.div
                               animate={{
                                 opacity: open ? 1 : 0,
                                 display: open ? "block" : "none",
                               }}
-                              className="text-xs text-muted-foreground"
                             >
-                              {new Date(session.updatedAt).toLocaleDateString()}
-                            </motion.p>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteSession(session.id);
+                                }}
+                              >
+                                <IconTrash className="h-3 w-3" />
+                              </Button>
+                            </motion.div>
                           </div>
-                          <motion.div
-                            animate={{
-                              opacity: open ? 1 : 0,
-                              display: open ? "block" : "none",
-                            }}
-                          >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteSession(session.id);
-                              }}
-                            >
-                              <IconTrash className="h-3 w-3" />
-                            </Button>
-                          </motion.div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      ))}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* User Profile */}
-          <div>
-            <SidebarLink
-              link={{
-                label: user?.name || "User",
-                href: "#",
-                icon: (
-                  <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
-                    {user?.name?.charAt(0) || "U"}
-                  </div>
-                ),
-              }}
-            />
-          </div>
-        </SidebarBody>
-      </Sidebar>
+            {/* User Profile */}
+            <div>
+              <SidebarLink
+                link={{
+                  label: user?.name || "User",
+                  href: "#",
+                  icon: (
+                    <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
+                      {user?.name?.charAt(0) || "U"}
+                    </div>
+                  ),
+                }}
+              />
+            </div>
+          </SidebarBody>
+        </Sidebar>
+      )}
     </div>
   );
 }

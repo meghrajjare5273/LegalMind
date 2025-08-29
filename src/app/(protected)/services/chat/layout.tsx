@@ -1,6 +1,5 @@
 import type React from "react";
 import type { Metadata } from "next";
-// import { Spotlight } from "@/components/ui/spotlight";
 import { ChatSidebar } from "@/components/protected/chat/chat-sidebar";
 import dynamic from "next/dynamic";
 
@@ -28,26 +27,35 @@ export const metadata: Metadata = {
   },
 };
 
-// This version gives you more control over the layout structure
 export default function ChatLayoutAlternative({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 flex">
+    <div className="relative h-dvh md:h-screen flex flex-col md:flex-row bg-background overflow-y-hidden overflow-x-hidden">
       {/* Background effects */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="pointer-events-none absolute inset-0">
         <Spotlight />
       </div>
 
-      {/* Sidebar container */}
-      <aside className="relative z-10 flex-shrink-0" aria-label="Chat history">
+      {/* Mobile header shows MobileSidebar (full width) */}
+      <div className="md:hidden sticky top-0 z-30">
+        <ChatSidebar />
+      </div>
+
+      {/* Desktop sidebar only on md+ so it doesn't occupy mobile width */}
+      <aside
+        className="relative z-20 hidden md:block md:flex-shrink-0"
+        aria-label="Chat history"
+      >
         <ChatSidebar />
       </aside>
 
       {/* Main content area */}
-      <main className="relative z-10 flex-1 overflow-auto">{children}</main>
+      <main className=" z-10 flex-1 min-h-0 snap-align-none overflow-x-hidden overflow-y-hidden">
+        {children}
+      </main>
     </div>
   );
 }
