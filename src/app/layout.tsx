@@ -1,3 +1,4 @@
+// src/app/layout.tsx - Updated with better viewport settings
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -17,8 +18,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false, // Prevent zoom issues that can cause viewport snapping
   viewportFit: "cover",
-  interactiveWidget: "resizes-content",
+  // Remove interactiveWidget temporarily to test
+  // interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
@@ -28,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className}`}>
+      <body className={`${inter.className} overflow-x-hidden`}>
         {children}
         <SpeedInsights />
       </body>
