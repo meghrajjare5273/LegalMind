@@ -107,14 +107,22 @@ export const MobileSidebar = ({
 }: React.ComponentProps<"div">) => {
   const { open, setOpen } = useSidebar();
   return (
-    <div
+    <nav
       className={cn(
-        "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-background w-full"
+        "px-4 h-12 md:hidden flex items-center justify-between bg-background w-full border-b border-border"
       )}
       {...props}
     >
       <div className="flex justify-end z-20 w-full">
-        <IconMenu2 className="text-foreground" onClick={() => setOpen(!open)} />
+        <button
+          type="button"
+          aria-label="Open menu"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+          className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <IconMenu2 className="h-5 w-5" />
+        </button>
       </div>
       <AnimatePresence>
         {open && (
@@ -124,21 +132,27 @@ export const MobileSidebar = ({
             exit={{ x: "-100%", opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className={cn(
-              "fixed h-full w-full inset-0 bg-background p-10 z- flex flex-col justify-between",
+              "fixed inset-0 h-full w-full bg-background p-6 z-50 flex flex-col justify-between",
               className
             )}
+            role="dialog"
+            aria-modal="true"
           >
-            <div
-              className="absolute right-10 top-10 z-50 text-foreground"
-              onClick={() => setOpen(!open)}
-            >
-              <IconX />
+            <div className="absolute right-6 top-4 z-50">
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={() => setOpen(false)}
+                className="inline-flex items-center justify-center p-2 rounded-md hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <IconX className="h-5 w-5 text-foreground" />
+              </button>
             </div>
-            {children}
+            <div className="mt-8 flex-1 overflow-y-auto">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </nav>
   );
 };
 

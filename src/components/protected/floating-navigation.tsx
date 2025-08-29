@@ -17,6 +17,8 @@ export function FloatingNavigation() {
   const pathname = usePathname();
   const { theme } = useTheme();
 
+  if (pathname?.startsWith("/services/chat")) return null;
+
   const navigationItems = [
     {
       title: "Dashboard",
