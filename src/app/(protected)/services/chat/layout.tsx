@@ -1,7 +1,13 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { Spotlight } from "@/components/ui/spotlight";
+// import { Spotlight } from "@/components/ui/spotlight";
 import { ChatSidebar } from "@/components/protected/chat/chat-sidebar";
+import dynamic from "next/dynamic";
+
+const Spotlight = dynamic(
+  () => import("@/components/ui/spotlight").then((m) => m.Spotlight),
+  { ssr: true }
+);
 
 export const metadata: Metadata = {
   title: "AI Legal Assistant - Chat",
@@ -36,7 +42,7 @@ export default function ChatLayoutAlternative({
       </div>
 
       {/* Sidebar container */}
-      <aside className="relative z-10 flex-shrink-0">
+      <aside className="relative z-10 flex-shrink-0" aria-label="Chat history">
         <ChatSidebar />
       </aside>
 
