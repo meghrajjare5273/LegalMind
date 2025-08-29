@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { AnimatedThemeToggler } from "@/components/ui/magicui/animated-theme-toggler";
 
 export type Message = {
   id: string;
@@ -184,6 +185,7 @@ export function ChatSidebar() {
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Logo */}
             {open ? <Logo /> : <LogoIcon />}
+            {open ? <AnimatedThemeToggler /> : null}
 
             {/* Navigation Links */}
             <div className="mt-8 flex flex-col gap-2">
