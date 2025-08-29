@@ -185,7 +185,10 @@ export default function ChatSessionPage() {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto overscroll-behavior-contain">
-        <div className="max-w-4xl mx-auto p-4 space-y-4">
+        <div
+          className="max-w-4xl mx-auto p-4 space-y-4 min-h-[60vh]"
+          style={{ containIntrinsicSize: "800px" }}
+        >
           {isLoadingMessages ? (
             Array.from({ length: 3 }).map((_, i) => (
               <MessageSkeleton key={i} align={i % 2 ? "end" : "start"} />
