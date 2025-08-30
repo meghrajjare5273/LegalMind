@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 // Get all chat sessions for a user
 export async function GET(request: NextRequest) {
@@ -41,7 +39,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Create new chat session
 export async function POST(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -52,7 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { title } = await request.json();
+    const { title, firstMessage } = await request.json();
 
     const chatSession = await prisma.chatSession.create({
       data: {
@@ -61,7 +58,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ session: chatSession });
+    // Optionally save the first message
+    if (firstMessage) {
+      await prisma.chatMessage.create({
+        data: {
+          sessionId: chatSession.id,
+          role: "user",
+          content: firstMessage,
+          tokenCount: Math.ceil(firstMessage.length / 4),
+        },
+      });
+    }
+
+    return NextResponse.json({
+      sessionId: chatSession.id,
+      success: true,
+    });
   } catch (error) {
     console.error("Error creating chat session:", error);
     return NextResponse.json(

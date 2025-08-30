@@ -19,13 +19,10 @@ const MessageSkeleton = ({ align = "start" }: { align?: "start" | "end" }) => (
         <Skeleton className="w-full h-full rounded-full" />
       </div>
     </div>
-
     <div className="chat-header flex items-center gap-2">
       <Skeleton className="h-4 w-20" />
       <Skeleton className="h-3 w-12" />
     </div>
-
-    {/* Mirror final shapes: pill for user, plain text lines for assistant */}
     <div className="chat-bubble bg-transparent p-0 shadow-none ring-0">
       {align === "end" ? (
         <Skeleton className="h-9 max-w-[70%] rounded-full" />
@@ -37,7 +34,6 @@ const MessageSkeleton = ({ align = "start" }: { align?: "start" | "end" }) => (
         </div>
       )}
     </div>
-
     <div className="chat-footer">
       <Skeleton className="h-3 w-16" />
     </div>
@@ -57,8 +53,10 @@ export default function ChatSessionPage() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+  const [streamingMessage, setStreamingMessage] = useState(""); // NEW: For streaming content
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,7 +64,7 @@ export default function ChatSessionPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [currentSession?.messages]);
+  }, [currentSession?.messages, streamingMessage]);
 
   useEffect(() => {
     if (sessionId) {
@@ -92,12 +90,16 @@ export default function ChatSessionPage() {
     }
   };
 
+  // NEW: Streaming message handler
   const handleSubmit = async () => {
     if (!message.trim() || isLoading || !currentSession) return;
+
     const userMessage = message;
     setMessage("");
     setIsLoading(true);
+    setStreamingMessage(""); // Reset streaming message
 
+    // Add user message to UI immediately
     const newUserMessage: Message = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -110,54 +112,108 @@ export default function ChatSessionPage() {
       messages: [...prev!.messages, newUserMessage],
     }));
 
+    // Create abort controller for this request
+    abortControllerRef.current = new AbortController();
+
     try {
       const response = await fetch("/api/rag", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: userMessage, sessionId }),
+        signal: abortControllerRef.current.signal,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const newAssistantMessage: Message = {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: data.response,
-          createdAt: new Date().toISOString(),
-          tokenCount: data.tokenUsage?.response,
-        };
-
-        setCurrentSession((prev) => ({
-          ...prev!,
-          messages: [...prev!.messages, newAssistantMessage],
-          updatedAt: new Date().toISOString(),
-        }));
-      } else {
-        setCurrentSession((prev) => ({
-          ...prev!,
-          messages: prev!.messages.filter((m) => m.id !== newUserMessage.id),
-        }));
-        toast({
-          title: "Error",
-          variant: "destructive",
-          description: "Failed to send message. Please try again.",
-        });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    } catch (error) {
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("No response body reader available");
+      }
+
+      let accumulatedContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              if (data.type === "chunk") {
+                accumulatedContent += data.content;
+                setStreamingMessage(accumulatedContent);
+              } else if (data.type === "complete") {
+                // Streaming complete - add final message to session
+                const finalMessage: Message = {
+                  id: `assistant-${Date.now()}`,
+                  role: "assistant",
+                  content: accumulatedContent,
+                  createdAt: new Date().toISOString(),
+                  tokenCount: data.tokenUsage?.response,
+                };
+
+                setCurrentSession((prev) => ({
+                  ...prev!,
+                  messages: [...prev!.messages, finalMessage],
+                  updatedAt: new Date().toISOString(),
+                }));
+
+                setStreamingMessage(""); // Clear streaming message
+              } else if (data.type === "error") {
+                throw new Error(data.error);
+              }
+            } catch (parseError) {
+              console.warn("Failed to parse SSE data:", parseError);
+            }
+          }
+        }
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        console.log("Request was aborted");
+        return;
+      }
+
+      // Remove the user message if there was an error
       setCurrentSession((prev) => ({
         ...prev!,
         messages: prev!.messages.filter((m) => m.id !== newUserMessage.id),
       }));
+
+      setStreamingMessage(""); // Clear streaming message
+
       toast({
         title: "Error",
         variant: "destructive",
         description: "Failed to send message. Please try again.",
       });
-      console.error(error);
+
+      console.error("Streaming error:", error);
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
+
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   if (!user) {
     return (
@@ -174,9 +230,9 @@ export default function ChatSessionPage() {
     <div className="flex flex-col h-dvh md:h-screen min-h-0">
       {/* Header */}
       <div className="flex-shrink-0 p-4 bg-transparent backdrop-blur-md z-20 sticky top-0">
-        <div className="flex items-center justify-between max-w-4xl mx-auto ">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-3 min-w-0">
-            <h1 className="text-base md:text-lg font-semibold truncate right-20">
+            <h1 className="text-base md:text-lg font-semibold truncate">
               {currentSession?.title || "Legal Assistant"}
             </h1>
           </div>
@@ -185,10 +241,7 @@ export default function ChatSessionPage() {
 
       {/* Messages Area */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-behavior-contain">
-        <div
-          className="max-w-4xl mx-auto p-4 space-y-4"
-          style={{ containIntrinsicSize: "800px" }}
-        >
+        <div className="max-w-4xl mx-auto p-4 space-y-4">
           {isLoadingMessages ? (
             Array.from({ length: 3 }).map((_, i) => (
               <MessageSkeleton key={i} align={i % 2 ? "end" : "start"} />
@@ -237,7 +290,6 @@ export default function ChatSessionPage() {
                       </time>
                     </div>
 
-                    {/* User = true pill (no tail); Assistant = invisible container */}
                     <div
                       className={[
                         "chat-bubble max-w-[70%] md:max-w-[60%]",
@@ -260,8 +312,56 @@ export default function ChatSessionPage() {
                 );
               })}
 
-              {/* Assistant typing indicator (keeps container invisible) */}
-              {isLoading && (
+              {/* NEW: Show streaming message while it's being generated */}
+              {streamingMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="chat chat-start"
+                >
+                  <div className="chat-image avatar">
+                    <div className="w-10 rounded-full">
+                      <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center">
+                        <svg
+                          className="w-6 h-6 text-muted-foreground"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="chat-header">
+                    Legal Assistant
+                    <time className="text-xs opacity-50 ml-2">
+                      {new Date().toLocaleTimeString()}
+                    </time>
+                  </div>
+
+                  <div className="chat-bubble bg-transparent p-0 shadow-none ring-0 max-w-[70%] md:max-w-[60%]">
+                    <div className="prose prose-sm max-w-none dark:prose-invert text-foreground">
+                      <p className="whitespace-pre-wrap break-words m-0">
+                        {streamingMessage}
+                        <span className="animate-pulse">|</span>{" "}
+                        {/* Typing cursor */}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="chat-footer opacity-50">Generating...</div>
+                </motion.div>
+              )}
+
+              {/* Assistant typing indicator when starting */}
+              {isLoading && !streamingMessage && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -298,12 +398,12 @@ export default function ChatSessionPage() {
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
                       <span className="text-sm text-foreground">
-                        Assistant is typing...
+                        Assistant is thinking...
                       </span>
                     </div>
                   </div>
 
-                  <div className="chat-footer opacity-50">Thinking...</div>
+                  <div className="chat-footer opacity-50">Starting...</div>
                 </motion.div>
               )}
 
@@ -327,14 +427,11 @@ export default function ChatSessionPage() {
         </div>
       </div>
 
-      {/* Global overrides: hide daisyUI tail for pills and ensure transparent inputs */}
+      {/* Global overrides */}
       <style jsx global>{`
-        /* True pill: remove daisyUI tail on user bubbles */
         .chat-end .chat-bubble.pill::before {
           display: none !important;
         }
-
-        /* Input should inherit page surface */
         .chat-input-shell input,
         .chat-input-shell textarea {
           background-color: transparent !important;
