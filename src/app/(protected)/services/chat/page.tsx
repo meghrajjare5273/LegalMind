@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { TextRoll } from "@/components/ui/motion-primitives/text-roll";
-import { TextEffect } from "@/components/ui/motion-primitives/text-effect";
 import { AIChatInput } from "@/components/ui/ai-chat-input";
 import { useSession } from "@/contexts/session-context";
 
@@ -64,31 +63,23 @@ export default function ChatPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.2 }}
           className="text-center mb-8 md:mb-12 px-2"
         >
           <div className="mb-6">
             <h1 className="text-3xl md:text-6xl font-bold tracking-tight mb-4 text-pretty">
-              <TextRoll duration={0.8} getEnterDelay={(i: any) => i * 0.05}>
+              <TextRoll duration={0.15} getEnterDelay={(i: any) => i * 0.05}>
                 {`Welcome back, ${firstName}`}
               </TextRoll>
             </h1>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.2, duration: 0.8 }}
+              transition={{ delay: 0.3, duration: 0.2 }}
             >
-              <TextEffect
-                preset="fade-in-blur"
-                per="word"
-                speedReveal={0.3}
-                delay={1.5}
-                className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto"
-              >
-                Your intelligent legal assistant powered by AI. Ask questions
-                about Indian law, contracts, compliance, and get expert guidance
-                instantly.
-              </TextEffect>
+              Your intelligent legal assistant powered by AI. Ask questions
+              about Indian law, contracts, compliance, and get expert guidance
+              instantly.
             </motion.div>
           </div>
         </motion.div>
@@ -97,7 +88,7 @@ export default function ChatPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2, duration: 0.8 }}
+          transition={{ delay: 0.5, duration: 0.2 }}
           className="w-full max-w-xl md:max-w-2xl"
         >
           <AIChatInput

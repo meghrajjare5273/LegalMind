@@ -173,10 +173,10 @@ export default function ChatSessionPage() {
   return (
     <div className="flex flex-col h-dvh md:h-screen min-h-0">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 bg-background backdrop-blur-md z-20 sticky top-0">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
+      <div className="flex-shrink-0 p-4 bg-transparent backdrop-blur-md z-20 sticky top-0">
+        <div className="flex items-center justify-between max-w-4xl mx-auto ">
           <div className="flex items-center gap-3 min-w-0">
-            <h1 className="text-base md:text-lg font-semibold truncate">
+            <h1 className="text-base md:text-lg font-semibold truncate right-20">
               {currentSession?.title || "Legal Assistant"}
             </h1>
           </div>

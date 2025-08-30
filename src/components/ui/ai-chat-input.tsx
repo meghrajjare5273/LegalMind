@@ -187,10 +187,11 @@ export const AIChatInput = ({
                     key={placeholderIndex}
                     className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 select-none pointer-events-none"
                     style={{
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
+                      // whiteSpace: "nowrap",
+                      // overflow: "hidden",
+                      // textOverflow: "unset",
                       zIndex: 0,
+                      textWrap: "revert",
                     }}
                     variants={placeholderContainerVariants}
                     initial="initial"
