@@ -4,14 +4,13 @@ import { Pinecone } from "@pinecone-database/pinecone";
 import { GoogleGenAI } from "@google/genai";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
 // Initialize Pinecone and Google Generative AI clients
 const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY as string });
 const index = pc.Index(process.env.PINECONE_INDEX_NAME as string);
 const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
 const namespace = process.env.PUBLIC_PINECONE_NAMESPACE as string;
-const prisma = new PrismaClient();
 
 // Token counting utility
 function estimateTokens(text: string): number {
@@ -112,11 +111,11 @@ async function retrieveContext(
 }
 
 // Function to generate response using Google Generative AI
-async function generateResponseWithGemini(
+async function* generateStreamingResponseWithGemini(
   query: string,
   context: string,
   conversationHistory: string
-): Promise<string> {
+): AsyncGenerator<string, void, unknown> {
   try {
     // const contextStr = contexts.join("\n");
     const prompt = `
@@ -145,8 +144,8 @@ USER QUESTION: ${query}
 
 RESPONSE: `;
 
-    const response = await genai.models.generateContent({
-      model: "gemini-2.5-flash-preview-05-20",
+    const response = await genai.models.generateContentStream({
+      model: "gemini-2.5-flash",
       contents: [
         {
           parts: [{ text: prompt }],
@@ -159,6 +158,65 @@ RESPONSE: `;
           thinkingBudget: 8000,
         },
         // cachedContent: contextStr,
+        maxOutputTokens: 5000,
+      },
+    });
+
+    for await (const chunk of response) {
+      const text = chunk.text;
+      if (text) {
+        yield text;
+      }
+    }
+
+    // throw new Error("No response generated from Gemini");
+  } catch (error) {
+    console.error("Error generating response:", error);
+    throw error;
+  }
+}
+
+// NEW: Generate non-streaming response (fallback)
+async function generateNonStreamingResponse(
+  query: string,
+  context: string,
+  conversationHistory: string | null
+): Promise<string> {
+  try {
+    const prompt = `
+You are a legal expert assistant specializing in Indian law, with the understanding of multiple legal texts such as the Constitution of India and other important scriptures. You are also provided with the user's chat history in precise terms for your reference. 
+
+Based on the provided legal contexts, answer the user's question accurately and comprehensively. 
+
+IMPORTANT GUIDELINES:
+0. Make sure the user understands that you are just an AI chatbot and not a replacement for an actual lawyer
+1. Do not mention the context to the end user and provide a refined output
+2. Always cite specific sections, articles, or provisions when referencing the law
+3. If the context doesn't contain sufficient information, provide a more generic answer
+4. Distinguish between Constitutional provisions and IPC provisions
+5. Provide practical interpretations where appropriate
+6. If multiple interpretations exist, mention them
+7. Use clear, accessible language while maintaining legal accuracy
+
+LEGAL CONTEXTS:
+${context}
+
+CONVERSATION HISTORY:
+${conversationHistory}
+
+USER QUESTION: ${query}
+
+RESPONSE: `;
+
+    const response = await genai.models.generateContent({
+      model: "gemini-2.5-flash-preview-05-20",
+      contents: [
+        {
+          parts: [{ text: prompt }],
+        },
+      ],
+      config: {
+        temperature: 0.4,
         maxOutputTokens: 5000,
       },
     });
@@ -188,7 +246,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { query, sessionId } = await request.json();
+    const { query, sessionId, stream = true } = await request.json();
 
     if (!query || typeof query !== "string") {
       return NextResponse.json(
@@ -246,50 +304,182 @@ export async function POST(request: NextRequest) {
     const { context, conversationHistory, totalTokens } =
       await buildContextWithTokenLimit(chatSession.messages, contexts);
 
-    const response = await generateResponseWithGemini(
-      query,
-      context,
-      conversationHistory
-    );
+    if (!sessionId) {
+      const response = await generateNonStreamingResponse(query, context, null);
+      const responseTokens = estimateTokens(response);
 
-    const responseTokens = estimateTokens(response);
-
-    // Save assistant response
-    await prisma.chatMessage.create({
-      data: {
-        sessionId: chatSession.id,
-        role: "assistant",
-        content: response,
-        tokenCount: responseTokens,
-        metadata: {
-          totalContextTokens: totalTokens,
-          contextSources: contexts.length,
-          processingTime: Date.now(),
+      // Save assistant response
+      await prisma.chatMessage.create({
+        data: {
+          sessionId: chatSession.id,
+          role: "assistant",
+          content: response,
+          tokenCount: responseTokens,
+          metadata: {
+            totalContextTokens: totalTokens,
+            contextSources: contexts.length,
+            processingTime: Date.now(),
+          },
         },
-      },
-    });
+      });
 
-    // Update session timestamp
-    await prisma.chatSession.update({
-      where: { id: chatSession.id },
-      data: { updatedAt: new Date() },
-    });
+      // Update session timestamp
+      await prisma.chatSession.update({
+        where: { id: chatSession.id },
+        data: { updatedAt: new Date() },
+      });
 
-    return NextResponse.json({
-      response,
-      sessionId: chatSession.id,
-      contexts,
-      tokenUsage: {
-        query: estimateTokens(query),
-        response: responseTokens,
-        context: totalTokens,
-      },
-      success: true,
-    });
+      // If this is a new session (no sessionId provided), return JSON for redirect
+      if (!sessionId) {
+        return NextResponse.json({
+          response,
+          sessionId: chatSession.id,
+          contexts,
+          tokenUsage: {
+            query: estimateTokens(query),
+            response: responseTokens,
+            context: totalTokens,
+          },
+          success: true,
+        });
+      }
+    }
+    // NEW: Handle streaming vs non-streaming
+    if (stream) {
+      try {
+        // Create a ReadableStream for streaming response
+        const encoder = new TextEncoder();
+        let fullResponse = "";
+
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            try {
+              for await (const chunk of generateStreamingResponseWithGemini(
+                query,
+                context,
+                conversationHistory
+              )) {
+                fullResponse += chunk;
+
+                // Send the chunk as Server-Sent Events format
+                const data = JSON.stringify({
+                  type: "chunk",
+                  content: chunk,
+                  sessionId: chatSession.id,
+                });
+
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+              }
+
+              // Save the complete response to database
+              const responseTokens = estimateTokens(fullResponse);
+              await prisma.chatMessage.create({
+                data: {
+                  sessionId: chatSession.id,
+                  role: "assistant",
+                  content: fullResponse,
+                  tokenCount: responseTokens,
+                  metadata: {
+                    totalContextTokens: totalTokens,
+                    contextSources: contexts.length,
+                    processingTime: Date.now(),
+                  },
+                },
+              });
+
+              // Update session timestamp
+              await prisma.chatSession.update({
+                where: { id: chatSession.id },
+                data: { updatedAt: new Date() },
+              });
+
+              // Send completion signal
+              const finalData = JSON.stringify({
+                type: "complete",
+                sessionId: chatSession.id,
+                tokenUsage: {
+                  query: estimateTokens(query),
+                  response: responseTokens,
+                  context: totalTokens,
+                },
+              });
+
+              controller.enqueue(encoder.encode(`data: ${finalData}\n\n`));
+              controller.close();
+            } catch (error) {
+              console.error("Streaming error:", error);
+              const errorData = JSON.stringify({
+                type: "error",
+                error: error instanceof Error ? error.message : "Unknown error",
+              });
+              controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
+              controller.close();
+            }
+          },
+        });
+
+        return new NextResponse(readableStream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
+        });
+      } catch (error) {
+        console.error("API route error:", error);
+        return NextResponse.json(
+          {
+            error: "Internal server error",
+            success: false,
+          },
+          { status: 500 }
+        );
+      }
+    }
+    //     // Fallback to non-streaming response
+    //     const response = await generateNonStreamingResponse(
+    //       query,
+    //       context,
+    //       conversationHistory
+    //     );
+
+    //     const responseTokens = estimateTokens(response);
+
+    //     // Save assistant response
+    //     await prisma.chatMessage.create({
+    //       data: {
+    //         sessionId: chatSession.id,
+    //         role: "assistant",
+    //         content: response,
+    //         tokenCount: responseTokens,
+    //         metadata: {
+    //           totalContextTokens: totalTokens,
+    //           contextSources: contexts.length,
+    //           processingTime: Date.now(),
+    //         },
+    //       },
+    //     });
+
+    //     // Update session timestamp
+    //     await prisma.chatSession.update({
+    //       where: { id: chatSession.id },
+    //       data: { updatedAt: new Date() },
+    //     });
+
+    //     return NextResponse.json({
+    //       response,
+    //       sessionId: chatSession.id,
+    //       contexts,
+    //       tokenUsage: {
+    //         query: estimateTokens(query),
+    //         response: responseTokens,
+    //         context: totalTokens,
+    //       },
+    //       success: true,
+    //     });
   } catch (error) {
     console.error("API route error:", error);
 
-    // Return more specific error messages in development
     const isDevelopment = process.env.NODE_ENV === "development";
 
     return NextResponse.json(

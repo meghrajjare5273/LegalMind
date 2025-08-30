@@ -101,25 +101,27 @@ export function ChatSidebar() {
     }
   };
 
+  // src/components/protected/chat/chat-sidebar.tsx
+  // Replace the existing createNewSession with this version
+
   const createNewSession = async () => {
     try {
-      const response = await fetch("/api/rag", {
+      const response = await fetch("/api/chat/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: "Hello",
-          sessionId: null,
-        }),
+        // Optional: send a title or omit to use backend default "New Chat"
+        body: JSON.stringify({ title: "New Chat" }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.sessionId) {
-          router.push(`/services/chat/${data.sessionId}`);
-          await fetchSessions();
-        }
-      } else {
+      if (!response.ok) {
         throw new Error("Failed to create session");
+      }
+
+      const { session } = await response.json();
+
+      if (session?.id) {
+        router.push(`/services/chat/${session.id}`);
+        await fetchSessions();
       }
     } catch (error) {
       console.error("Error creating new session:", error);
