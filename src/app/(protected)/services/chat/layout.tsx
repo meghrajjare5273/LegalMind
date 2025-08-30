@@ -41,15 +41,12 @@ export default function ChatLayout({
       </div>
 
       {/* Sidebar */}
-      <aside
-        className="relative z-20 hidden md:block lg:flex-shrink-0"
-        aria-label="Chat history"
-      >
+      <div className="relative flex lg:flex-shrink-0" aria-label="Chat history">
         <ChatSidebar />
-      </aside>
+      </div>
 
       {/* Main content area */}
-      <main className="relative z-10 flex min-w-0 flex-1 flex-col min-h-0">
+      <main className="relative z-10 flex min-w-0 flex-1 flex-col min-h-0 p-0.5">
         <div className="flex-1 overflow-y-auto">{children}</div>
       </main>
     </div>
