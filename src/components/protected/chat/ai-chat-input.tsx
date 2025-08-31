@@ -142,7 +142,7 @@ export const AIChatInput = ({
   return (
     <motion.div
       ref={wrapperRef}
-      className="w-full max-w-3xl mx-auto"
+      className="w-full max-w-3xl mx-auto bg-transparent"
       variants={containerVariants}
       animate={isActive || value ? "expanded" : "collapsed"}
       initial="collapsed"
