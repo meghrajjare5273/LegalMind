@@ -1,352 +1,280 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-
-import { useState, useEffect, useMemo } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import {
-  IconBrandTabler,
-  IconPlus,
-  IconTrash,
-  IconMessageCircle,
-} from "@tabler/icons-react";
-import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
-import { useRouter, useParams } from "next/navigation";
-import { useSession } from "@/contexts/session-context";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  ChevronLeft,
+  ChevronRight,
+  HistoryIcon,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Plus,
+  Search,
+  Settings,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { AnimatedThemeToggler } from "@/components/ui/magicui/animated-theme-toggler";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
-export type Message = {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  createdAt: string;
-  tokenCount?: number;
-};
-
-export type ChatSession = {
-  id: string;
-  title: string;
-  messages: Message[];
-  createdAt: string;
-  updatedAt: string;
-};
-
-const SessionSkeleton = () => (
-  <div className="mb-2 rounded-lg border border-border/30 p-3">
-    <div className="flex items-start justify-between">
-      <div className="min-w-0 flex-1">
-        <div className="mb-1 flex items-center gap-2">
-          <Skeleton className="h-3 w-3 rounded-sm" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-        <Skeleton className="h-3 w-20" />
-      </div>
-      <Skeleton className="h-6 w-6 rounded-md" />
-    </div>
-  </div>
-);
-
+/**
+ * ChatSidebar
+ * Encapsulates: animated desktop sidebar, mobile Sheet, user footer, and history placeholder.
+ * Keeps all interactive state local to the sidebar.
+ */
 export function ChatSidebar() {
-  const router = useRouter();
-  const params = useParams();
-  const sessionId = params?.sessionId as string | undefined;
-  const { user } = useSession();
-  const { toast } = useToast();
-
-  const [open, setOpen] = useState(false);
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [currentSession, setCurrentSession] = useState<ChatSession | null>(
-    null
-  );
-  const [isLoadingSessions, setIsLoadingSessions] = useState(true);
-
-  useEffect(() => {
-    fetchSessions();
-  }, []);
-
-  useEffect(() => {
-    if (sessionId) {
-      fetchCurrentSession();
-    }
-  }, [sessionId]);
-
-  const fetchSessions = async () => {
-    try {
-      setIsLoadingSessions(true);
-      const response = await fetch("/api/chat/sessions");
-      if (response.ok) {
-        const data = await response.json();
-        setSessions(data.sessions || []);
-      }
-    } catch (error) {
-      console.error("Error fetching sessions:", error);
-    } finally {
-      setIsLoadingSessions(false);
-    }
-  };
-
-  const fetchCurrentSession = async () => {
-    try {
-      const response = await fetch(`/api/chat/${sessionId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentSession(data.session);
-      }
-    } catch (error) {
-      console.error("Error fetching current session:", error);
-    }
-  };
-
-  // src/components/protected/chat/chat-sidebar.tsx
-  // Replace the existing createNewSession with this version
-
-  const createNewSession = async () => {
-    try {
-      const response = await fetch("/api/chat/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // Optional: send a title or omit to use backend default "New Chat"
-        body: JSON.stringify({ title: "New Chat" }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create session");
-      }
-
-      const { session } = await response.json();
-
-      if (session?.id) {
-        router.push(`/services/chat/${session.id}`);
-        await fetchSessions();
-      }
-    } catch (error) {
-      console.error("Error creating new session:", error);
-      toast({
-        title: "Error",
-        variant: "destructive",
-        description: "Could not create new chat session",
-      });
-    }
-  };
-
-  const deleteSession = async (sessionIdToDelete: string) => {
-    try {
-      const response = await fetch(`/api/chat/${sessionIdToDelete}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        setSessions((prev) => prev.filter((s) => s.id !== sessionIdToDelete));
-        if (sessionIdToDelete === sessionId) {
-          router.push("/services/chat");
-        }
-        toast({
-          title: "Success",
-          description: "Chat session deleted successfully",
-        });
-      } else {
-        throw new Error("Failed to delete");
-      }
-    } catch (error) {
-      console.error("Error deleting session:", error);
-      toast({
-        title: "Error",
-        variant: "destructive",
-        description: "Could not delete chat session",
-      });
-    }
-  };
-
-  const links = useMemo(
-    () => [
-      {
-        label: "New Chat",
-        href: "#",
-        icon: (
-          <IconPlus
-            className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200"
-            stroke={1.75}
-          />
-        ),
-        onClick: createNewSession,
-      },
-      {
-        label: "Chat Home",
-        href: "/services/chat",
-        icon: (
-          <IconBrandTabler
-            className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200"
-            stroke={1.75}
-          />
-        ),
-      },
-    ],
-    []
-  );
+  const [open, setOpen] = useState(true);
+  const pathname = usePathname();
 
   return (
-    <div className="h-full">
-      <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="gap-10 justify-between">
-          <div className="flex flex-1 flex-col overflow-hidden">
-            {/* Logo */}
-            {open ? <Logo /> : <LogoIcon />}
-            {/* Optional: Theme toggler when expanded */}
-            {open ? <AnimatedThemeToggler /> : null}
-
-            {/* Navigation Links */}
-            <nav className="mt-8 flex flex-col gap-2">
-              {links.map((link, idx) => (
-                <button
-                  key={idx}
-                  className="text-left"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    link.onClick?.();
-                  }}
+    <>
+      {/* Desktop Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{ width: open ? 280 : 72 }}
+        transition={{ type: "spring", stiffness: 260, damping: 30 }}
+        className="hidden md:flex flex-col border-r border-neutral-800 bg-neutral-900/60 backdrop-blur-sm"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-3 h-14">
+          <Link href="/chat" className="flex items-center gap-2">
+            <div className="size-8 grid place-items-center rounded-md bg-neutral-800 text-neutral-200">
+              <MessageSquare className="size-4" />
+            </div>
+            <AnimatePresence initial={false}>
+              {open && (
+                <motion.span
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -6 }}
+                  className="text-sm font-medium text-neutral-200"
                 >
-                  <SidebarLink link={link} />
-                </button>
-              ))}
-            </nav>
+                  AICHAT
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-neutral-400 hover:text-neutral-100"
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? (
+              <ChevronLeft className="size-4" />
+            ) : (
+              <ChevronRight className="size-4" />
+            )}
+          </Button>
+        </div>
 
-            {/* Chat History */}
-            <div className="mt-6 flex-1 overflow-hidden">
-              <motion.div
-                animate={{
-                  opacity: open ? 1 : 0,
-                  display: open ? "block" : "none",
-                }}
-                className="mb-4 px-2"
-              >
-                <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                  Chat History
-                </h3>
-              </motion.div>
+        {/* New Chat */}
+        <div className="px-3">
+          <Link href="/chat">
+            <motion.div
+              whileHover={{ y: -1, scale: 1.01 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="flex items-center gap-2 rounded-lg bg-neutral-800 hover:bg-neutral-700/80 px-3 py-2 cursor-pointer"
+            >
+              <div className="size-6 grid place-items-center rounded-md bg-neutral-700">
+                <Plus className="size-4 text-neutral-100" />
+              </div>
+              {open && (
+                <span className="text-sm text-neutral-100">New Chat</span>
+              )}
+            </motion.div>
+          </Link>
+        </div>
 
-              <div className="flex-1 overscroll-contain overflow-y-auto pr-2">
-                {isLoadingSessions
-                  ? Array.from({ length: 5 }).map((_, i) => (
-                      <SessionSkeleton key={i} />
-                    ))
-                  : sessions.map((session) => (
-                      <motion.div
-                        key={session.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={cn(
-                          "group mb-2 cursor-pointer rounded-lg border p-3 transition-colors hover:bg-accent/50",
-                          currentSession?.id === session.id
-                            ? "border-primary/50 bg-accent/50"
-                            : "border-border/30 hover:border-border"
-                        )}
-                        onClick={() => {
-                          router.push(`/services/chat/${session.id}`);
-                          setOpen(false);
-                        }}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-1 flex items-center gap-2">
-                              <IconMessageCircle
-                                className="h-4 w-4 flex-shrink-0 text-muted-foreground"
-                                stroke={1.75}
-                              />
-                              <motion.p
-                                animate={{
-                                  opacity: open ? 1 : 0,
-                                  display: open ? "block" : "none",
-                                }}
-                                className="truncate text-sm font-medium"
-                              >
-                                {session.title}
-                              </motion.p>
-                            </div>
-                            <motion.p
-                              animate={{
-                                opacity: open ? 1 : 0,
-                                display: open ? "block" : "none",
-                              }}
-                              className="text-xs text-muted-foreground"
-                            >
-                              {new Date(session.updatedAt).toLocaleDateString()}
-                            </motion.p>
-                          </div>
-                          <motion.div
-                            animate={{
-                              opacity: open ? 1 : 0,
-                              display: open ? "block" : "none",
-                            }}
-                          >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteSession(session.id);
-                              }}
-                              aria-label="Delete session"
-                            >
-                              <IconTrash className="h-3 w-3" stroke={2} />
-                            </Button>
-                          </motion.div>
-                        </div>
-                      </motion.div>
-                    ))}
+        {/* Quick actions */}
+        <div className="px-3 mt-3 space-y-1">
+          <SidebarItem
+            icon={<Search className="size-4" />}
+            label="Search"
+            open={open}
+          />
+          <SidebarItem
+            icon={<HistoryIcon className="size-4" />}
+            label="History"
+            open={open}
+          />
+          <SidebarItem
+            icon={<Settings className="size-4" />}
+            label="Settings"
+            open={open}
+          />
+        </div>
+
+        {/* History list */}
+        <div className="mt-4 px-2 flex-1 overflow-y-auto">
+          {/* TODO: Fetch and render user's chat history */}
+          <EmptyHint open={open} />
+        </div>
+
+        {/* User footer */}
+        <div className="px-3 py-3 border-t border-neutral-800">
+          <div className="flex items-center gap-3">
+            <Avatar className="size-8">
+              <AvatarImage alt="User" src="https://i.pravatar.cc/100?img=5" />
+              <AvatarFallback>UM</AvatarFallback>
+            </Avatar>
+            {open && (
+              <div className="flex-1">
+                <div className="text-sm font-medium">Ui Mahadi</div>
+                <div className="text-xs text-neutral-400">
+                  mahadi@example.com
+                </div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-neutral-400 hover:text-neutral-100"
+            >
+              <LogOut className="size-4" />
+            </Button>
+          </div>
+        </div>
+      </motion.aside>
+
+      {/* Mobile topbar + Sheet */}
+      <div className="md:hidden fixed inset-x-0 top-0 h-12 z-30 bg-neutral-900/70 backdrop-blur-sm border-b border-neutral-800 flex items-center px-3">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="text-neutral-200">
+              <Menu className="size-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side="left"
+            className="p-0 bg-neutral-900 text-neutral-100 w-80"
+          >
+            <SheetHeader className="px-4 py-3">
+              <SheetTitle className="text-neutral-200">AICHAT</SheetTitle>
+            </SheetHeader>
+            <div className="px-4 pb-4 space-y-3">
+              <Link href="/chat">
+                <div className="flex items-center gap-2 rounded-lg bg-neutral-800 hover:bg-neutral-700/80 px-3 py-2">
+                  <div className="size-6 grid place-items-center rounded-md bg-neutral-700">
+                    <Plus className="size-4 text-neutral-100" />
+                  </div>
+                  <span className="text-sm text-neutral-100">New Chat</span>
+                </div>
+              </Link>
+              <div className="space-y-1">
+                <MobileLink
+                  icon={<Search className="size-4" />}
+                  label="Search"
+                />
+                <MobileLink
+                  icon={<HistoryIcon className="size-4" />}
+                  label="History"
+                />
+                <MobileLink
+                  icon={<Settings className="size-4" />}
+                  label="Settings"
+                />
+              </div>
+              <div className="pt-2 border-t border-neutral-800">
+                {/* TODO: Fetch and render user's chat history */}
+                <div className="text-xs text-neutral-400">
+                  No conversations yet.
+                </div>
+              </div>
+              <div className="pt-3 border-t border-neutral-800 flex items-center gap-3">
+                <Avatar className="size-8">
+                  <AvatarImage
+                    alt="User"
+                    src="https://i.pravatar.cc/100?img=5"
+                  />
+                  <AvatarFallback>UM</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="text-sm font-medium">Ui Mahadi</div>
+                  <div className="text-xs text-neutral-400">
+                    mahadi@example.com
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-neutral-400 hover:text-neutral-100"
+                >
+                  <LogOut className="size-4" />
+                </Button>
               </div>
             </div>
-          </div>
+          </SheetContent>
+        </Sheet>
+        <div className="ml-2 text-sm text-neutral-300">AICHAT</div>
+        <div className="ml-auto text-xs text-neutral-500">
+          {pathname?.replace("/", "")}
+        </div>
+      </div>
+    </>
+  );
+}
 
-          {/* User Profile */}
-          <div>
-            <SidebarLink
-              link={{
-                label: user?.name || "User",
-                href: "#",
-                icon: (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black text-xs font-medium text-white dark:bg-white dark:text-black">
-                    {(user?.name?.charAt(0) || "U").toUpperCase()}
-                  </div>
-                ),
-              }}
-            />
-          </div>
-        </SidebarBody>
-      </Sidebar>
+function SidebarItem({
+  icon,
+  label,
+  open,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  open: boolean;
+}) {
+  return (
+    <motion.div
+      whileHover={{ x: 2 }}
+      className="flex items-center gap-2 px-2 py-2 rounded-md text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800/70 cursor-pointer"
+    >
+      <span className="grid place-items-center">{icon}</span>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.span
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -6 }}
+            className="text-sm"
+          >
+            {label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function EmptyHint({ open }: { open: boolean }) {
+  return (
+    <div className="rounded-lg border border-dashed border-neutral-800 p-4 text-center">
+      <div className="text-xs text-neutral-400">
+        No conversations yet — start a new one from the button above.
+      </div>
+      {open && (
+        <div className="mt-2 text-[10px] text-neutral-500">
+          Your chats will appear here.
+        </div>
+      )}
     </div>
   );
 }
 
-export const Logo = () => {
+function MobileLink({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <Link
-      href="/services/chat"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal"
-    >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="whitespace-pre font-medium text-foreground"
-      >
-        LegalMind
-      </motion.span>
-    </Link>
+    <div className="flex items-center gap-3 px-2 py-2 rounded-md text-neutral-300 hover:text-neutral-100 hover:bg-neutral-800/70">
+      {icon}
+      <span className="text-sm">{label}</span>
+    </div>
   );
-};
-
-export const LogoIcon = () => {
-  return (
-    <Link
-      href="/services/chat"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal"
-    >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
-    </Link>
-  );
-};
+}

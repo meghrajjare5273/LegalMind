@@ -1,104 +1,76 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { TextRoll } from "@/components/ui/motion-primitives/text-roll";
-import { AIChatInput } from "@/components/ui/ai-chat-input";
-import { useSession } from "@/contexts/session-context";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { AIChatInput } from "@/components/protected/chat/ai-chat-input";
 
-export default function ChatPage() {
-  const router = useRouter();
-  const { user, loading } = useSession();
-  const [message, setMessage] = useState("");
+export default function ChatHomePage() {
+  const [value, setValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const firstName = user?.name?.split(" ")[0] || "Counsel";
-
-  const handleSubmit = async () => {
-    if (!message.trim() || isLoading) return;
-
+  const onSubmit = async () => {
+    if (!value.trim()) return;
     setIsLoading(true);
-    try {
-      const response = await fetch("/api/rag", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: message,
-          sessionId: null,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.sessionId) {
-          router.push(`/services/chat/${data.sessionId}`);
-        }
-      } else {
-        console.error("Failed to create chat session");
-      }
-    } catch (error) {
-      console.error("Error starting chat:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    const id = crypto.randomUUID();
+    // Navigate to a new session with the query as a param
+    router.push(`/chat/${id}?q=${encodeURIComponent(value.trim())}`);
+    setIsLoading(false);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="h-8 w-48 bg-muted rounded mb-4" />
-          <div className="h-4 w-96 bg-muted rounded" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center px-4">
-      {/* Header Section */}
-      <div className="flex-1 flex flex-col items-center justify-center max-w-4xl w-full py-8 md:py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="text-center mb-8 md:mb-12 px-2"
-        >
-          <div className="mb-6">
-            <h1 className="text-3xl md:text-6xl font-bold tracking-tight mb-4 text-pretty">
-              <TextRoll duration={0.15} getEnterDelay={(i: any) => i * 0.05}>
-                {`Welcome back, ${firstName}`}
-              </TextRoll>
-            </h1>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.2 }}
-            >
-              Your intelligent legal assistant powered by AI. Ask questions
-              about Indian law, contracts, compliance, and get expert guidance
-              instantly.
-            </motion.div>
-          </div>
-        </motion.div>
+    <div className="relative h-full w-full flex flex-col items-center px-4 md:px-8">
+      {/* Centered hero */}
+      <div className="max-w-5xl w-full mx-auto mt-16 md:mt-24">
+        <div className="text-left space-y-2 mb-8">
+          <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">
+            Hi there, Ui Mahadi
+          </h1>
+          <h2 className="text-xl md:text-3xl mb-36 text-neutral-300">
+            What would you like to know?
+          </h2>
+        </div>
 
-        {/* Input Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.2 }}
-          className="w-full max-w-xl md:max-w-2xl"
-        >
-          <AIChatInput
-            value={message}
-            onChange={setMessage}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            placeholder="Ask me anything about Indian law..."
-          />
-        </motion.div>
+        {/* 2x2 suggestion cards */}
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+          {[
+            "Write a to-do list for a personal project or task",
+            "Generate an email to reply to a job offer",
+            "Summarize this article or text for me in one paragraph",
+            "How does AI work in a technical capacity",
+          ].map((text, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ y: -2, scale: 1.01 }}
+              transition={{ type: "spring", stiffness: 280, damping: 20 }}
+            >
+              <Card className="bg-neutral-900/70 border-neutral-800 hover:border-neutral-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-neutral-300">
+                    Prompt
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-neutral-100 text-sm">
+                  {text}
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div> */}
+      </div>
+
+      {/* Bottom input */}
+      <div className="w-full max-w-5xl mx-auto mt-10 md:mt-14 mb-6 px-0">
+        <AIChatInput
+          value={value}
+          onChange={setValue}
+          onSubmit={onSubmit}
+          isLoading={isLoading}
+          placeholder="Ask whatever you want..."
+        />
       </div>
     </div>
   );
