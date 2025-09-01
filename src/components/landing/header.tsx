@@ -398,8 +398,8 @@ const Navbar: React.FC = () => {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <span
-                        className="font-bold text-xl tracking-tighter font-space"
-                        style={{ color: "#b08d28" }}
+                        className="font-bold text-xl text-gold tracking-tighter font-space"
+                        // style={{ color: "#b08d28" }}
                       >
                         Legal
                       </span>

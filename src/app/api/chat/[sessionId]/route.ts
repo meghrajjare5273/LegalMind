@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+<<<<<<< HEAD
 import { unstable_cache, revalidateTag } from "next/cache";
+=======
+>>>>>>> b0746eaf1d5123e949f0b265733b95d79a189364
 
 // Get specific chat session with messages
 export async function GET(

@@ -62,13 +62,14 @@ export default function HeroSection() {
               >
                 Made{" "}
                 <span
-                  className={`font-extrabold text-[#fff3cd] inline-block ${inter.className} italic`}
+                  className={`font-bold text-[#ad9238e2]  backdrop-blur-3xl  inline-block italic`}
                 >
                   <TextEffect
                     delay={1.2}
                     preset="fade-in-blur"
                     per="char"
                     speedReveal={0.4}
+                    className="backdrop-blur-3xl"
                   >
                     Conversational
                   </TextEffect>
