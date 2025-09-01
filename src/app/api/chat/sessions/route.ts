@@ -3,32 +3,39 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+import { unstable_cache, revalidateTag } from "next/cache";
 
 // Get all chat sessions for a user
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const chatSessions = await prisma.chatSession.findMany({
-      where: { userId: session.user.id },
-      orderBy: { updatedAt: "desc" },
-      include: {
-        messages: {
-          orderBy: { createdAt: "asc" },
-          take: 1, // Just get the first message for preview
-        },
-        _count: {
-          select: { messages: true },
-        },
-      },
-    });
+    const userId = session.user.id;
 
+    // Create a per-request cached reader with user-scoped key and tags
+    const getUserSessionsCached = unstable_cache(
+      async () => {
+        return prisma.chatSession.findMany({
+          where: { userId },
+          orderBy: { updatedAt: "desc" }, // use asc/desc as desired
+          include: {
+            messages: { orderBy: { createdAt: "asc" }, take: 1 },
+            _count: { select: { messages: true } },
+          },
+        });
+      },
+      // keyParts can include the user to ensure separation across users
+      [`chat-sessions:by-user:${userId}`],
+      {
+        revalidate: 180, // 3 minutes
+        tags: ["chat-sessions", `chat-sessions:${userId}`],
+      }
+    );
+
+    const chatSessions = await getUserSessionsCached();
     return NextResponse.json({ sessions: chatSessions });
   } catch (error) {
     console.error("Error fetching chat sessions:", error);
@@ -41,24 +48,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
     const { title, firstMessage } = await request.json();
 
     const chatSession = await prisma.chatSession.create({
       data: {
         title: title || "New Chat",
-        userId: session.user.id,
+        userId,
       },
     });
 
-    // Optionally save the first message
     if (firstMessage) {
       await prisma.chatMessage.create({
         data: {
@@ -70,10 +74,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({
-      sessionId: chatSession.id,
-      success: true,
-    });
+    // Invalidate list caches so next GET sees the new session
+    revalidateTag("chat-sessions");
+    revalidateTag(`chat-sessions:${userId}`);
+
+    return NextResponse.json({ sessionId: chatSession.id, success: true });
   } catch (error) {
     console.error("Error creating chat session:", error);
     return NextResponse.json(
