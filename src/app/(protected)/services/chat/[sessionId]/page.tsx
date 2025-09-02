@@ -70,7 +70,6 @@ function SessionView({ sessionId }: { sessionId: string }) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [streamingMessage, setStreamingMessage] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
-
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const scrollToBottom = () => {
@@ -183,7 +182,8 @@ function SessionView({ sessionId }: { sessionId: string }) {
       let accumulatedContent = "";
 
       while (true) {
-        const { value } = await reader.read();
+        const { done, value } = await reader.read();
+        if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.split("\n");
@@ -257,7 +257,7 @@ function SessionView({ sessionId }: { sessionId: string }) {
   // Authentication check
   if (!user) {
     return (
-      <div className="min-h-dvh flex items-center justify-center">
+      <div className="h-full flex items-center justify-center">
         <div className="animate-pulse">
           <div className="h-8 w-48 bg-muted rounded mb-4" />
           <div className="h-4 w-96 bg-muted rounded" />
@@ -267,7 +267,7 @@ function SessionView({ sessionId }: { sessionId: string }) {
   }
 
   return (
-    <div className="flex flex-col h-dvh md:h-screen min-h-0">
+    <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex-shrink-0 p-4 bg-transparent backdrop-blur-md z-20 sticky top-0">
         <div className="flex items-center justify-between max-w-3xl mx-auto">

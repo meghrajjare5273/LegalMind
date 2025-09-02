@@ -11,11 +11,11 @@ import {
   User,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
+// import { useTheme } from "next-themes";
 
 export function FloatingNavigation() {
   const pathname = usePathname();
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
 
   if (pathname?.startsWith("/services/chat")) return null;
 

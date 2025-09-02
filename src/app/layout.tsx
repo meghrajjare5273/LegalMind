@@ -4,7 +4,11 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const inter = Inter({ subsets: ["latin"] });
+export const inter = Inter({
+  weight: ["400"],
+  subsets: ["latin"],
+  style: ["normal"],
+});
 
 export const metadata: Metadata = {
   title: "LegalMind",
