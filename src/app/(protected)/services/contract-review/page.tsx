@@ -1,12 +1,77 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
-import { FileText, Upload, Scan } from "lucide-react";
+import { FileText, Upload, Scan, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+
+// Mock API function (replace with real backend call)
+async function analyzeContract(file: File) {
+  if (!file) {
+    throw new Error("File Not Upload.");
+  }
+  const formData = new FormData();
+  formData.append("file", file);
+
+  // Simulate API call
+  try {
+    const response = await fetch("/api/analyze-contract", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    console.log(data);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export default function ContractReviewPage() {
+  const [file, setFile] = useState<File | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const { toast } = useToast();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setFile(e.target.files[0]);
+  };
+
+  const handleAnalyze = async () => {
+    if (!file) return;
+    setIsAnalyzing(true);
+    try {
+      const results = await analyzeContract(file);
+      setAnalysisResults(results);
+      toast({
+        title: "Analysis Complete",
+        description: "Review the results below.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to analyze contract.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <motion.div
@@ -45,13 +110,40 @@ export default function ContractReviewPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+            <div
+              className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center cursor-pointer"
+              onDrop={(e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files) setFile(e.dataTransfer.files[0]);
+              }}
+              onDragOver={(e) => e.preventDefault()}
+            >
               <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">
                 Drag and drop your contract here, or click to browse
               </p>
-              <Button>Choose File</Button>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".pdf"
+                className="hidden"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload">
+                <Button asChild>
+                  <span>Choose File</span>
+                </Button>
+              </label>
+              {file && <p className="mt-2 text-sm">{file.name}</p>}
             </div>
+            <Button onClick={handleAnalyze} disabled={!file || isAnalyzing}>
+              {isAnalyzing ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Scan className="mr-2 h-4 w-4" />
+              )}
+              {isAnalyzing ? "Analyzing..." : "Analyze Contract"}
+            </Button>
           </CardContent>
         </Card>
 
@@ -71,9 +163,40 @@ export default function ContractReviewPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center text-muted-foreground py-12">
-              Upload a contract to see AI analysis results
-            </div>
+            {!analysisResults ? (
+              <div className="text-center text-muted-foreground py-12">
+                Upload a contract to see AI analysis results
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Clause</TableHead>
+                    <TableHead>Risk Level</TableHead>
+                    <TableHead>Description</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {analysisResults.risks.map((risk: any, i: number) => (
+                    <TableRow key={i}>
+                      <TableCell>{risk.clause}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            risk.riskLevel === "High"
+                              ? "destructive"
+                              : "default"
+                          }
+                        >
+                          {risk.riskLevel}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{risk.description}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </motion.div>

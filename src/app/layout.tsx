@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-export const inter = Inter({
+const inter = Inter({
   weight: ["400"],
   subsets: ["latin"],
   style: ["normal"],
