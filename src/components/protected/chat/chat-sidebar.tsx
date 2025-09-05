@@ -214,23 +214,22 @@ export function ChatSidebar() {
           aria-label="Primary"
           initial={false}
           animate={{ width: open ? 256 : 64 }} // 16rem vs 4rem
-          transition={{ type: "tween", duration: 0.2, ease: "easeInOut" }}
-          className="hidden md:flex fixed md:static top-0 left-0 h-screen md:h-auto flex-col border-r bg-white/90 dark:bg-neutral-900/70 backdrop-blur-sm border-gray-200 dark:border-neutral-800 rounded-[1.25rem] md:rounded-none"
+          transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+          className="hidden md:flex fixed md:static top-0 left-0 h-screen md:h-auto flex-col border-r bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-gray-200 dark:border-neutral-800 overflow-hidden"
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
         >
-          {/* Logo + Toggle */}
-          <div className="flex items-center gap-2 justify-between h-14 px-3">
+          <div className="flex items-center gap-2 justify-between h-14 px-3 border-b border-gray-100 dark:border-neutral-800">
             {open ? (
               <Link
                 href="/services/chat"
                 aria-label="New chat"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 flex-1 min-w-0"
               >
-                <div className="size-8 grid place-items-center rounded-md bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100">
+                <div className="size-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border border-gray-200 dark:border-neutral-700">
                   <Plus className="size-4" />
                 </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-neutral-300">
+                <span className="text-sm font-medium text-gray-700 dark:text-neutral-300 truncate">
                   New Chat
                 </span>
               </Link>
@@ -240,7 +239,7 @@ export function ChatSidebar() {
                   <Link
                     href="/services/chat"
                     aria-label="New chat"
-                    className="size-8 grid place-items-center rounded-md bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
+                    className="size-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border border-gray-200 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                   >
                     <Plus className="size-4" />
                   </Link>
@@ -252,9 +251,10 @@ export function ChatSidebar() {
             <AnimatePresence initial={false}>
               {open && (
                 <motion.span
-                  initial={{ opacity: 0, x: -6 }}
+                  initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -6 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
                   className="text-lg font-semibold tracking-tight text-gray-900 dark:text-neutral-100"
                 >
                   LegalMind
@@ -262,11 +262,11 @@ export function ChatSidebar() {
               )}
             </AnimatePresence>
 
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
-              className="h-8 w-8 rounded-md border border-gray-200 dark:border-neutral-800 text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+              className="h-8 w-8 rounded-lg border border-gray-200 dark:border-neutral-700 text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all duration-200 flex-shrink-0"
               onClick={() => setOpen((v) => !v)}
             >
               {open ? (
@@ -274,18 +274,17 @@ export function ChatSidebar() {
               ) : (
                 <ChevronRight className="size-4" />
               )}
-            </Button>
+            </Button> */}
           </div>
 
-          {/* Search */}
-          <div className="px-3">
+          <div className="px-3 py-2">
             {open ? (
               <div className="relative">
-                <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-500" />
+                <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-500 z-10" />
                 <Input
                   aria-label="Search"
                   placeholder="Search"
-                  className="pl-9 h-9 rounded-lg bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 placeholder:text-gray-400 dark:placeholder:text-neutral-500 focus-visible:ring-1 focus-visible:ring-[#007BFF] dark:focus-visible:ring-[#63B3ED]"
+                  className="pl-9 pr-12 h-9 rounded-lg bg-gray-50 dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-900 dark:text-neutral-100 placeholder:text-gray-400 dark:placeholder:text-neutral-500 focus-visible:ring-2 focus-visible:ring-[#007BFF] dark:focus-visible:ring-[#63B3ED] focus-visible:border-transparent"
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2">
                   <kbd className="px-1.5 py-0.5 text-[10px] rounded bg-white border text-gray-500 border-gray-200 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400">
@@ -296,8 +295,12 @@ export function ChatSidebar() {
             ) : (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="w-full">
-                    <Search className="size-5" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-full h-9 rounded-lg border border-gray-200 dark:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <Search className="size-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right">Search</TooltipContent>
@@ -305,210 +308,220 @@ export function ChatSidebar() {
             )}
           </div>
 
-          {/* Sections */}
-          <div
-            className={`mt-3 px-2 flex-1 ${
-              open ? "overflow-y-auto" : "overflow-y-hidden"
-            }`}
-          >
-            <AnimatedThemeToggler />
+          <div className="flex-1 px-2 overflow-hidden">
+            <div
+              className={`h-full ${
+                open ? "overflow-y-auto" : "overflow-y-hidden"
+              } scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-neutral-600`}
+            >
+              <div className="py-2">
+                <AnimatedThemeToggler />
 
-            {/* MAIN */}
-            <SectionLabel open={open}>MAIN</SectionLabel>
-            <nav className="space-y-1">
-              {MAIN_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  item.href &&
-                  pathname?.startsWith(item.href) &&
-                  !item.hasChildren;
-                // Dashboard special case
-                if (item.hasChildren) {
-                  if (open) {
-                    return (
-                      <div key={item.label} className="px-1">
-                        <button
-                          aria-expanded={dashOpen}
-                          onClick={() => setDashOpen((v) => !v)}
-                          className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-xl transition-colors ${
-                            pathname?.startsWith("/dashboard")
-                              ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                              : "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70"
-                          }`}
-                        >
-                          <div className="size-6 grid place-items-center rounded-md bg-gray-100 dark:bg-neutral-800">
-                            <Icon className="size-4" />
-                          </div>
-                          <span className="text-sm font-medium">Dashboard</span>
-                          <ChevronDown
-                            className={`ml-auto size-4 transition-transform ${
-                              dashOpen ? "" : "-rotate-90"
-                            }`}
-                          />
-                        </button>
-
-                        <AnimatePresence initial={false}>
-                          {dashOpen && (
-                            <motion.ul
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="ml-8 mt-1 space-y-1 overflow-hidden"
+                {/* MAIN */}
+                <SectionLabel open={open}>MAIN</SectionLabel>
+                <nav className="space-y-1 px-1">
+                  {MAIN_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive =
+                      item.href &&
+                      pathname?.startsWith(item.href) &&
+                      !item.hasChildren;
+                    // Dashboard special case
+                    if (item.hasChildren) {
+                      if (open) {
+                        return (
+                          <div key={item.label}>
+                            <button
+                              aria-expanded={dashOpen}
+                              onClick={() => setDashOpen((v) => !v)}
+                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 border ${
+                                pathname?.startsWith("/dashboard")
+                                  ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
+                                  : "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
+                              }`}
                             >
-                              {DASHBOARD_CHILDREN.map((child) => {
-                                const activeChild = pathname === child.href;
-                                return (
-                                  <li key={child.href}>
+                              <div className="size-6 flex items-center justify-center rounded-md bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 flex-shrink-0">
+                                <Icon className="size-4" />
+                              </div>
+                              <span className="text-sm font-medium truncate">
+                                Dashboard
+                              </span>
+                              <ChevronDown
+                                className={`ml-auto size-4 transition-transform duration-200 flex-shrink-0 ${
+                                  dashOpen ? "" : "-rotate-90"
+                                }`}
+                              />
+                            </button>
+
+                            <AnimatePresence initial={false}>
+                              {dashOpen && (
+                                <motion.ul
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="ml-9 mt-1 space-y-1 overflow-hidden"
+                                >
+                                  {DASHBOARD_CHILDREN.map((child) => {
+                                    const activeChild = pathname === child.href;
+                                    return (
+                                      <li key={child.href}>
+                                        <Link
+                                          href={child.href}
+                                          className={`block text-sm rounded-lg px-3 py-2 transition-all duration-200 border ${
+                                            activeChild
+                                              ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
+                                              : "text-gray-600 hover:bg-gray-50 dark:text-neutral-400 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
+                                          }`}
+                                        >
+                                          {child.label}
+                                        </Link>
+                                      </li>
+                                    );
+                                  })}
+                                </motion.ul>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      }
+                      // Collapsed: show popover with child links
+                      return (
+                        <Tooltip key={item.label}>
+                          <TooltipTrigger asChild>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button
+                                  aria-label="Dashboard"
+                                  className={`w-full flex items-center justify-center p-2.5 rounded-xl transition-all duration-200 border ${
+                                    pathname?.startsWith("/dashboard")
+                                      ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
+                                      : "text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
+                                  }`}
+                                >
+                                  <Icon className="size-5 flex-shrink-0" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                align="start"
+                                side="right"
+                                className="w-48 p-2 bg-white shadow-lg dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700"
+                              >
+                                <div className="text-xs text-gray-500 dark:text-neutral-400 px-2 pb-2 font-medium">
+                                  Dashboard
+                                </div>
+                                <div className="space-y-1">
+                                  {DASHBOARD_CHILDREN.map((child) => (
                                     <Link
+                                      key={child.href}
                                       href={child.href}
-                                      className={`block text-sm rounded-lg px-2.5 py-1.5 ${
-                                        activeChild
+                                      className={`block rounded-lg px-2 py-2 text-sm transition-colors ${
+                                        pathname === child.href
                                           ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                                          : "text-gray-600 hover:bg-gray-50 dark:text-neutral-400 dark:hover:bg-neutral-800/70"
+                                          : "text-gray-700 hover:bg-gray-50 dark:text-neutral-400 dark:hover:bg-neutral-800/70"
                                       }`}
                                     >
                                       {child.label}
                                     </Link>
-                                  </li>
-                                );
-                              })}
-                            </motion.ul>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    );
-                  }
-                  // Collapsed: show popover with child links
-                  return (
-                    <Tooltip key={item.label}>
-                      <TooltipTrigger asChild>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              aria-label="Dashboard"
-                              className={`w-full flex items-center justify-center p-2 rounded-xl transition-colors ${
-                                pathname?.startsWith("/dashboard")
-                                  ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                                  : "text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70"
-                              }`}
-                            >
-                              <Icon className="size-5" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            align="start"
-                            side="right"
-                            className="w-48 p-2 bg-white shadow-md dark:bg-neutral-900"
-                          >
-                            <div className="text-xs text-gray-500 dark:text-neutral-400 px-1 pb-1">
-                              Dashboard
-                            </div>
-                            <div className="space-y-1">
-                              {DASHBOARD_CHILDREN.map((child) => (
-                                <Link
-                                  key={child.href}
-                                  href={child.href}
-                                  className={`block rounded-md px-2 py-1.5 text-sm ${
-                                    pathname === child.href
-                                      ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                                      : "text-gray-700 hover:bg-gray-50 dark:text-neutral-400 dark:hover:bg-neutral-800/70"
-                                  }`}
-                                >
-                                  {child.label}
-                                </Link>
-                              ))}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">Dashboard</TooltipContent>
-                    </Tooltip>
-                  );
-                }
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          </TooltipTrigger>
+                          <TooltipContent side="right">
+                            Dashboard
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    }
 
-                // Regular items
-                return open ? (
-                  <Link
-                    key={item.label}
-                    href={item.href!}
-                    aria-label={item.label}
-                  >
-                    <div
-                      className={`flex items-center gap-3 px-2.5 py-2 rounded-xl transition-colors ${
-                        isActive
-                          ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                          : "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70"
-                      }`}
-                    >
-                      <div className="size-6 grid place-items-center rounded-md bg-gray-100 dark:bg-neutral-800">
-                        <Icon className="size-4" />
-                      </div>
-                      <span className="text-sm font-medium">{item.label}</span>
-                      {"badge" in item && item.badge ? (
-                        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-[#007BFF]/10 text-[#007BFF]">
-                          {item.badge}
-                        </span>
-                      ) : null}
-                    </div>
-                  </Link>
-                ) : (
-                  <Tooltip key={item.label}>
-                    <TooltipTrigger asChild>
-                      <Link href={item.href!} aria-label={item.label}>
-                        <div
-                          className={`flex items-center justify-center p-2 rounded-xl transition-colors ${
-                            isActive
-                              ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                              : "text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70"
-                          }`}
-                        >
-                          <Icon className="size-5" />
+                    // Regular items
+                    return open ? (
+                      <Link
+                        key={item.label}
+                        href={item.href!}
+                        aria-label={item.label}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 border ${
+                          isActive
+                            ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
+                            : "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
+                        }`}
+                      >
+                        <div className="size-6 flex items-center justify-center rounded-md bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 flex-shrink-0">
+                          <Icon className="size-4" />
                         </div>
+                        <span className="text-sm font-medium truncate">
+                          {item.label}
+                        </span>
+                        {"badge" in item && item.badge ? (
+                          <span className="ml-auto text-[10px] px-2 py-1 rounded-full bg-[#007BFF]/10 text-[#007BFF] border border-[#007BFF]/20 flex-shrink-0">
+                            {item.badge}
+                          </span>
+                        ) : null}
                       </Link>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">{item.label}</TooltipContent>
-                  </Tooltip>
-                );
-              })}
-            </nav>
+                    ) : (
+                      <Tooltip key={item.label}>
+                        <TooltipTrigger asChild>
+                          <Link
+                            href={item.href!}
+                            aria-label={item.label}
+                            className={`flex items-center justify-center p-2.5 rounded-xl transition-all duration-200 border ${
+                              isActive
+                                ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
+                                : "text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
+                            }`}
+                          >
+                            <Icon className="size-5 flex-shrink-0" />
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          {item.label}
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </nav>
 
-            {/* RECENT */}
-            <SectionLabel className="mt-4" open={open}>
-              RECENT
-            </SectionLabel>
-            <div className="px-1">
-              {isLoadingSessions ? (
-                <ChatHistorySkeleton open={open} />
-              ) : sessions.length ? (
-                <RecentList
-                  sessions={sessions}
-                  open={open}
-                  pathname={pathname || null}
-                  deleteSession={deleteSession}
-                />
-              ) : open ? (
-                <EmptyHint open={open} />
-              ) : null}
+                {/* RECENT */}
+                <SectionLabel className="mt-6" open={open}>
+                  RECENT
+                </SectionLabel>
+                <div className="px-1">
+                  {isLoadingSessions ? (
+                    <ChatHistorySkeleton open={open} />
+                  ) : sessions.length ? (
+                    <RecentList
+                      sessions={sessions}
+                      open={open}
+                      pathname={pathname || null}
+                      deleteSession={deleteSession}
+                    />
+                  ) : open ? (
+                    <EmptyHint open={open} />
+                  ) : null}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Footer User Card */}
           {user && (
-            <div className="px-3 py-3">
+            <div className="px-3 py-3 border-t border-gray-100 dark:border-neutral-800">
               {open ? (
-                <div className="flex items-center gap-3 rounded-2xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 px-3 py-2">
-                  <Avatar className="size-9">
+                <div className="flex items-center gap-3 rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-700 px-3 py-2.5 shadow-sm">
+                  <Avatar className="size-9 flex-shrink-0">
                     <AvatarImage
                       src={(user.image as string) || "/placeholder.svg"}
                       alt={user.name || "User"}
                     />
-                    <AvatarFallback>{userInitials}</AvatarFallback>
+                    <AvatarFallback className="bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border border-gray-200 dark:border-neutral-700">
+                      {userInitials}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-gray-900 dark:text-neutral-100 truncate">
                       {user.name || "User"}
                     </div>
-                    <div className="text-[10px] text-gray-500 dark:text-neutral-400 truncate">
+                    <div className="text-xs text-gray-500 dark:text-neutral-400 truncate">
                       {user.email || "DESIGNER"}
                     </div>
                   </div>
@@ -516,7 +529,7 @@ export function ChatSidebar() {
                     variant="ghost"
                     size="icon"
                     aria-label="Logout"
-                    className="text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                    className="text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-neutral-100 h-8 w-8 rounded-lg border border-gray-200 dark:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800 flex-shrink-0"
                     onClick={handleLogout}
                   >
                     <LogOut className="size-4" />
@@ -527,14 +540,16 @@ export function ChatSidebar() {
                   <TooltipTrigger asChild>
                     <button
                       aria-label="Account"
-                      className="w-full p-1.5 rounded-2xl border bg-white dark:bg-neutral-900"
+                      className="w-full px-1.5 py-1.5 pr-9.75 rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors shadow-sm"
                     >
                       <Avatar className="size-8 mx-auto">
                         <AvatarImage
                           src={(user.image as string) || "/placeholder.svg"}
                           alt={user.name || "User"}
                         />
-                        <AvatarFallback>{userInitials}</AvatarFallback>
+                        <AvatarFallback className="bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border border-gray-200 dark:border-neutral-700">
+                          {userInitials}
+                        </AvatarFallback>
                       </Avatar>
                     </button>
                   </TooltipTrigger>
@@ -666,13 +681,13 @@ function SectionLabel({
 }) {
   return open ? (
     <div
-      className={`px-2 py-2 text-[10px] tracking-wider text-gray-500 dark:text-neutral-500 ${className}`}
+      className={`px-3 py-2 text-[10px] tracking-wider font-medium text-gray-500 dark:text-neutral-500 ${className}`}
     >
       {children}
     </div>
   ) : (
     <div className={`flex items-center justify-center py-2 ${className}`}>
-      <div className="h-6 w-[2px] rounded-full bg-gray-200 dark:bg-neutral-800" />
+      <div className="h-6 w-[2px] rounded-full bg-gray-200 dark:bg-neutral-700" />
     </div>
   );
 }
@@ -683,9 +698,9 @@ function ChatHistorySkeleton({ open }: { open: boolean }) {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className={`flex items-center gap-2 ${open ? "px-2.5" : "px-0"} py-2`}
+          className={`flex items-center gap-2 ${open ? "px-3" : "px-0"} py-2`}
         >
-          <Skeleton className="size-4 rounded" />
+          <Skeleton className="size-4 rounded flex-shrink-0" />
           {open && <Skeleton className="h-4 flex-1 rounded" />}
         </div>
       ))}
@@ -713,10 +728,10 @@ function RecentList({
           return (
             <div
               key={s.id}
-              className={`group flex items-center gap-2 px-2.5 py-2 rounded-xl ${
+              className={`group flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all duration-200 border ${
                 active
-                  ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                  : "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70"
+                  ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
+                  : "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
               }`}
             >
               <Link
@@ -735,7 +750,7 @@ function RecentList({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800 flex-shrink-0"
                 onClick={(e) => deleteSession(s.id, e)}
                 aria-label="Delete chat"
               >
@@ -758,14 +773,14 @@ function RecentList({
             <TooltipTrigger asChild>
               <Link
                 href={`/services/chat/${s.id}`}
-                className={`flex items-center justify-center p-2 rounded-xl ${
+                className={`flex items-center justify-center p-2.5 rounded-xl transition-all duration-200 border ${
                   active
-                    ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                    : "text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70"
+                    ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
+                    : "text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
                 }`}
                 aria-label={s.title}
               >
-                <MessageSquare className="size-5" />
+                <MessageSquare className="size-5 flex-shrink-0" />
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right" className="max-w-56">
@@ -783,7 +798,7 @@ function RecentList({
 
 function EmptyHint({ open }: { open: boolean }) {
   return (
-    <div className="rounded-xl border border-dashed border-gray-200 dark:border-neutral-800 p-4 text-center">
+    <div className="rounded-xl border border-dashed border-gray-200 dark:border-neutral-700 p-4 text-center bg-gray-50/50 dark:bg-neutral-800/50">
       <div className="text-xs text-gray-500 dark:text-neutral-400">
         No conversations yet — start a new one.
       </div>
