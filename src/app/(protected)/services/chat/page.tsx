@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { AIChatInput } from "@/components/protected/chat/ai-chat-input";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/hooks/use-toast";
+import TextType from "@/components/TextType";
 
 export default function ChatHomePage() {
   const router = useRouter();
@@ -97,9 +98,16 @@ export default function ChatHomePage() {
           transition={{ duration: 0.2 }}
           className="text-left space-y-2 mb-8"
         >
-          <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">
-            Hi there, {firstName}
-          </h1>
+          <TextType
+            text={`Hi there, ${firstName}`}
+            className="text-3xl md:text-5xl font-semibold tracking-tight"
+            typingSpeed={75}
+            pauseDuration={0}
+            startOnVisible={true}
+            showCursor={true}
+            cursorCharacter="|"
+          />
+
           <motion.h2
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

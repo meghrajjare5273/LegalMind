@@ -96,9 +96,9 @@ const Navbar: React.FC = () => {
       icon: <FileText className="h-5 w-5" />,
     },
     {
-      title: "Legal Research",
-      description: "Comprehensive precedent research and citations",
-      href: "/services/research",
+      title: "Legal Chat",
+      description: "Comprehensive citations and extractions",
+      href: "/services/chat",
       icon: <BookOpen className="h-5 w-5" />,
     },
     {
