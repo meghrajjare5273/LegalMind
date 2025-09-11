@@ -14,6 +14,7 @@ import { authClient } from "@/lib/auth-client";
 import { BorderTrail } from "@/components/ui/motion-primitives/border-trail";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 // Zod validation schemas
 const signInSchema = z.object({
@@ -36,7 +37,7 @@ export default function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
   const [showBorderTrail, setShowBorderTrail] = useState(false);
   const [borderTrailVisible, setBorderTrailVisible] = useState(false);
   const { toast } = useToast();
-
+  const router = useRouter();
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -83,6 +84,7 @@ export default function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
               description: "You have been signed in successfully.",
               variant: "success",
             });
+            router.push("/dashboard");
           },
           onError: (ctx) => {
             console.error("Sign-in error:", ctx.error);

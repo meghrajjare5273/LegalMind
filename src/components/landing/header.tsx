@@ -92,7 +92,7 @@ const Navbar: React.FC = () => {
     {
       title: "Contract Analysis",
       description: "AI-powered contract review and risk scoring",
-      href: "/services/contracts",
+      href: "/services/contract-review",
       icon: <FileText className="h-5 w-5" />,
     },
     {
