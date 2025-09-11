@@ -26,7 +26,7 @@ export default function ChatLayout({
       className={`${inter.variable} font-sans text-neutral-100 bg-neutral-950 h-dvh w-dvw flex`}
     >
       <ChatSidebar />
-      <main className="flex-1 min-w-0 h-dvh overflow-scroll scr md:ml-0 pt-12 md:pt-0">
+      <main className="flex-1 min-w-0 max-h-lvh overflow-hidden">
         <Spotlight
           height={1000}
           gradientFirst="radial-gradient(58.43% 44.44% at 49.26% 40.84%, hsla(0, 100%, 81%, .08) 0, hsla(0, 100%, 54%, .02) 50%, hsla(0, 100%, 40%, 0) 80%)"

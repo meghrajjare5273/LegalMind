@@ -23,7 +23,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false, // Prevent zoom issues that can cause viewport snapping
-  viewportFit: "cover",
+  viewportFit: "contain",
   // Remove interactiveWidget temporarily to test
   // interactiveWidget: "resizes-content",
 };
@@ -35,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} overflow-x-hidden`}>
+      <body className={`${inter.className} overflow-hidden`}>
         {children}
         <SpeedInsights />
       </body>

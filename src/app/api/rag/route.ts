@@ -5,12 +5,21 @@ import { GoogleGenAI } from "@google/genai";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+import OpenAI from "openai";
 
 // Initialize Pinecone and Google Generative AI clients
 const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY as string });
 const index = pc.Index(process.env.PINECONE_INDEX_NAME as string);
 const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
 const namespace = process.env.PUBLIC_PINECONE_NAMESPACE as string;
+const client = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY as string,
+  defaultHeaders: {
+    "HTTP-Referer": process.env.PRODUCTION_URL!, // Optional. Site URL for rankings on openrouter.ai.
+    "X-Title": process.env.PRODUCTION_NAME!, // Optional. Site title for rankings on openrouter.ai.
+  },
+});
 
 // Token counting utility
 function estimateTokens(text: string): number {
@@ -106,6 +115,128 @@ async function retrieveContext(
     );
   } catch (error) {
     console.error("Error retrieving context:", error);
+    throw error;
+  }
+}
+
+// Function to generate streaming response using OpenAI (ChatGPT OSS 20B)
+async function* generateStreamingResponseWithOpenAI(
+  query: string,
+  context: string,
+  conversationHistory: string
+): AsyncGenerator<string, void, unknown> {
+  try {
+    const prompt = `
+You are a legal expert assistant specializing in Indian law, with the understanding of multiple legal texts such as the Constitution of India and other important scriptures. You are also provided with the user's chat history in precise terms for your reference. 
+
+Based on the provided legal contexts, answer the user's question accurately and comprehensively. 
+
+IMPORTANT GUIDELINES:
+0. Make sure the user understands that you are just an AI chatbot and not a replacement for an actual lawyer
+1. Do not mention the context to the end user and provide a refined output
+2. Always cite specific sections, articles, or provisions when referencing the law
+3. If the context doesn't contain sufficient information, provide a more generic answer
+4. Distinguish between Constitutional provisions and IPC provisions
+5. Provide practical interpretations where appropriate
+6. If multiple interpretations exist, mention them
+7. Use clear, accessible language while maintaining legal accuracy
+
+LEGAL CONTEXTS:
+${context}
+
+CONVERSATION HISTORY:
+${conversationHistory}
+
+
+RESPONSE: `;
+
+    const stream = await client.chat.completions.create({
+      model: "openai/gpt-oss-20b:free",
+      messages: [
+        {
+          role: "system",
+          content: prompt,
+        },
+        {
+          role: "user",
+          content: `USER QUESTION: ${query}`,
+        },
+      ],
+      temperature: 0.4,
+      max_tokens: 5000,
+      stream: true,
+    });
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) {
+        yield content;
+      }
+    }
+  } catch (error) {
+    console.error("Error generating streaming response with OpenAI:", error);
+    throw error;
+  }
+}
+
+// Function to generate non-streaming response using OpenAI (ChatGPT OSS 20B)
+async function generateNonStreamingResponseWithOpenAI(
+  query: string,
+  context: string,
+  conversationHistory: string | null
+): Promise<string> {
+  try {
+    const prompt = `
+You are a legal expert assistant specializing in Indian law, with the understanding of multiple legal texts such as the Constitution of India and other important scriptures. You are also provided with the user's chat history in precise terms for your reference. 
+
+Based on the provided legal contexts, answer the user's question accurately and comprehensively. 
+
+IMPORTANT GUIDELINES:
+0. Make sure the user understands that you are just an AI chatbot and not a replacement for an actual lawyer
+1. Do not mention the context to the end user and provide a refined output
+2. Always cite specific sections, articles, or provisions when referencing the law
+3. If the context doesn't contain sufficient information, provide a more generic answer
+4. Distinguish between Constitutional provisions and IPC provisions
+5. Provide practical interpretations where appropriate
+6. If multiple interpretations exist, mention them
+7. Use clear, accessible language while maintaining legal accuracy
+
+LEGAL CONTEXTS:
+${context}
+
+CONVERSATION HISTORY:
+${conversationHistory}
+
+RESPONSE: `;
+
+    const response = await client.chat.completions.create({
+      model: "openai/gpt-oss-20b:free",
+      messages: [
+        {
+          role: "system",
+          content: prompt,
+        },
+        {
+          role: "user",
+          content: query,
+        },
+      ],
+      temperature: 0.4,
+      max_tokens: 5000,
+      stream: false,
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (content) {
+      return content;
+    }
+
+    throw new Error("No response generated from ChatGPT OSS 20B");
+  } catch (error) {
+    console.error(
+      "Error generating non-streaming response with OpenAI:",
+      error
+    );
     throw error;
   }
 }
@@ -305,7 +436,11 @@ export async function POST(request: NextRequest) {
       await buildContextWithTokenLimit(chatSession.messages, contexts);
 
     if (!sessionId) {
-      const response = await generateNonStreamingResponse(query, context, null);
+      const response = await generateNonStreamingResponseWithOpenAI(
+        query,
+        context,
+        null
+      );
       const responseTokens = estimateTokens(response);
 
       // Save assistant response
@@ -354,7 +489,7 @@ export async function POST(request: NextRequest) {
         const readableStream = new ReadableStream({
           async start(controller) {
             try {
-              for await (const chunk of generateStreamingResponseWithGemini(
+              for await (const chunk of generateStreamingResponseWithOpenAI(
                 query,
                 context,
                 conversationHistory

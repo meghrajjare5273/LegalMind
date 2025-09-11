@@ -9,6 +9,7 @@ import { AIChatInput } from "@/components/protected/chat/ai-chat-input";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MessageSquare } from "lucide-react";
 
 type Message = {
   id: string;
@@ -28,13 +29,17 @@ type ChatSession = {
 
 const MessageSkeleton = ({ align = "start" }: { align?: "start" | "end" }) => (
   <div
-    className={`max-w-3xl mb-4 ${align === "end" ? "ml-auto text-right" : ""}`}
+    className={`w-full mb-6 ${
+      align === "end" ? "flex justify-end" : "flex justify-start"
+    }`}
   >
-    <Skeleton
-      className={`inline-block rounded-2xl px-4 py-2 ${
-        align === "end" ? "h-9 max-w-[70%]" : "h-20 w-11/12"
-      }`}
-    />
+    <div className="max-w-[85%] md:max-w-[75%]">
+      <Skeleton
+        className={`rounded-2xl ${
+          align === "end" ? "h-12 w-48 bg-muted/50" : "h-20 w-64 bg-card/50"
+        }`}
+      />
+    </div>
   </div>
 );
 
@@ -257,117 +262,146 @@ function SessionView({ sessionId }: { sessionId: string }) {
   // Authentication check
   if (!user) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="h-8 w-48 bg-muted rounded mb-4" />
-          <div className="h-4 w-96 bg-muted rounded" />
+      <div className="h-full flex items-center justify-center bg-background">
+        <div className="animate-pulse text-center">
+          <div className="h-8 w-48 bg-muted rounded-lg mb-4 mx-auto" />
+          <div className="h-4 w-96 bg-muted rounded-lg mx-auto" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex-shrink-0 p-4 bg-transparent backdrop-blur-md z-20 sticky top-0">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 min-w-0">
-            <h1 className="text-base md:text-lg font-semibold truncate">
-              {currentSession?.title || "Legal Assistant"}
-            </h1>
+    <div className="h-full flex flex-col bg-transparent overflow-y-hidden">
+      <div className="flex-shrink-0 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-20">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center gap-3">
+              {/* <div className="p-2 rounded-lg bg-accent/10">
+                <Scale className="h-5 w-5 text-accent" />
+              </div> */}
+              <div className="text-center">
+                <h1 className="text-lg font-semibold text-foreground text-balance">
+                  {currentSession?.title || "Legal Assistant"}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Ask questions about Indian law
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-4 pb-10">
-        {isLoadingMessages ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <MessageSkeleton key={i} align={i % 2 ? "end" : "start"} />
-          ))
-        ) : (
-          <>
-            {currentSession?.messages?.map((m) => (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`max-w-3xl ${
-                  m.role === "user" ? "ml-auto text-right" : ""
-                }`}
-              >
-                <div
-                  className={`inline-block rounded-2xl px-4 py-2 text-sm ${
-                    m.role === "user"
-                      ? "bg-neutral-200 text-neutral-900"
-                      : "bg-neutral-900/70 border border-neutral-800 text-neutral-100"
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+          {isLoadingMessages ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <MessageSkeleton key={i} align={i % 2 ? "end" : "start"} />
+            ))
+          ) : (
+            <>
+              {currentSession?.messages?.map((m) => (
+                <motion.div
+                  key={m.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`w-full flex ${
+                    m.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <p className="whitespace-pre-wrap break-words m-0">
-                      {m.content}
-                    </p>
+                  <div className="max-w-[85%] md:max-w-[75%]">
+                    <div
+                      className={`rounded-2xl px-4 py-3 shadow-sm ${
+                        m.role === "user"
+                          ? "bg-primary text-primary-foreground ml-auto"
+                          : "bg-card border border-border text-card-foreground"
+                      }`}
+                    >
+                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <p className="whitespace-pre-wrap break-words m-0 leading-relaxed text-pretty">
+                          {m.content}
+                        </p>
+                      </div>
+                    </div>
+                    {m.tokenCount && (
+                      <div
+                        className={`text-xs text-muted-foreground mt-2 ${
+                          m.role === "user" ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {m.tokenCount} tokens
+                      </div>
+                    )}
                   </div>
-                </div>
-                {m.tokenCount && (
-                  <div className="text-xs opacity-50 mt-1">
-                    {m.tokenCount} tokens
-                  </div>
-                )}
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
 
-            {/* Streaming message */}
-            {streamingMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="max-w-3xl"
-              >
-                <div className="inline-block rounded-2xl px-4 py-2 text-sm bg-neutral-900/70 border border-neutral-800 text-neutral-100">
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <p className="whitespace-pre-wrap break-words m-0">
-                      {streamingMessage}
-                      <span className="animate-pulse">|</span>
-                    </p>
+              {streamingMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="w-full flex justify-start"
+                >
+                  <div className="max-w-[85%] md:max-w-[75%]">
+                    <div className="rounded-2xl px-4 py-3 bg-card border border-border text-card-foreground shadow-sm">
+                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <p className="whitespace-pre-wrap break-words m-0 leading-relaxed text-pretty">
+                          {streamingMessage}
+                          <span className="animate-pulse text-accent">|</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-3 w-3 animate-pulse" />
+                        Generating response...
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="text-xs opacity-50 mt-1">Generating...</div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
 
-            {/* Loading indicator */}
-            {isLoading && !streamingMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="max-w-3xl"
-              >
-                <div className="inline-block rounded-2xl px-4 py-2 text-sm bg-neutral-900/70 border border-neutral-800 text-neutral-100">
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-                    <span>Assistant is thinking...</span>
+              {isLoading && !streamingMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="w-full flex justify-start"
+                >
+                  <div className="max-w-[85%] md:max-w-[75%]">
+                    <div className="rounded-2xl px-4 py-3 bg-card border border-border text-card-foreground shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent" />
+                        <span className="text-sm">
+                          Assistant is thinking...
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Preparing response...
+                    </div>
                   </div>
-                </div>
-                <div className="text-xs opacity-50 mt-1">Starting...</div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
 
-            <div ref={endRef} />
-          </>
-        )}
+              <div ref={endRef} />
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Sticky input */}
-      <div className="flex-shrink-0 sticky bottom-4 px-4 md:px-8 bg-transparent">
-        <div className="bg-transparent  rounded-xl p-3">
-          <AIChatInput
-            value={value}
-            onChange={setValue}
-            onSubmit={onSubmit}
-            isLoading={isLoading}
-            placeholder="Ask your legal question..."
-          />
+      <div className="flex-shrink-0">
+        <div className="max-w-4xl mx-auto p-4">
+          <div className="bg-transparent rounded-xl shadow-sm p-3">
+            <AIChatInput
+              value={value}
+              onChange={setValue}
+              onSubmit={onSubmit}
+              isLoading={isLoading}
+              placeholder="Ask your legal question..."
+            />
+          </div>
         </div>
       </div>
     </div>

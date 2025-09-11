@@ -24,7 +24,7 @@ export default function DashboardLayout({
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <SessionProvider>
-        <div>
+        <div className="overflow-hidden">
           {children}
           <FloatingNavigation />
         </div>
