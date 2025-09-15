@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { AIChatInput } from "@/components/protected/chat/ai-chat-input";
+import { MessageBubble } from "@/components/protected/chat/message-bubble";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -106,24 +107,16 @@ function SessionView({ sessionId }: { sessionId: string }) {
 
   const fetchCurrentSession = async () => {
     try {
-      setIsLoadingMessages(true);
       const response = await fetch(`/api/chat/${sessionId}`);
       if (response.ok) {
         const data = await response.json();
         setCurrentSession(data.session);
-      } else {
-        // If session doesn't exist, create it with welcome message
+      } else if (response.status === 404) {
+        // Session not found, create a new one with this ID
         setCurrentSession({
           id: sessionId,
-          title: "Legal Assistant",
-          messages: [
-            {
-              id: "welcome",
-              role: "assistant",
-              content: "Welcome! Ask anything about Indian law to get started.",
-              createdAt: new Date().toISOString(),
-            },
-          ],
+          title: "New Chat",
+          messages: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -277,9 +270,6 @@ function SessionView({ sessionId }: { sessionId: string }) {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-center gap-3">
             <div className="flex items-center gap-3">
-              {/* <div className="p-2 rounded-lg bg-accent/10">
-                <Scale className="h-5 w-5 text-accent" />
-              </div> */}
               <div className="text-center">
                 <h1 className="text-lg font-semibold text-foreground text-balance">
                   {currentSession?.title || "Legal Assistant"}
@@ -302,106 +292,54 @@ function SessionView({ sessionId }: { sessionId: string }) {
           ) : (
             <>
               {currentSession?.messages?.map((m) => (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={`w-full flex ${
-                    m.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div className="max-w-[85%] md:max-w-[75%]">
-                    <div
-                      className={`rounded-2xl px-4 py-3 shadow-sm ${
-                        m.role === "user"
-                          ? "bg-primary text-primary-foreground ml-auto"
-                          : "bg-card border border-border text-card-foreground"
-                      }`}
-                    >
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
-                        <p className="whitespace-pre-wrap break-words m-0 leading-relaxed text-pretty">
-                          {m.content}
-                        </p>
-                      </div>
-                    </div>
-                    {m.tokenCount && (
-                      <div
-                        className={`text-xs text-muted-foreground mt-2 ${
-                          m.role === "user" ? "text-right" : "text-left"
-                        }`}
-                      >
-                        {m.tokenCount} tokens
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
+                <MessageBubble key={m.id} message={m} />
               ))}
 
               {streamingMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="w-full flex justify-start"
-                >
-                  <div className="max-w-[85%] md:max-w-[75%]">
-                    <div className="rounded-2xl px-4 py-3 bg-card border border-border text-card-foreground shadow-sm">
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
-                        <p className="whitespace-pre-wrap break-words m-0 leading-relaxed text-pretty">
-                          {streamingMessage}
-                          <span className="animate-pulse text-accent">|</span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-2">
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="h-3 w-3 animate-pulse" />
-                        Generating response...
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                <MessageBubble
+                  message={{
+                    id: "streaming",
+                    role: "assistant",
+                    content: streamingMessage,
+                    createdAt: new Date().toISOString(),
+                  }}
+                  isStreaming={true}
+                />
               )}
 
-              {isLoading && !streamingMessage && (
+              {/* Empty state */}
+              {currentSession?.messages?.length === 0 && !streamingMessage && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="w-full flex justify-start"
+                  className="text-center py-12"
                 >
-                  <div className="max-w-[85%] md:max-w-[75%]">
-                    <div className="rounded-2xl px-4 py-3 bg-card border border-border text-card-foreground shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent" />
-                        <span className="text-sm">
-                          Assistant is thinking...
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-2">
-                      Preparing response...
-                    </div>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MessageSquare className="w-8 h-8 text-primary" />
                   </div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Start a conversation
+                  </h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Ask me anything about Indian law, legal procedures, or get
+                    help with contract analysis.
+                  </p>
                 </motion.div>
               )}
-
-              <div ref={endRef} />
             </>
           )}
+          <div ref={endRef} />
         </div>
       </div>
 
-      <div className="flex-shrink-0">
-        <div className="max-w-4xl mx-auto p-4">
-          <div className="bg-transparent rounded-xl shadow-sm p-3">
-            <AIChatInput
-              value={value}
-              onChange={setValue}
-              onSubmit={onSubmit}
-              isLoading={isLoading}
-              placeholder="Ask your legal question..."
-            />
-          </div>
+      <div className="flex-shrink-0 border-t border-border bg-background/80 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <AIChatInput
+            value={value}
+            onChange={setValue}
+            onSubmit={onSubmit}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </div>

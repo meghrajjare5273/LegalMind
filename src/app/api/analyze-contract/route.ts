@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"; // Set this in .env
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000/api/v1"; // Set this in .env
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     backendFormData.append("file", file);
 
     // Forward to backend
-    const response = await fetch(`${BACKEND_URL}/extract_and_analyze`, {
+    const response = await fetch(`${BACKEND_URL}/contract-analysis/analyze`, {
       method: "POST",
       body: backendFormData,
     });
