@@ -1,3 +1,12 @@
+/*
+ * REFACTOR CHANGES:
+ * 1. Removed page-specific layout constraints and height definitions
+ * 2. Replaced space-y-* with flex flex-col gap-* for consistent spacing
+ * 3. Simplified root element to work with parent layout's main content area
+ * 4. Added layout prop to motion components to prevent shifts
+ * 5. Maintained all existing analytics functionality
+ */
+
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,8 +47,9 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8">
       <motion.div
+        layout
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -54,6 +64,7 @@ export default function AnalyticsPage() {
       </motion.div>
 
       <motion.div
+        layout
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -61,6 +72,7 @@ export default function AnalyticsPage() {
       >
         {stats.map((stat, index) => (
           <motion.div
+            layout
             key={stat.title}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

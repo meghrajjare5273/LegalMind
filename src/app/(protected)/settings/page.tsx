@@ -1,3 +1,12 @@
+/*
+ * REFACTOR CHANGES:
+ * 1. Removed page-specific layout constraints and space-y-* classes
+ * 2. Replaced with flex flex-col gap-* for predictable vertical spacing
+ * 3. Simplified root element to work with parent layout structure
+ * 4. Added layout prop to motion components to prevent layout shifts
+ * 5. Maintained all existing settings functionality and form logic
+ */
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +23,9 @@ export default function SettingsPage() {
   const { user } = useSession();
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8">
       <motion.div
+        layout
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -31,6 +41,7 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div
+          layout
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -50,12 +61,12 @@ export default function SettingsPage() {
                 Profile Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+            <CardContent className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="name">Name</Label>
                 <Input id="name" defaultValue={user?.name || ""} />
               </div>
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -69,6 +80,7 @@ export default function SettingsPage() {
         </motion.div>
 
         <motion.div
+          layout
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
@@ -88,7 +100,7 @@ export default function SettingsPage() {
                 Notifications
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="email-notifications">Email Notifications</Label>
                 <Switch id="email-notifications" />
