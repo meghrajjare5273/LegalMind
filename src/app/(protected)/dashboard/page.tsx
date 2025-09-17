@@ -1,3 +1,12 @@
+/*
+ * REFACTOR CHANGES:
+ * 1. Removed page-specific layout wrappers and height constraints
+ * 2. Replaced space-y-* with flex flex-col gap-* for predictable spacing
+ * 3. Simplified root element to work with parent layout's padding
+ * 4. Added layout prop to motion components to prevent layout shifts
+ * 5. Maintained all existing functionality and data fetching logic
+ */
+
 "use client";
 
 import { useMemo } from "react";
@@ -113,25 +122,26 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-6">
-        <div className="h-7 w-48 bg-muted rounded" />
+      <div className="flex flex-col gap-6">
+        <div className="h-7 w-48 bg-muted rounded animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="h-40 bg-muted rounded-xl" />
-          <div className="h-40 bg-muted rounded-xl" />
-          <div className="h-40 bg-muted rounded-xl" />
+          <div className="h-40 bg-muted rounded-xl animate-pulse" />
+          <div className="h-40 bg-muted rounded-xl animate-pulse" />
+          <div className="h-40 bg-muted rounded-xl animate-pulse" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="h-72 bg-muted rounded-xl" />
-          <div className="h-72 bg-muted rounded-xl" />
+          <div className="h-72 bg-muted rounded-xl animate-pulse" />
+          <div className="h-72 bg-muted rounded-xl animate-pulse" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <motion.div
+        layout
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -139,6 +149,7 @@ export default function DashboardPage() {
       >
         <div>
           <motion.h1
+            layout
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
@@ -147,20 +158,22 @@ export default function DashboardPage() {
             Welcome back, {firstName}
           </motion.h1>
           <motion.p
+            layout
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="text-muted-foreground mt-1"
           >
-            Here&lsquo;s what&apos;s happening with your legal work today.
+            Here&apos;s what&apos;s happening with your legal work today.
           </motion.p>
         </div>
         <motion.div
+          layout
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="flex items-center gap-3"
         >
-          <Link href="/dashboard/services/chat">
+          <Link href="/services/chat">
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all duration-200">
               <Sparkles className="w-4 h-4 mr-2" />
               Start AI Session
@@ -171,13 +184,18 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <motion.div
+        layout
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Link href="/dashboard/services/chat" className="group">
+        <motion.div
+          layout
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Link href="/services/chat" className="group">
             <Card className="relative overflow-hidden transition-all duration-200 border hover:shadow-lg">
               <GlowingEffect
                 spread={40}
@@ -204,8 +222,12 @@ export default function DashboardPage() {
           </Link>
         </motion.div>
 
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Link href="/dashboard/services/contract-review" className="group">
+        <motion.div
+          layout
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Link href="/services/contract-review" className="group">
             <Card className="relative overflow-hidden transition-all duration-200 border hover:shadow-lg">
               <GlowingEffect
                 spread={40}
@@ -232,8 +254,12 @@ export default function DashboardPage() {
           </Link>
         </motion.div>
 
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Link href="/dashboard/services/research" className="group">
+        <motion.div
+          layout
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Link href="/services/research" className="group">
             <Card className="relative overflow-hidden transition-all duration-200 border hover:shadow-lg">
               <GlowingEffect
                 spread={40}
@@ -265,6 +291,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Projects Overview */}
         <motion.div
+          layout
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -287,9 +314,10 @@ export default function DashboardPage() {
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="flex flex-col gap-4">
               {projects.map((project, index) => (
                 <motion.div
+                  layout
                   key={project.id}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -340,10 +368,11 @@ export default function DashboardPage() {
 
         {/* Today's Tasks & Calendar */}
         <motion.div
+          layout
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="space-y-6"
+          className="flex flex-col gap-6"
         >
           {/* Today's Tasks */}
           <Card className="relative overflow-hidden">
@@ -361,9 +390,10 @@ export default function DashboardPage() {
                 Today&apos;s Tasks
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="flex flex-col gap-3">
               {todayTasks.map((task, index) => (
                 <motion.div
+                  layout
                   key={task.id}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -416,9 +446,10 @@ export default function DashboardPage() {
                 Upcoming
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="flex flex-col gap-3">
               {calendarEvents.map((event, index) => (
                 <motion.div
+                  layout
                   key={index}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
