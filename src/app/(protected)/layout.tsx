@@ -8,7 +8,7 @@ import { FloatingNavigation } from "@/components/protected/floating-navigation";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | LegalMind Dashboard",
+    template: "%s | LegalMind",
     default: "Dashboard | LegalMind",
   },
   description:
