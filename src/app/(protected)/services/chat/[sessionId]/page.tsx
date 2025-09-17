@@ -266,21 +266,11 @@ function SessionView({ sessionId }: { sessionId: string }) {
 
   return (
     <div className="h-full flex flex-col bg-transparent overflow-y-hidden">
-      <div className="flex-shrink-0 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-center gap-3">
-            <div className="flex items-center gap-3">
-              <div className="text-center">
-                <h1 className="text-lg font-semibold text-foreground text-balance">
-                  {currentSession?.title || "Legal Assistant"}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Ask questions about Indian law
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Subtle title bar - non-sticky */}
+      <div className="max-w-4xl mx-auto px-4 pt-6 pb-2">
+        <h1 className="text-base font-medium text-muted-foreground/80 text-center">
+          {currentSession?.title || "Legal Assistant"}
+        </h1>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -332,15 +322,13 @@ function SessionView({ sessionId }: { sessionId: string }) {
         </div>
       </div>
 
-      <div className="flex-shrink-0 border-t border-border bg-background/80 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <AIChatInput
-            value={value}
-            onChange={setValue}
-            onSubmit={onSubmit}
-            isLoading={isLoading}
-          />
-        </div>
+      <div className="max-w-4xl mx-auto px-4 py-4">
+        <AIChatInput
+          value={value}
+          onChange={setValue}
+          onSubmit={onSubmit}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );

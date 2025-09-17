@@ -7,13 +7,13 @@ import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-const Spotlight = dynamic(
-  () => import("@/components/ui/spotlight").then((m) => m.Spotlight),
+const RotatingEarth = dynamic(
+  () => import("@/components/ui/rotating-earth").then((m) => m.RotatingEarth),
   { ssr: true }
 );
 
 export const metadata: Metadata = {
-  title: "Chat | LegalMind",
+  title: "Chat",
 };
 
 export default function ChatLayout({
@@ -23,18 +23,18 @@ export default function ChatLayout({
 }) {
   return (
     <div
-      className={`${inter.variable} font-sans text-neutral-100 bg-neutral-950 h-dvh w-dvw flex`}
+      className={`${inter.variable} font-sans text-neutral-100 bg-neutral-950 h-dvh w-dvw flex relative`}
     >
-      <ChatSidebar />
-      <main className="flex-1 min-w-0 max-h-lvh overflow-hidden">
-        <Spotlight
-          height={1000}
-          gradientFirst="radial-gradient(58.43% 44.44% at 49.26% 40.84%, hsla(0, 100%, 81%, .08) 0, hsla(0, 100%, 54%, .02) 50%, hsla(0, 100%, 40%, 0) 80%)"
-          gradientSecond="radial-gradient(52.8% 65.2% at 45.5% 32.1%, hsla(0, 100%, 85%, .06) 0, hsla(0, 100%, 55%, .02) 50%, hsla(0, 100%, 45%, 0) 80%)"
-          gradientThird="radial-gradient(61.3% 58.4% at 53.8% 38.9%, hsla(0, 100%, 88%, .04) 0, hsla(0, 100%, 52%, .01) 50%, hsla(0, 100%, 42%, 0) 80%)"
-        />
-        {children}
-      </main>
+      <div className="absolute inset-0 flex items-center top-25 left-10 justify-center z-0 backdrop-blur-3xl filter">
+        <RotatingEarth />
+      </div>
+
+      <div className="relative z-10 flex w-full">
+        <ChatSidebar />
+        <main className="flex-1 min-w-0 max-h-lvh overflow-hidden">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

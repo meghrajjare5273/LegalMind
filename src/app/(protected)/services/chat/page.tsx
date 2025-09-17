@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { AIChatInput } from "@/components/protected/chat/ai-chat-input";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/hooks/use-toast";
-import TextType from "@/components/TextType";
+import TextType from "@/components/react-bits/TextType";
 
 export default function ChatHomePage() {
   const router = useRouter();
