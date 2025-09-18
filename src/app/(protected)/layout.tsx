@@ -25,10 +25,10 @@ export default function DashboardLayout({
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <SessionProvider>
         <div className="flex h-screen w-full">
-          <div className="overflow-hidden">
-            {children}
-            <FloatingNavigation />
-          </div>
+          {/* <div className="overflow-hidden"> */}
+          {children}
+          <FloatingNavigation />
+          {/* </div> */}
         </div>
         <Toaster />
       </SessionProvider>

@@ -1,22 +1,12 @@
-/*
- * REFACTOR CHANGES:
- * 1. Removed min-h-screen constraint that conflicted with parent layout
- * 2. Simplified header structure to work with parent layout's padding
- * 3. Removed redundant container max-width (handled by parent)
- * 4. Maintained all existing contract review functionality
- * 5. Preserved footer but adjusted for new layout structure
- */
-
 "use client";
 
-// import { Toaster } from "sonner";
 import ContractReview from "@/components/protected/contract/ContractReview";
 
-export default function Page() {
+export default function ContractReviewPage() {
   return (
-    <div className="flex flex-col gap-6">
-      {/* Top App Bar */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm -mx-6 md:-mx-8 px-6 md:px-8">
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm px-6 md:px-8">
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-4">
             <h1 className="text-lg font-semibold text-foreground">
@@ -38,13 +28,13 @@ export default function Page() {
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1">
+      {/* Main Content */}
+      <main className="flex-1 px-6 md:px-8 py-6">
         <ContractReview />
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border -mx-6 md:-mx-8 px-6 md:px-8 mt-12">
+      <footer className="border-t border-border px-6 md:px-8">
         <div className="py-4">
           <div className="flex items-center justify-center space-x-6 text-xs text-muted-foreground">
             <a href="#" className="hover:text-foreground transition-colors">

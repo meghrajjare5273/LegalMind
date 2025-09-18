@@ -322,7 +322,7 @@ function SessionView({ sessionId }: { sessionId: string }) {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="max-w-full px-4 py-4">
         <AIChatInput
           value={value}
           onChange={setValue}
