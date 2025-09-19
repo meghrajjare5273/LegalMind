@@ -29,7 +29,8 @@ export function RotatingEarth({
   }, []);
 
   const getThemeColors = () => {
-    const isDark = theme === "dark";
+    // const isDark = theme === "dark";
+    const isDark = true;
     return {
       ocean: isDark ? "#000000" : "#f8f9fa", // Light gray instead of light blue
       oceanStroke: isDark ? "#ffffff" : "#212529", // Dark gray/black instead of blue
