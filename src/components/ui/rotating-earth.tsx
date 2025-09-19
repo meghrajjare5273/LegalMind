@@ -21,7 +21,7 @@ export function RotatingEarth({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme(); // Use resolvedTheme instead of theme
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -29,17 +29,18 @@ export function RotatingEarth({
   }, []);
 
   const getThemeColors = () => {
-    const isDark = theme === "dark";
+    const isDark = resolvedTheme === "dark"; // Use resolvedTheme here
     return {
-      ocean: isDark ? "#000000" : "#f8f9fa", // Light gray instead of light blue
-      oceanStroke: isDark ? "#ffffff" : "#212529", // Dark gray/black instead of blue
-      graticule: isDark ? "#ffffff" : "#6c757d", // Medium gray instead of blue
-      landStroke: isDark ? "#ffffff" : "#343a40", // Dark gray instead of blue
-      dots: isDark ? "#999999" : "#495057", // Dark gray instead of blue
+      ocean: isDark ? "#000000" : "#f8f9fa", // Light gray background
+      oceanStroke: isDark ? "#ffffff" : "#212529", // Dark gray/black border
+      graticule: isDark ? "#ffffff" : "#6c757d", // Medium gray grid lines
+      landStroke: isDark ? "#ffffff" : "#343a40", // Dark gray land outlines
+      dots: isDark ? "#999999" : "#495057", // Dark gray dots
     };
   };
+
   useEffect(() => {
-    if (!canvasRef.current || !mounted) return;
+    if (!canvasRef.current || !mounted || !resolvedTheme) return; // Add resolvedTheme check
 
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
@@ -264,7 +265,7 @@ export function RotatingEarth({
     return () => {
       rotationTimer.stop();
     };
-  }, [width, height, resolvedTheme, mounted]);
+  }, [width, height, resolvedTheme, mounted]); // Use resolvedTheme in dependencies
 
   if (!mounted) {
     return (
