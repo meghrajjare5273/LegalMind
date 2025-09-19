@@ -21,7 +21,7 @@ export function RotatingEarth({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { resolvedTheme } = useTheme(); // Use resolvedTheme instead of theme
+  const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -29,18 +29,18 @@ export function RotatingEarth({
   }, []);
 
   const getThemeColors = () => {
-    const isDark = resolvedTheme === "dark"; // Use resolvedTheme here
+    const isDark = theme === "dark";
     return {
-      ocean: isDark ? "#000000" : "#f8f9fa", // Light gray background
-      oceanStroke: isDark ? "#ffffff" : "#212529", // Dark gray/black border
-      graticule: isDark ? "#ffffff" : "#6c757d", // Medium gray grid lines
-      landStroke: isDark ? "#ffffff" : "#343a40", // Dark gray land outlines
-      dots: isDark ? "#999999" : "#495057", // Dark gray dots
+      ocean: isDark ? "#000000" : "#f8f9fa", // Light gray instead of light blue
+      oceanStroke: isDark ? "#ffffff" : "#212529", // Dark gray/black instead of blue
+      graticule: isDark ? "#ffffff" : "#6c757d", // Medium gray instead of blue
+      landStroke: isDark ? "#ffffff" : "#343a40", // Dark gray instead of blue
+      dots: isDark ? "#999999" : "#495057", // Dark gray instead of blue
     };
   };
 
   useEffect(() => {
-    if (!canvasRef.current || !mounted || !resolvedTheme) return; // Add resolvedTheme check
+    if (!canvasRef.current || !mounted) return;
 
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
@@ -156,6 +156,8 @@ export function RotatingEarth({
     let landFeatures: any;
 
     const render = () => {
+      const currentColors = getThemeColors();
+
       context.clearRect(0, 0, containerWidth, containerHeight);
 
       const currentScale = projection.scale();
@@ -169,9 +171,9 @@ export function RotatingEarth({
         0,
         2 * Math.PI
       );
-      context.fillStyle = colors.ocean;
+      context.fillStyle = currentColors.ocean;
       context.fill();
-      context.strokeStyle = colors.oceanStroke;
+      context.strokeStyle = currentColors.oceanStroke;
       context.lineWidth = 2 * scaleFactor;
       context.stroke();
 
@@ -179,7 +181,7 @@ export function RotatingEarth({
         const graticule = d3.geoGraticule();
         context.beginPath();
         path(graticule());
-        context.strokeStyle = colors.graticule;
+        context.strokeStyle = currentColors.graticule;
         context.lineWidth = 1 * scaleFactor;
         context.globalAlpha = 0.25;
         context.stroke();
@@ -189,7 +191,7 @@ export function RotatingEarth({
         landFeatures.features.forEach((feature: any) => {
           path(feature);
         });
-        context.strokeStyle = colors.landStroke;
+        context.strokeStyle = currentColors.landStroke;
         context.lineWidth = 1 * scaleFactor;
         context.stroke();
 
@@ -210,7 +212,7 @@ export function RotatingEarth({
               0,
               2 * Math.PI
             );
-            context.fillStyle = colors.dots;
+            context.fillStyle = currentColors.dots;
             context.fill();
           }
         });
@@ -265,7 +267,7 @@ export function RotatingEarth({
     return () => {
       rotationTimer.stop();
     };
-  }, [width, height, resolvedTheme, mounted]); // Use resolvedTheme in dependencies
+  }, [width, height, resolvedTheme, mounted]);
 
   if (!mounted) {
     return (
