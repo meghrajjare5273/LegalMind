@@ -2,9 +2,13 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TextEffect } from "../ui/motion-primitives/text-effect";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import { useRouter } from "next/navigation";
 import { Inter } from "next/font/google";
+import { useState, useEffect } from "react";
+import { TextEffect } from "../ui/motion-primitives/text-effect";
+import { useSession } from "@/contexts/session-context";
 
 const inter = Inter({
   weight: ["600", "700"],
@@ -15,6 +19,16 @@ const inter = Inter({
 
 export default function HeroSection() {
   const router = useRouter();
+  const { user } = useSession();
+  const [buttonsLoading, setButtonsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setButtonsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div
       className="min-h-screen flex items-center relative overflow-hidden pt-16 bg-card"
@@ -38,8 +52,8 @@ export default function HeroSection() {
                 className={`${inter.className} text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[0.9] mb-2 h-auto font-bold`}
               >
                 Accesible and Precise
-                {/* <span className="italic relative inline-block font-bold">
-                  {/* Legal */}
+                {/* <span className="italic relative inline-block font-bold"> */}
+                {/* Legal */}
                 {/* <div className="absolute bottom-[3px] left-0 right-0 h-[3px] bg-white/50 rounded-sm" /> */}
                 {/* </span> */}
               </h1>
@@ -62,7 +76,7 @@ export default function HeroSection() {
               >
                 Made{" "}
                 <span
-                  className={`font-bold text-[#ad9238e2]  backdrop-blur-3xl  inline-block italic`}
+                  className={`font-bold text-[#ad9238e2] backdrop-blur-3xl inline-block italic`}
                 >
                   <TextEffect
                     delay={1.2}
@@ -96,27 +110,51 @@ export default function HeroSection() {
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <div className="flex flex-col sm:flex-row gap-6 mt-2">
-              <Button
-                onClick={() => {
-                  router.push("/sign-up");
-                }}
-                className="bg-white text-gold hover:bg-white/90 px-4 py-3 text-[1.1rem] font-semibold hover:-translate-y-[3px] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-0 h-auto"
-                size="lg"
-              >
-                Join LegalMind&copy;
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              {buttonsLoading ? (
+                <div className="flex flex-col sm:flex-row gap-6">
+                  <Skeleton className="h-14 w-48 bg-white/20 rounded-md" />
+                  <Skeleton className="h-14 w-44 bg-white/15 rounded-md" />
+                </div>
+              ) : (
+                <>
+                  {user ? (
+                    <Button
+                      onClick={() => {
+                        router.push("/dashboard");
+                      }}
+                      className="bg-white text-gold hover:bg-white/90 px-8 py-4 text-[1.1rem] font-semibold hover:-translate-y-[3px] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-0 h-auto tracking-wide"
+                      size="lg"
+                    >
+                      Go to Dashboard
+                      <ArrowRight className="ml-3 h-5 w-5" />
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={() => {
+                          router.push("/sign-up");
+                        }}
+                        className="bg-white text-gold hover:bg-white/90 px-8 py-4 text-[1.1rem] font-semibold hover:-translate-y-[3px] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-0 h-auto tracking-wide"
+                        size="lg"
+                      >
+                        Join LegalMind&copy;
+                        <ArrowRight className="ml-3 h-5 w-5" />
+                      </Button>
 
-              <Button
-                variant="outline"
-                onClick={() => {
-                  router.push("/sign-in");
-                }}
-                className="border-white/50 text-white hover:border-white hover:bg-white px-4 py-3 text-[1.1rem]  hover:-translate-y-[3px] transition-all duration-300 bg-transparent h-auto font-bold"
-                size="lg"
-              >
-                Already a Member.?
-              </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          router.push("/sign-in");
+                        }}
+                        className="border-white/50 text-white hover:border-white hover:bg-white px-8 py-4 text-[1.1rem] hover:-translate-y-[3px] transition-all duration-300 bg-transparent h-auto font-bold tracking-wide"
+                        size="lg"
+                      >
+                        Already a Member?
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </motion.div>
         </div>

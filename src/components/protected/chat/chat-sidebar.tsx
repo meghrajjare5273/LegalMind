@@ -13,9 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Bell,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   CreditCard,
   FileText,
   LayoutDashboard,
@@ -38,11 +35,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -71,7 +63,6 @@ type NavigationItem = {
   label: string;
   icon: React.ComponentType<any>;
   href: string;
-  hasChildren?: boolean;
   badge?: number;
 };
 
@@ -81,18 +72,11 @@ const MAIN_ITEMS: NavigationItem[] = [
     label: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
-    hasChildren: true,
   },
-  { label: "Contracts", icon: FileText, href: "/contracts" },
-  { label: "Payments", icon: CreditCard, href: "/payments" },
-  { label: "Notifications", icon: Bell, href: "/notifications", badge: 5 },
+  { label: "Contracts", icon: FileText, href: "/services/contract-review" },
+  // { label: "Payments", icon: CreditCard, href: "/payments" },
+  // { label: "Notifications", icon: Bell, href: "/notifications", badge: 5 },
 ] as const;
-
-const DASHBOARD_CHILDREN = [
-  { label: "Project", href: "/dashboard/project" },
-  { label: "Revenue", href: "/dashboard/revenue" },
-  { label: "Insights", href: "/dashboard/insights" },
-];
 
 export function ChatSidebar() {
   const [open, setOpen] = React.useState(false);
@@ -314,8 +298,8 @@ export function ChatSidebar() {
                 open ? "overflow-y-auto" : "overflow-y-hidden"
               } scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-neutral-600`}
             >
-              <div className="py-2">
-                <AnimatedThemeToggler />
+              <div className="py-2 ml-1.5">
+                <AnimatedThemeToggler className="ml-4" />
 
                 {/* MAIN */}
                 <SectionLabel open={open}>MAIN</SectionLabel>
@@ -323,119 +307,8 @@ export function ChatSidebar() {
                   {MAIN_ITEMS.map((item) => {
                     const Icon = item.icon;
                     const isActive =
-                      item.href &&
-                      pathname?.startsWith(item.href) &&
-                      !item.hasChildren;
-                    // Dashboard special case
-                    if (item.hasChildren) {
-                      if (open) {
-                        return (
-                          <div key={item.label}>
-                            <button
-                              aria-expanded={dashOpen}
-                              onClick={() => setDashOpen((v) => !v)}
-                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 border ${
-                                pathname?.startsWith("/dashboard")
-                                  ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
-                                  : "text-gray-700 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
-                              }`}
-                            >
-                              <div className="size-6 flex items-center justify-center rounded-md bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 flex-shrink-0">
-                                <Icon className="size-4" />
-                              </div>
-                              <span className="text-sm font-medium truncate">
-                                Dashboard
-                              </span>
-                              <ChevronDown
-                                className={`ml-auto size-4 transition-transform duration-200 flex-shrink-0 ${
-                                  dashOpen ? "" : "-rotate-90"
-                                }`}
-                              />
-                            </button>
-
-                            <AnimatePresence initial={false}>
-                              {dashOpen && (
-                                <motion.ul
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: "auto", opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.2 }}
-                                  className="ml-9 mt-1 space-y-1 overflow-hidden"
-                                >
-                                  {DASHBOARD_CHILDREN.map((child) => {
-                                    const activeChild = pathname === child.href;
-                                    return (
-                                      <li key={child.href}>
-                                        <Link
-                                          href={child.href}
-                                          className={`block text-sm rounded-lg px-3 py-2 transition-all duration-200 border ${
-                                            activeChild
-                                              ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
-                                              : "text-gray-600 hover:bg-gray-50 dark:text-neutral-400 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
-                                          }`}
-                                        >
-                                          {child.label}
-                                        </Link>
-                                      </li>
-                                    );
-                                  })}
-                                </motion.ul>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        );
-                      }
-                      // Collapsed: show popover with child links
-                      return (
-                        <Tooltip key={item.label}>
-                          <TooltipTrigger asChild>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <button
-                                  aria-label="Dashboard"
-                                  className={`w-full flex items-center justify-center p-2.5 rounded-xl transition-all duration-200 border ${
-                                    pathname?.startsWith("/dashboard")
-                                      ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 border-gray-200 dark:border-neutral-700"
-                                      : "text-gray-600 hover:bg-gray-50 dark:text-neutral-300 dark:hover:bg-neutral-800/70 border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
-                                  }`}
-                                >
-                                  <Icon className="size-5 flex-shrink-0" />
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                align="start"
-                                side="right"
-                                className="w-48 p-2 bg-white shadow-lg dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700"
-                              >
-                                <div className="text-xs text-gray-500 dark:text-neutral-400 px-2 pb-2 font-medium">
-                                  Dashboard
-                                </div>
-                                <div className="space-y-1">
-                                  {DASHBOARD_CHILDREN.map((child) => (
-                                    <Link
-                                      key={child.href}
-                                      href={child.href}
-                                      className={`block rounded-lg px-2 py-2 text-sm transition-colors ${
-                                        pathname === child.href
-                                          ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
-                                          : "text-gray-700 hover:bg-gray-50 dark:text-neutral-400 dark:hover:bg-neutral-800/70"
-                                      }`}
-                                    >
-                                      {child.label}
-                                    </Link>
-                                  ))}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          </TooltipTrigger>
-                          <TooltipContent side="right">
-                            Dashboard
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    }
-
-                    // Regular items
+                      item.href && pathname?.startsWith(item.href);
+                    // Regular items only
                     return open ? (
                       <Link
                         key={item.label}
@@ -540,7 +413,7 @@ export function ChatSidebar() {
                   <TooltipTrigger asChild>
                     <button
                       aria-label="Account"
-                      className="w-full px-1.5 py-1.5 pr-9.75 rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors shadow-sm"
+                      className="w-full px-1.5 py-1.5 pr-9.75 rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800/70 transition-colors shadow-sm"
                     >
                       <Avatar className="size-8 mx-auto">
                         <AvatarImage
@@ -599,7 +472,7 @@ export function ChatSidebar() {
               </Link>
 
               <div className="space-y-1">
-                {MAIN_ITEMS.filter((i) => !i.hasChildren).map((i) => {
+                {MAIN_ITEMS.map((i) => {
                   const Icon = i.icon;
                   return (
                     <Link

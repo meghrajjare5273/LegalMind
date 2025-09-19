@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SessionProvider } from "@/contexts/session-context";
 
 const inter = Inter({
   weight: ["400"],
@@ -35,10 +36,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} overflow-x-hidden`}>
-        {children}
-        <SpeedInsights />
-      </body>
+      <SessionProvider>
+        <body className={`${inter.className} overflow-x-hidden`}>
+          {children}
+          <SpeedInsights />
+        </body>
+      </SessionProvider>
     </html>
   );
 }

@@ -101,7 +101,7 @@ export default function ChatHomePage() {
         >
           <TextType
             text={`Hi there, ${firstName}`}
-            className="text-3xl md:text-5xl font-semibold tracking-tight"
+            className="text-3xl md:text-5xl font-semibold tracking-tight cursor-default"
             typingSpeed={75}
             pauseDuration={0}
             startOnVisible={true}
@@ -113,14 +113,14 @@ export default function ChatHomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.2 }}
-            className="text-xl md:text-3xl mb-36 text-neutral-300"
+            className="text-xl md:text-3xl mb-36 text-neutral-700 dark:text-neutral-300 "
           >
             <ScrambleHover
               text={"What would you like to know?"}
               scrambleSpeed={50}
               maxIterations={10}
-              useOriginalCharsOnly={true}
-              className="cursor-pointer"
+              useOriginalCharsOnly={false}
+              className="cursor-default "
             />
           </motion.h2>
         </motion.div>

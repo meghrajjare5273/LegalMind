@@ -4,12 +4,12 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { ChatSidebar } from "@/components/protected/chat/chat-sidebar";
 import { Inter } from "next/font/google";
-import ShadersBackground from "@/components/ui/liquid-metal";
+// import ShadersBackground from "@/components/ui/liquid-metal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-const RotatingEarth = dynamic(
-  () => import("@/components/ui/rotating-earth").then((m) => m.RotatingEarth),
+const ShadersBackground = dynamic(
+  () => import("@/components/ui/liquid-metal").then((m) => m.default),
   { ssr: true }
 );
 
