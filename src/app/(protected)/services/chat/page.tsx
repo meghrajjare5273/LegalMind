@@ -8,6 +8,7 @@ import { AIChatInput } from "@/components/protected/chat/ai-chat-input";
 import { useSession } from "@/contexts/session-context";
 import { useToast } from "@/hooks/use-toast";
 import TextType from "@/components/react-bits/TextType";
+import { ScrambleHover } from "@/components/ui/text-scramble";
 
 export default function ChatHomePage() {
   const router = useRouter();
@@ -89,14 +90,14 @@ export default function ChatHomePage() {
   }
 
   return (
-    <div className="relative h-full w-full flex flex-col items-center px-4 md:px-8">
+    <div className="relative h-full w-full flex flex-col items-center px-4 md:px-8  text-neutral-950 dark:text-neutral-200">
       {/* Centered hero */}
-      <div className="max-w-5xl w-full mx-auto mt-16 md:mt-24">
+      <div className="max-w-5xl w-full mx-auto mt-16 md:mt-24  text-neutral-950 dark:text-neutral-200">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="text-left space-y-2 mb-8"
+          className="text-left space-y-2 mb-8 text-neutral-950 dark:text-neutral-200"
         >
           <TextType
             text={`Hi there, ${firstName}`}
@@ -114,7 +115,13 @@ export default function ChatHomePage() {
             transition={{ delay: 0.3, duration: 0.2 }}
             className="text-xl md:text-3xl mb-36 text-neutral-300"
           >
-            What would you like to know?
+            <ScrambleHover
+              text={"What would you like to know?"}
+              scrambleSpeed={50}
+              maxIterations={10}
+              useOriginalCharsOnly={true}
+              className="cursor-pointer"
+            />
           </motion.h2>
         </motion.div>
       </div>

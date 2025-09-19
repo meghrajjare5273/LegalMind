@@ -23,15 +23,15 @@ export default function ChatLayout({
 }) {
   return (
     <div
-      className={`${inter.variable} font-sans text-neutral-100 bg-neutral-950 h-dvh w-dvw flex relative`}
+      className={`${inter.variable} font-sans  text-neutral-950 dark:text-neutral-100 dark:bg-neutral-950 h-dvh w-dvw flex relative`}
     >
       <div className="absolute inset-0 flex items-center top-25 left-10 justify-center z-0 backdrop-blur-3xl filter">
         <RotatingEarth />
       </div>
 
-      <div className="relative z-10 flex w-full">
+      <div className="relative z-10 flex w-full  text-neutral-950 dark:text-neutral-200">
         <ChatSidebar />
-        <main className="flex-1 min-w-0 max-h-lvh overflow-hidden">
+        <main className="flex-1 min-w-0 max-h-lvh overflow-hidden  text-neutral-950 dark:text-neutral-200">
           {children}
         </main>
       </div>

@@ -1,9 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+import { useTheme } from "next-themes";
 
 interface RotatingEarthProps {
   width?: number;
@@ -19,15 +21,33 @@ export function RotatingEarth({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    setMounted(true);
+  }, []);
+
+  const getThemeColors = () => {
+    const isDark = resolvedTheme === "dark";
+    return {
+      ocean: isDark ? "#000000" : "#e0f2fe",
+      oceanStroke: isDark ? "#ffffff" : "#0369a1",
+      graticule: isDark ? "#ffffff" : "#0284c7",
+      landStroke: isDark ? "#ffffff" : "#0369a1",
+      dots: isDark ? "#999999" : "#0284c7",
+    };
+  };
+
+  useEffect(() => {
+    if (!canvasRef.current || !mounted) return;
 
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    // Set up responsive dimensions
+    const colors = getThemeColors();
+
     const containerWidth = Math.min(width, window.innerWidth - 40);
     const containerHeight = Math.min(height, window.innerHeight - 100);
     const radius = Math.min(containerWidth, containerHeight) / 2.5;
@@ -39,7 +59,6 @@ export function RotatingEarth({
     canvas.style.height = `${containerHeight}px`;
     context.scale(dpr, dpr);
 
-    // Create projection and path generator for Canvas
     const projection = d3
       .geoOrthographic()
       .scale(radius)
@@ -72,23 +91,18 @@ export function RotatingEarth({
 
       if (geometry.type === "Polygon") {
         const coordinates = geometry.coordinates;
-        // Check if point is in outer ring
         if (!pointInPolygon(point, coordinates[0])) {
           return false;
         }
-        // Check if point is in any hole (inner rings)
         for (let i = 1; i < coordinates.length; i++) {
           if (pointInPolygon(point, coordinates[i])) {
-            return false; // Point is in a hole
+            return false;
           }
         }
         return true;
       } else if (geometry.type === "MultiPolygon") {
-        // Check each polygon in the MultiPolygon
         for (const polygon of geometry.coordinates) {
-          // Check if point is in outer ring
           if (pointInPolygon(point, polygon[0])) {
-            // Check if point is in any hole
             let inHole = false;
             for (let i = 1; i < polygon.length; i++) {
               if (pointInPolygon(point, polygon[i])) {
@@ -142,13 +156,11 @@ export function RotatingEarth({
     let landFeatures: any;
 
     const render = () => {
-      // Clear canvas
       context.clearRect(0, 0, containerWidth, containerHeight);
 
       const currentScale = projection.scale();
       const scaleFactor = currentScale / radius;
 
-      // Draw ocean (globe background)
       context.beginPath();
       context.arc(
         containerWidth / 2,
@@ -157,33 +169,30 @@ export function RotatingEarth({
         0,
         2 * Math.PI
       );
-      context.fillStyle = "#000000";
+      context.fillStyle = colors.ocean;
       context.fill();
-      context.strokeStyle = "#ffffff";
+      context.strokeStyle = colors.oceanStroke;
       context.lineWidth = 2 * scaleFactor;
       context.stroke();
 
       if (landFeatures) {
-        // Draw graticule
         const graticule = d3.geoGraticule();
         context.beginPath();
         path(graticule());
-        context.strokeStyle = "#ffffff";
+        context.strokeStyle = colors.graticule;
         context.lineWidth = 1 * scaleFactor;
         context.globalAlpha = 0.25;
         context.stroke();
         context.globalAlpha = 1;
 
-        // Draw land outlines
         context.beginPath();
         landFeatures.features.forEach((feature: any) => {
           path(feature);
         });
-        context.strokeStyle = "#ffffff";
+        context.strokeStyle = colors.landStroke;
         context.lineWidth = 1 * scaleFactor;
         context.stroke();
 
-        // Draw halftone dots
         allDots.forEach((dot) => {
           const projected = projection([dot.lng, dot.lat]);
           if (
@@ -201,7 +210,7 @@ export function RotatingEarth({
               0,
               2 * Math.PI
             );
-            context.fillStyle = "#999999";
+            context.fillStyle = colors.dots;
             context.fill();
           }
         });
@@ -219,7 +228,6 @@ export function RotatingEarth({
 
         landFeatures = await response.json();
 
-        // Generate dots for all land features
         let totalDots = 0;
         landFeatures.features.forEach((feature: any) => {
           const dots = generateDotsInPolygon(feature, 16);
@@ -241,7 +249,6 @@ export function RotatingEarth({
       }
     };
 
-    // Set up rotation - fix TypeScript error by properly typing the rotation array
     const rotation: [number, number] = [0, 0];
     const rotationSpeed = 0.5;
 
@@ -251,28 +258,36 @@ export function RotatingEarth({
       render();
     };
 
-    // Auto-rotation timer
     const rotationTimer = d3.timer(rotate);
 
-    // Load the world data
     loadWorldData();
 
-    // Cleanup
     return () => {
       rotationTimer.stop();
     };
-  }, [width, height]);
+  }, [width, height, resolvedTheme, mounted]);
+
+  if (!mounted) {
+    return (
+      <div className={`relative ${className}`}>
+        <div
+          className="w-full rounded-2xl bg-muted animate-pulse"
+          style={{ width, height }}
+        />
+      </div>
+    );
+  }
 
   if (error) {
     return (
       <div
-        className={`dark flex items-center justify-center bg-card rounded-2xl p-8 ${className}`}
+        className={`flex items-center justify-center bg-card rounded-2xl p-8 ${className}`}
       >
         <div className="text-center">
-          <p className="dark text-destructive font-semibold mb-2">
+          <p className="text-destructive font-semibold mb-2">
             Error loading Earth visualization
           </p>
-          <p className="dark text-muted-foreground text-sm">{error}</p>
+          <p className="text-muted-foreground text-sm">{error}</p>
         </div>
       </div>
     );
@@ -282,7 +297,7 @@ export function RotatingEarth({
     <div className={`relative ${className}`}>
       <canvas
         ref={canvasRef}
-        className="w-full h-auto rounded-2xl bg-background dark"
+        className="w-full h-auto rounded-2xl bg-background"
         style={{ maxWidth: "100%", height: "auto" }}
       />
     </div>
