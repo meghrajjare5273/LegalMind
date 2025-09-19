@@ -29,16 +29,15 @@ export function RotatingEarth({
   }, []);
 
   const getThemeColors = () => {
-    const isDark = resolvedTheme === "dark";
+    const isDark = theme === "dark";
     return {
-      ocean: isDark ? "#000000" : "#e0f2fe",
-      oceanStroke: isDark ? "#ffffff" : "#0369a1",
-      graticule: isDark ? "#ffffff" : "#0284c7",
-      landStroke: isDark ? "#ffffff" : "#0369a1",
-      dots: isDark ? "#999999" : "#0284c7",
+      ocean: isDark ? "#000000" : "#f8f9fa", // Light gray instead of light blue
+      oceanStroke: isDark ? "#ffffff" : "#212529", // Dark gray/black instead of blue
+      graticule: isDark ? "#ffffff" : "#6c757d", // Medium gray instead of blue
+      landStroke: isDark ? "#ffffff" : "#343a40", // Dark gray instead of blue
+      dots: isDark ? "#999999" : "#495057", // Dark gray instead of blue
     };
   };
-
   useEffect(() => {
     if (!canvasRef.current || !mounted) return;
 
