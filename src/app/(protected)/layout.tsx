@@ -23,7 +23,7 @@ export default function DashboardLayout({
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       {/* <SessionProvider> */}
-      <div className="flex h-screen w-full">
+      <div className="flex min-h-screen  w-full">
         {/* <div className="overflow-hidden"> */}
         {children}
         <FloatingNavigation />
