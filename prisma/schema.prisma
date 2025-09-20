@@ -14,16 +14,19 @@ datasource db {
 }
 
 model User {
-    id            String        @id
-    name          String
-    email         String
-    emailVerified Boolean
-    image         String?
-    createdAt     DateTime
-    updatedAt     DateTime
-    sessions      Session[]
-    accounts      Account[]
-    ChatSession   ChatSession[]
+    id              String           @id
+    name            String
+    email           String
+    emailVerified   Boolean
+    image           String?
+    createdAt       DateTime
+    updatedAt       DateTime
+    sessions        Session[]
+    accounts        Account[]
+    ChatSession     ChatSession[]
+    Todo            Todo[]
+    UserActivity    UserActivity[]
+    UserPreferences UserPreferences?
 
     @@unique([email])
     @@map("user")
@@ -99,8 +102,57 @@ model ChatMessage {
     @@map("chat_message")
 }
 
+// Add to existing prisma/schema.prisma
+
+model Todo {
+    id           String    @id @default(uuid())
+    title        String
+    description  String?
+    completed    Boolean   @default(false)
+    priority     Priority  @default(MEDIUM)
+    dueDate      DateTime?
+    reminderTime DateTime?
+    notified     Boolean   @default(false)
+    userId       String
+    user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+
+    @@map("todo")
+}
+
+model UserActivity {
+    id        String   @id @default(uuid())
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    action    String // "created_todo", "completed_todo", "started_chat", etc.
+    metadata  Json? // Additional context
+    createdAt DateTime @default(now())
+
+    @@map("user_activity")
+}
+
+model UserPreferences {
+    id                 String  @id @default(uuid())
+    userId             String  @unique
+    user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    emailNotifications Boolean @default(true)
+    pushNotifications  Boolean @default(true)
+    theme              String  @default("system") // "light", "dark", "system"
+    timezone           String  @default("UTC")
+
+    @@map("user_preferences")
+}
+
 enum MessageRole {
     user
     assistant
     system
+}
+
+enum Priority {
+    LOW
+    MEDIUM
+    HIGH
+    URGENT
 }
