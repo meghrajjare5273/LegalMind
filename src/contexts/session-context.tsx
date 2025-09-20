@@ -9,7 +9,8 @@ import {
 } from "react";
 import { authClient } from "@/lib/auth-client";
 
-interface User {
+export interface User {
+  id: string;
   name: string;
   email: string;
   image: string | null;
@@ -46,6 +47,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
         const session = await authClient.getSession();
         if (session?.data?.user) {
           setUser({
+            id: session?.data.user.id,
             name: session?.data.user.name || "User",
             email: session.data.user.email || "",
             image: session.data.user.image || null,
