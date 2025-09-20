@@ -1,7 +1,8 @@
+// src/components/react-bits/CardNav.tsx (Updated)
 "use client";
 
 import type React from "react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { GoArrowUpRight } from "react-icons/go";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +25,7 @@ import {
 import { useRouter } from "next/navigation";
 import "./CardNav.css";
 import { AnimatedThemeToggler } from "../ui/magicui/animated-theme-toggler";
+import { useTheme } from "next-themes";
 
 type CardNavLink = {
   label: string;
@@ -76,6 +78,32 @@ const CardNav: React.FC<CardNavProps> = ({
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure theme is available after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Dynamic theming based on current theme
+  const getThemeColors = () => {
+    if (!mounted) return { baseColor, menuColor: menuColor || "#000" };
+
+    const isDark =
+      theme === "dark" ||
+      (theme === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+    return {
+      baseColor: isDark ? "#1a1a1a" : baseColor,
+      menuColor: isDark ? "#ffffff" : menuColor || "#000000",
+      surfaceColor: isDark ? "#2a2a2a" : "#ffffff",
+      textColor: isDark ? "#ffffff" : "#000000",
+    };
+  };
+
+  const themeColors = getThemeColors();
 
   const calculateHeight = () => {
     const navEl = navRef.current;
@@ -94,7 +122,6 @@ const CardNav: React.FC<CardNavProps> = ({
         contentEl.style.pointerEvents = "auto";
         contentEl.style.position = "static";
         contentEl.style.height = "auto";
-
         contentEl.offsetHeight;
 
         const topBar = 60;
@@ -120,13 +147,7 @@ const CardNav: React.FC<CardNavProps> = ({
     gsap.set(cardsRef.current, { y: 50, opacity: 0 });
 
     const tl = gsap.timeline({ paused: true });
-
-    tl.to(navEl, {
-      height: calculateHeight,
-      duration: 0.4,
-      ease,
-    });
-
+    tl.to(navEl, { height: calculateHeight(), duration: 0.4, ease });
     tl.to(
       cardsRef.current,
       { y: 0, opacity: 1, duration: 0.4, ease, stagger: 0.08 },
@@ -153,7 +174,6 @@ const CardNav: React.FC<CardNavProps> = ({
       if (isExpanded) {
         const newHeight = calculateHeight();
         gsap.set(navRef.current, { height: newHeight });
-
         tlRef.current.kill();
         const newTl = createTimeline();
         if (newTl) {
@@ -163,9 +183,7 @@ const CardNav: React.FC<CardNavProps> = ({
       } else {
         tlRef.current.kill();
         const newTl = createTimeline();
-        if (newTl) {
-          tlRef.current = newTl;
-        }
+        if (newTl) tlRef.current = newTl;
       }
     };
 
@@ -176,6 +194,7 @@ const CardNav: React.FC<CardNavProps> = ({
   const toggleMenu = () => {
     const tl = tlRef.current;
     if (!tl) return;
+
     if (!isExpanded) {
       setIsHamburgerOpen(true);
       setIsExpanded(true);
@@ -192,7 +211,6 @@ const CardNav: React.FC<CardNavProps> = ({
   };
 
   const handleLogout = () => {
-    // Add logout logic here
     console.log("Logging out...");
     router.push("/auth/login");
   };
@@ -205,7 +223,7 @@ const CardNav: React.FC<CardNavProps> = ({
     router.push("/settings");
   };
 
-  const getUserInitials = () => {
+  const getUserInitials = (): string => {
     if (!user?.name) return "U";
     return user.name
       .split(" ")
@@ -220,7 +238,7 @@ const CardNav: React.FC<CardNavProps> = ({
       <nav
         ref={navRef}
         className={`card-nav ${isExpanded ? "open" : ""}`}
-        style={{ backgroundColor: baseColor }}
+        style={{ backgroundColor: themeColors.baseColor }}
       >
         <div className="card-nav-top">
           <div
@@ -229,7 +247,7 @@ const CardNav: React.FC<CardNavProps> = ({
             role="button"
             aria-label={isExpanded ? "Close menu" : "Open menu"}
             tabIndex={0}
-            style={{ color: menuColor || "#000" }}
+            style={{ color: themeColors.menuColor }}
           >
             <div className="hamburger-line" />
             <div className="hamburger-line" />
@@ -248,69 +266,75 @@ const CardNav: React.FC<CardNavProps> = ({
             <AnimatedThemeToggler />
 
             {/* User Avatar Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={user?.image || "/placeholder-avatar.png"}
-                      alt={user?.name || "User"}
-                    />
-                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user?.name || "User"}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email || "user@example.com"}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleProfileClick}>
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSettingsClick}>
-                  <SettingsIcon className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCardIcon className="mr-2 h-4 w-4" />
-                  <span>Billing</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ShieldIcon className="mr-2 h-4 w-4" />
-                  <span>Security</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="text-red-600 focus:text-red-600"
-                >
-                  <LogOutIcon className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src={user?.image || "/placeholder-avatar.png"}
+                        alt={user?.name || "User"}
+                      />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user?.name || "User"}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email || "user@example.com"}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleProfileClick}>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSettingsClick}>
+                    <SettingsIcon className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <CreditCardIcon className="mr-2 h-4 w-4" />
+                    <span>Billing</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <ShieldIcon className="mr-2 h-4 w-4" />
+                    <span>Security</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOutIcon className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 
         <div className="card-nav-content" aria-hidden={!isExpanded}>
-          {(items || []).slice(0, 3).map((item, idx) => (
+          {items.slice(0, 3).map((item, idx) => (
             <div
               key={`${item.label}-${idx}`}
               className="nav-card"
               ref={setCardRef(idx)}
-              style={{ backgroundColor: item.bgColor, color: item.textColor }}
+              style={{
+                backgroundColor: item.bgColor,
+                color: item.textColor,
+                borderColor:
+                  theme === "dark"
+                    ? "rgba(255,255,255,0.1)"
+                    : "rgba(0,0,0,0.1)",
+              }}
             >
               <div className="nav-card-label">{item.label}</div>
               <div className="nav-card-links">
