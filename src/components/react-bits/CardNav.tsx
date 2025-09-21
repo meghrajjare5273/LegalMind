@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // src/components/react-bits/CardNav.tsx (Updated)
 "use client";
 
@@ -26,6 +28,23 @@ import { useRouter } from "next/navigation";
 import "./CardNav.css";
 import { AnimatedThemeToggler } from "../ui/magicui/animated-theme-toggler";
 import { useTheme } from "next-themes";
+import { authClient } from "@/lib/auth-client";
+import { OutlineText } from "../ui/outline-text";
+import TextPressure from "./TextPressure";
+import ShinyText from "./ShinyText";
+import {
+  Bacasime_Antique,
+  Balthazar,
+  Bebas_Neue,
+  Hedvig_Letters_Serif,
+} from "next/font/google";
+
+const bacasime = Hedvig_Letters_Serif({
+  weight: ["400"],
+  preload: true,
+  subsets: ["latin"],
+  display: "block",
+});
 
 type CardNavLink = {
   label: string;
@@ -68,8 +87,6 @@ const CardNav: React.FC<CardNavProps> = ({
   ease = "power3.out",
   baseColor = "#fff",
   menuColor,
-  buttonBgColor,
-  buttonTextColor,
   user,
 }) => {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
@@ -78,7 +95,7 @@ const CardNav: React.FC<CardNavProps> = ({
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // Ensure theme is available after hydration
@@ -210,9 +227,16 @@ const CardNav: React.FC<CardNavProps> = ({
     if (el) cardsRef.current[i] = el;
   };
 
-  const handleLogout = () => {
-    console.log("Logging out...");
-    router.push("/auth/login");
+  const handleLogout = async () => {
+    // console.log("Logging out...");
+    await authClient.signOut(
+      {},
+      {
+        onSuccess: () => {
+          router.push("/");
+        },
+      }
+    );
   };
 
   const handleProfileClick = () => {
@@ -253,11 +277,17 @@ const CardNav: React.FC<CardNavProps> = ({
             <div className="hamburger-line" />
           </div>
 
-          <div className="logo-container">
-            <img
+          <div className="logo-container cursor-default">
+            {/* <img
               src={logo || "/placeholder.svg"}
               alt={logoAlt}
               className="logo"
+            /> */}
+            <ShinyText
+              text="LegalMind"
+              disabled={false}
+              speed={3}
+              className={`text-3xl ${bacasime.className} font-extrabold`}
             />
           </div>
 

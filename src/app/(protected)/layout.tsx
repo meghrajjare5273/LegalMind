@@ -21,16 +21,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      {/* <SessionProvider> */}
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       <div className="flex min-h-screen  w-full">
-        {/* <div className="overflow-hidden"> */}
         {children}
         <FloatingNavigation />
-        {/* </div> */}
       </div>
       <Toaster />
-      {/* </SessionProvider> */}
     </ThemeProvider>
   );
 }

@@ -1,13 +1,11 @@
 // src/app/(protected)/dashboard/page.tsx (Updated)
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useSession } from "@/contexts/session-context";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,9 +23,7 @@ import {
   Plus,
   Bell,
   Trash2,
-  Edit,
   Clock,
-  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -41,7 +37,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-interface Todo {
+interface Task {
   id: string;
   title: string;
   description?: string;
@@ -62,12 +58,12 @@ interface ChatSession {
 }
 
 interface DashboardData {
-  todos: Todo[];
+  Tasks: Task[];
   chatSessions: ChatSession[];
   stats: {
-    totalTodos: number;
-    completedTodos: number;
-    pendingTodos: number;
+    totalTasks: number;
+    completedTasks: number;
+    pendingTasks: number;
     totalChatSessions: number;
     completionRate: number;
   };
@@ -80,9 +76,12 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [loadingTasks, setLoadingTasks] = useState<Set<string>>(new Set());
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Todo[]>([]);
-  const [newTodo, setNewTodo] = useState({
+  const [notifications, setNotifications] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     priority: "MEDIUM" as const,
@@ -152,20 +151,10 @@ export default function DashboardPage() {
     [user]
   );
 
-  // Fetch dashboard data
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-      checkNotifications();
+  const fetchDashboardData = useCallback(async () => {
+    if (!user) return;
 
-      // Set up periodic notification checks
-      const notificationInterval = setInterval(checkNotifications, 60000); // Check every minute
-
-      return () => clearInterval(notificationInterval);
-    }
-  }, [user]);
-
-  const fetchDashboardData = async () => {
+    setIsLoadingData(true);
     try {
       const response = await fetch("/api/dashboard");
       if (response.ok) {
@@ -179,20 +168,24 @@ export default function DashboardPage() {
         description: "Failed to fetch dashboard data",
         variant: "destructive",
       });
+    } finally {
+      setIsLoadingData(false);
     }
-  };
+  }, [user, toast]);
 
-  const checkNotifications = async () => {
+  const checkNotifications = useCallback(async () => {
+    if (!user) return;
+
     try {
       const response = await fetch("/api/notifications");
       if (response.ok) {
         const data = await response.json();
         if (data.notifications.length > 0) {
           setNotifications(data.notifications);
-          data.notifications.forEach((todo: Todo) => {
+          data.notifications.forEach((Task: Task) => {
             toast({
               title: "📋 Task Reminder",
-              description: `Don't forget: ${todo.title}`,
+              description: `Don't forget: ${Task.title}`,
               duration: 5000,
             });
           });
@@ -201,26 +194,71 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error checking notifications:", error);
     }
-  };
+  }, [user, toast]);
 
-  const createTodo = async () => {
-    if (!newTodo.title.trim()) return;
+  // Fetch dashboard data
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+      checkNotifications();
+
+      // Set up periodic notification checks
+      const notificationInterval = setInterval(checkNotifications, 60000); // Check every minute
+
+      return () => clearInterval(notificationInterval);
+    }
+  }, [user]);
+
+  const createTask = async () => {
+    if (!newTask.title.trim() || isCreatingTask) return;
+
+    setIsCreatingTask(true);
+
+    // Optimistic update
+    const optimisticTask: Task = {
+      id: `temp-${Date.now()}`,
+      title: newTask.title,
+      description: newTask.description,
+      completed: false,
+      priority: newTask.priority,
+      dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined,
+      reminderTime: newTask.reminderTime
+        ? new Date(newTask.reminderTime)
+        : undefined,
+      createdAt: new Date(),
+    };
+
+    if (dashboardData) {
+      setDashboardData((prev) =>
+        prev
+          ? {
+              ...prev,
+              Tasks: [optimisticTask, ...prev.Tasks],
+              stats: {
+                ...prev.stats,
+                totalTasks: prev.stats.totalTasks + 1,
+                pendingTasks: prev.stats.pendingTasks + 1,
+              },
+            }
+          : null
+      );
+    }
 
     try {
-      const response = await fetch("/api/todos", {
+      const response = await fetch("/api/Tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: newTodo.title,
-          description: newTodo.description,
-          priority: newTodo.priority,
-          dueDate: newTodo.dueDate || null,
-          reminderTime: newTodo.reminderTime || null,
+          title: newTask.title,
+          description: newTask.description,
+          priority: newTask.priority,
+          dueDate: newTask.dueDate || null,
+          reminderTime: newTask.reminderTime || null,
         }),
       });
 
       if (response.ok) {
-        setNewTodo({
+        setNewTask({
           title: "",
           description: "",
           priority: "MEDIUM",
@@ -228,68 +266,210 @@ export default function DashboardPage() {
           reminderTime: "",
         });
         setIsCreateDialogOpen(false);
+        // Refresh data to get the real Task with server-generated ID
         fetchDashboardData();
         toast({
           title: "Success",
-          description: "Todo created successfully",
+          description: "Task created successfully",
         });
+      } else {
+        // Revert optimistic update on error
+        if (dashboardData) {
+          setDashboardData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  Tasks: prev.Tasks.filter(
+                    (Task) => Task.id !== optimisticTask.id
+                  ),
+                  stats: {
+                    ...prev.stats,
+                    totalTasks: prev.stats.totalTasks - 1,
+                    pendingTasks: prev.stats.pendingTasks - 1,
+                  },
+                }
+              : null
+          );
+        }
+        throw new Error("Failed to create Task");
       }
     } catch (error) {
-      console.error("Error creating todo:", error);
+      console.error("Error creating Task:", error);
       toast({
         title: "Error",
-        description: "Failed to create todo",
+        description: "Failed to create Task",
         variant: "destructive",
       });
+    } finally {
+      setIsCreatingTask(false);
     }
   };
 
-  const toggleTodoComplete = async (todoId: string, completed: boolean) => {
+  const toggleTaskComplete = async (TaskId: string, completed: boolean) => {
+    if (loadingTasks.has(TaskId)) return;
+
+    setLoadingTasks((prev) => new Set(prev).add(TaskId));
+
+    // Optimistic update
+    if (dashboardData) {
+      setDashboardData((prev) =>
+        prev
+          ? {
+              ...prev,
+              Tasks: prev.Tasks.map((Task) =>
+                Task.id === TaskId ? { ...Task, completed: !completed } : Task
+              ),
+              stats: {
+                ...prev.stats,
+                completedTasks: completed
+                  ? prev.stats.completedTasks - 1
+                  : prev.stats.completedTasks + 1,
+                pendingTasks: completed
+                  ? prev.stats.pendingTasks + 1
+                  : prev.stats.pendingTasks - 1,
+              },
+            }
+          : null
+      );
+    }
+
     try {
-      const response = await fetch(`/api/todos/${todoId}`, {
+      const response = await fetch(`/api/Tasks/${TaskId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !completed }),
       });
 
       if (response.ok) {
-        fetchDashboardData();
         toast({
           title: "Success",
           description: completed
-            ? "Todo marked as incomplete"
-            : "Todo completed!",
+            ? "Task marked as incomplete"
+            : "Task completed!",
         });
+      } else {
+        // Revert optimistic update on error
+        if (dashboardData) {
+          setDashboardData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  Tasks: prev.Tasks.map((Task) =>
+                    Task.id === TaskId ? { ...Task, completed } : Task
+                  ),
+                  stats: {
+                    ...prev.stats,
+                    completedTasks: completed
+                      ? prev.stats.completedTasks + 1
+                      : prev.stats.completedTasks - 1,
+                    pendingTasks: completed
+                      ? prev.stats.pendingTasks - 1
+                      : prev.stats.pendingTasks + 1,
+                  },
+                }
+              : null
+          );
+        }
+        throw new Error("Failed to update Task");
       }
     } catch (error) {
-      console.error("Error updating todo:", error);
+      console.error("Error updating Task:", error);
       toast({
         title: "Error",
-        description: "Failed to update todo",
+        description: "Failed to update Task",
         variant: "destructive",
+      });
+    } finally {
+      setLoadingTasks((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(TaskId);
+        return newSet;
       });
     }
   };
 
-  const deleteTodo = async (todoId: string) => {
+  const deleteTask = async (TaskId: string) => {
+    if (loadingTasks.has(TaskId)) return;
+
+    setLoadingTasks((prev) => new Set(prev).add(TaskId));
+
+    // Store the Task for potential rollback
+    const TaskToDelete = dashboardData?.Tasks.find(
+      (Task) => Task.id === TaskId
+    );
+
+    // Optimistic update
+    if (dashboardData && TaskToDelete) {
+      setDashboardData((prev) =>
+        prev
+          ? {
+              ...prev,
+              Tasks: prev.Tasks.filter((Task) => Task.id !== TaskId),
+              stats: {
+                ...prev.stats,
+                totalTasks: prev.stats.totalTasks - 1,
+                completedTasks: TaskToDelete.completed
+                  ? prev.stats.completedTasks - 1
+                  : prev.stats.completedTasks,
+                pendingTasks: !TaskToDelete.completed
+                  ? prev.stats.pendingTasks - 1
+                  : prev.stats.pendingTasks,
+              },
+            }
+          : null
+      );
+    }
+
     try {
-      const response = await fetch(`/api/todos/${todoId}`, {
+      const response = await fetch(`/api/Tasks/${TaskId}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        fetchDashboardData();
         toast({
           title: "Success",
-          description: "Todo deleted successfully",
+          description: "Task deleted successfully",
         });
+      } else {
+        // Revert optimistic update on error
+        if (dashboardData && TaskToDelete) {
+          setDashboardData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  Tasks: [...prev.Tasks, TaskToDelete].sort(
+                    (a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                  ),
+                  stats: {
+                    ...prev.stats,
+                    totalTasks: prev.stats.totalTasks + 1,
+                    completedTasks: TaskToDelete.completed
+                      ? prev.stats.completedTasks + 1
+                      : prev.stats.completedTasks,
+                    pendingTasks: !TaskToDelete.completed
+                      ? prev.stats.pendingTasks + 1
+                      : prev.stats.pendingTasks,
+                  },
+                }
+              : null
+          );
+        }
+        throw new Error("Failed to delete Task");
       }
     } catch (error) {
-      console.error("Error deleting todo:", error);
+      console.error("Error deleting Task:", error);
       toast({
         title: "Error",
-        description: "Failed to delete todo",
+        description: "Failed to delete Task",
         variant: "destructive",
+      });
+    } finally {
+      setLoadingTasks((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(TaskId);
+        return newSet;
       });
     }
   };
@@ -309,19 +489,21 @@ export default function DashboardPage() {
     }
   };
 
-  if (loading || !dashboardData) {
+  if (loading || isLoadingData) {
     return (
       <>
-        <CardNav
-          logo="/logo.svg"
-          logoAlt="LegalMind Logo"
-          items={navItems}
-          baseColor="#fff"
-          menuColor="#000"
-          buttonBgColor="#111"
-          buttonTextColor="#fff"
-          ease="power3.out"
-        />
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <CardNav
+            logo="/logo.svg"
+            logoAlt="LegalMind Logo"
+            items={navItems}
+            baseColor="#fff"
+            menuColor="#000"
+            buttonBgColor="#111"
+            buttonTextColor="#fff"
+            ease="power3.out"
+          />
+        </div>
         <div
           className="min-h-screen w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12 pt-32"
           style={{ paddingTop: "92px" }}
@@ -348,17 +530,19 @@ export default function DashboardPage() {
 
   return (
     <>
-      <CardNav
-        logo="/logo.svg"
-        logoAlt="LegalMind Logo"
-        items={navItems}
-        baseColor="#fff"
-        menuColor="#000"
-        buttonBgColor="#111"
-        buttonTextColor="#fff"
-        ease="power3.out"
-        user={user!}
-      />
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <CardNav
+          logo="/logo.svg"
+          logoAlt="LegalMind Logo"
+          items={navItems}
+          baseColor="#fff"
+          menuColor="#000"
+          buttonBgColor="#111"
+          buttonTextColor="#fff"
+          ease="power3.out"
+          user={user!}
+        />
+      </div>
 
       <div
         className="min-h-screen w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12 pt-32"
@@ -395,7 +579,11 @@ export default function DashboardPage() {
             </div>
             <motion.div layout className="flex items-center gap-3">
               {notifications.length > 0 && (
-                <Button variant="outline" size="sm" className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="relative bg-transparent"
+                >
                   <Bell className="w-4 h-4 mr-2" />
                   Notifications
                   <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs">
@@ -411,32 +599,32 @@ export default function DashboardPage() {
                 <DialogTrigger asChild>
                   <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Todo
+                    Add Task
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create New Todo</DialogTitle>
+                    <DialogTitle>Create New Task</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Input
-                      placeholder="Todo title"
-                      value={newTodo.title}
+                      placeholder="Task title"
+                      value={newTask.title}
                       onChange={(e) =>
-                        setNewTodo({ ...newTodo, title: e.target.value })
+                        setNewTask({ ...newTask, title: e.target.value })
                       }
                     />
                     <Textarea
                       placeholder="Description (optional)"
-                      value={newTodo.description}
+                      value={newTask.description}
                       onChange={(e) =>
-                        setNewTodo({ ...newTodo, description: e.target.value })
+                        setNewTask({ ...newTask, description: e.target.value })
                       }
                     />
                     <Select
-                      value={newTodo.priority}
+                      value={newTask.priority}
                       onValueChange={(value: never) =>
-                        setNewTodo({ ...newTodo, priority: value })
+                        setNewTask({ ...newTask, priority: value })
                       }
                     >
                       <SelectTrigger>
@@ -454,9 +642,9 @@ export default function DashboardPage() {
                         <label className="text-sm font-medium">Due Date</label>
                         <Input
                           type="datetime-local"
-                          value={newTodo.dueDate}
+                          value={newTask.dueDate}
                           onChange={(e) =>
-                            setNewTodo({ ...newTodo, dueDate: e.target.value })
+                            setNewTask({ ...newTask, dueDate: e.target.value })
                           }
                         />
                       </div>
@@ -464,10 +652,10 @@ export default function DashboardPage() {
                         <label className="text-sm font-medium">Reminder</label>
                         <Input
                           type="datetime-local"
-                          value={newTodo.reminderTime}
+                          value={newTask.reminderTime}
                           onChange={(e) =>
-                            setNewTodo({
-                              ...newTodo,
+                            setNewTask({
+                              ...newTask,
                               reminderTime: e.target.value,
                             })
                           }
@@ -478,10 +666,13 @@ export default function DashboardPage() {
                       <Button
                         variant="outline"
                         onClick={() => setIsCreateDialogOpen(false)}
+                        disabled={isCreatingTask}
                       >
                         Cancel
                       </Button>
-                      <Button onClick={createTodo}>Create Todo</Button>
+                      <Button onClick={createTask} disabled={isCreatingTask}>
+                        {isCreatingTask ? "Creating..." : "Create Task"}
+                      </Button>
                     </div>
                   </div>
                 </DialogContent>
@@ -501,9 +692,9 @@ export default function DashboardPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Todos</p>
+                    <p className="text-sm text-muted-foreground">Total Tasks</p>
                     <p className="text-2xl font-bold">
-                      {dashboardData.stats.totalTodos}
+                      {dashboardData?.stats.totalTasks || 0}
                     </p>
                   </div>
                   <CheckCircle2 className="w-8 h-8 text-blue-600" />
@@ -518,7 +709,7 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Completed</p>
                     <p className="text-2xl font-bold">
-                      {dashboardData.stats.completedTodos}
+                      {dashboardData?.stats.completedTasks || 0}
                     </p>
                   </div>
                   <CheckCircle2 className="w-8 h-8 text-green-600" />
@@ -533,7 +724,7 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Pending</p>
                     <p className="text-2xl font-bold">
-                      {dashboardData.stats.pendingTodos}
+                      {dashboardData?.stats.pendingTasks || 0}
                     </p>
                   </div>
                   <Clock className="w-8 h-8 text-orange-600" />
@@ -550,7 +741,7 @@ export default function DashboardPage() {
                       Chat Sessions
                     </p>
                     <p className="text-2xl font-bold">
-                      {dashboardData.stats.totalChatSessions}
+                      {dashboardData?.stats.totalChatSessions || 0}
                     </p>
                   </div>
                   <Calendar className="w-8 h-8 text-purple-600" />
@@ -560,7 +751,7 @@ export default function DashboardPage() {
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Todos */}
+            {/* Tasks */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -571,34 +762,35 @@ export default function DashboardPage() {
                 <GlowingEffect spread={60} glow={true} />
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-xl font-semibold">
-                    Your Todos
+                    Your Tasks
                   </CardTitle>
                   <Button variant="ghost" size="icon">
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {dashboardData.todos.length === 0 ? (
+                  {!dashboardData?.Tasks || dashboardData.Tasks.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      No todos yet. Create your first one!
+                      No Tasks yet. Create your first one!
                     </div>
                   ) : (
-                    dashboardData.todos.map((todo) => (
+                    dashboardData.Tasks.map((Task) => (
                       <div
-                        key={todo.id}
+                        key={Task.id}
                         className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                          todo.completed
+                          Task.completed
                             ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
                             : "bg-card hover:bg-accent/50"
-                        }`}
+                        } ${loadingTasks.has(Task.id) ? "opacity-50" : ""}`}
                       >
                         <div className="flex items-start gap-3 flex-1">
                           <button
                             onClick={() =>
-                              toggleTodoComplete(todo.id, todo.completed)
+                              toggleTaskComplete(Task.id, Task.completed)
                             }
-                            className={`w-4 h-4 rounded-full border-2 mt-0.5 transition-colors ${
-                              todo.completed
+                            disabled={loadingTasks.has(Task.id)}
+                            className={`w-4 h-4 rounded-full border-2 mt-0.5 transition-colors disabled:cursor-not-allowed ${
+                              Task.completed
                                 ? "bg-green-600 border-green-600"
                                 : "border-muted-foreground hover:border-primary"
                             }`}
@@ -606,23 +798,23 @@ export default function DashboardPage() {
                           <div className="flex-1 min-w-0">
                             <h4
                               className={`font-medium text-sm ${
-                                todo.completed
+                                Task.completed
                                   ? "line-through text-muted-foreground"
                                   : "text-card-foreground"
                               }`}
                             >
-                              {todo.title}
+                              {Task.title}
                             </h4>
-                            {todo.description && (
+                            {Task.description && (
                               <p className="text-xs text-muted-foreground mt-1 truncate">
-                                {todo.description}
+                                {Task.description}
                               </p>
                             )}
-                            {todo.dueDate && (
+                            {Task.dueDate && (
                               <div className="flex items-center gap-1 mt-1">
                                 <Calendar className="w-3 h-3 text-muted-foreground" />
                                 <span className="text-xs text-muted-foreground">
-                                  {new Date(todo.dueDate).toLocaleDateString()}
+                                  {new Date(Task.dueDate).toLocaleDateString()}
                                 </span>
                               </div>
                             )}
@@ -630,16 +822,17 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge
-                            className={getPriorityColor(todo.priority)}
+                            className={getPriorityColor(Task.priority)}
                             variant="secondary"
                           >
-                            {todo.priority}
+                            {Task.priority}
                           </Badge>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteTodo(todo.id)}
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => deleteTask(Task.id)}
+                            disabled={loadingTasks.has(Task.id)}
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive disabled:cursor-not-allowed"
                           >
                             <Trash2 className="w-3 h-3" />
                           </Button>
@@ -666,7 +859,8 @@ export default function DashboardPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {dashboardData.chatSessions.length === 0 ? (
+                  {!dashboardData?.chatSessions ||
+                  dashboardData.chatSessions.length === 0 ? (
                     <div className="text-center py-4 text-muted-foreground text-sm">
                       No chat sessions yet
                     </div>
