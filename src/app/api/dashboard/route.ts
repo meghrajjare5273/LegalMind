@@ -6,66 +6,49 @@ import prisma from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user's todos
-    const todos = await prisma.todo.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      take: 10, // Recent 10 todos
-    });
+    const userId = session.user.id;
 
-    // Fetch user's chat sessions
-    const chatSessions = await prisma.chatSession.findMany({
-      where: { userId: session.user.id },
-      orderBy: { updatedAt: "desc" },
-      take: 5,
-      include: {
-        messages: {
-          take: 1,
+    // Use Promise.all for concurrent queries
+    const [todos, chatSessions, totalTodos, completedTodos, totalChatSessions] =
+      await Promise.all([
+        prisma.todo.findMany({
+          where: { userId },
           orderBy: { createdAt: "desc" },
-        },
-      },
-    });
+          take: 20, // Limit results
+        }),
+        prisma.chatSession.findMany({
+          where: { userId },
+          orderBy: { updatedAt: "desc" },
+          take: 10, // Limit results
+          include: {
+            messages: {
+              take: 1,
+              orderBy: { createdAt: "desc" },
+            },
+          },
+        }),
+        prisma.todo.count({ where: { userId } }),
+        prisma.todo.count({ where: { userId, completed: true } }),
+        prisma.chatSession.count({ where: { userId } }),
+      ]);
 
-    // Fetch user activities
-    const activities = await prisma.userActivity.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    });
-
-    // Calculate stats
-    const totalTodos = await prisma.todo.count({
-      where: { userId: session.user.id },
-    });
-
-    const completedTodos = await prisma.todo.count({
-      where: {
-        userId: session.user.id,
-        completed: true,
-      },
-    });
-
-    const totalChatSessions = await prisma.chatSession.count({
-      where: { userId: session.user.id },
-    });
+    const stats = {
+      totalTasks: totalTodos,
+      completedTasks: completedTodos,
+      pendingTasks: totalTodos - completedTodos,
+      totalChatSessions,
+      completionRate:
+        totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0,
+    };
 
     return NextResponse.json({
-      todos,
+      Tasks: todos,
       chatSessions,
-      activities,
-      stats: {
-        totalTodos,
-        completedTodos,
-        pendingTodos: totalTodos - completedTodos,
-        totalChatSessions,
-        completionRate:
-          totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0,
-      },
+      stats,
     });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
