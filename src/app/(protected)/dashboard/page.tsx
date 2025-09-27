@@ -36,6 +36,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { navItems } from "@/lib/items";
 
 interface Task {
   id: string;
@@ -90,61 +91,6 @@ export default function DashboardPage() {
   });
 
   // CardNav configuration
-  const navItems = [
-    {
-      label: "Services",
-      bgColor: "#0D0716",
-      textColor: "#fff",
-      links: [
-        {
-          label: "AI Chat",
-          href: "/services/chat",
-          ariaLabel: "AI Chat Service",
-        },
-        {
-          label: "Document Analysis",
-          href: "/services/analysis",
-          ariaLabel: "Document Analysis Service",
-        },
-        {
-          label: "Contract Review",
-          href: "/services/contract-review",
-          ariaLabel: "Contract Review Service",
-        },
-      ],
-    },
-    {
-      label: "Dashboard",
-      bgColor: "#170D27",
-      textColor: "#fff",
-      links: [
-        {
-          label: "Overview",
-          href: "/dashboard",
-          ariaLabel: "Dashboard Overview",
-        },
-        {
-          label: "Analytics",
-          href: "/analytics",
-          ariaLabel: "Analytics Dashboard",
-        },
-      ],
-    },
-    {
-      label: "Resources",
-      bgColor: "#271E37",
-      textColor: "#fff",
-      links: [
-        { label: "Help Center", href: "/help", ariaLabel: "Help Center" },
-        {
-          label: "Legal Guides",
-          href: "/resources/guides",
-          ariaLabel: "Legal Guides",
-        },
-        { label: "API Docs", href: "/docs", ariaLabel: "API Documentation" },
-      ],
-    },
-  ];
 
   const firstName = useMemo(
     () => user?.name?.split(" ")[0] || "Counsel",
@@ -493,7 +439,7 @@ export default function DashboardPage() {
     return (
       <>
         <div className="fixed top-0 left-0 right-0 z-50">
-          <CardNav
+          {/* <CardNav
             logo="/logo.svg"
             logoAlt="LegalMind Logo"
             items={navItems}
@@ -502,7 +448,8 @@ export default function DashboardPage() {
             buttonBgColor="#111"
             buttonTextColor="#fff"
             ease="power3.out"
-          />
+            className="tab-disabled fixed"
+          /> */}
         </div>
         <div
           className="min-h-screen w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12 pt-32"
@@ -541,6 +488,8 @@ export default function DashboardPage() {
           buttonTextColor="#fff"
           ease="power3.out"
           user={user!}
+          className="fixed top-0 left-0"
+          
         />
       </div>
 
@@ -681,6 +630,351 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Stats Cards */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-6"
+          >
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Tasks</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Completed</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.completedTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pending</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.pendingTasks || 0}
+                    </p>
+                  </div>
+                  <Clock className="w-8 h-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Chat Sessions
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalChatSessions || 0}
+                    </p>
+                  </div>
+                  <Calendar className="w-8 h-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-6"
+          >
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Tasks</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Completed</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.completedTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pending</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.pendingTasks || 0}
+                    </p>
+                  </div>
+                  <Clock className="w-8 h-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Chat Sessions
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalChatSessions || 0}
+                    </p>
+                  </div>
+                  <Calendar className="w-8 h-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-6"
+          >
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Tasks</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Completed</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.completedTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pending</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.pendingTasks || 0}
+                    </p>
+                  </div>
+                  <Clock className="w-8 h-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Chat Sessions
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalChatSessions || 0}
+                    </p>
+                  </div>
+                  <Calendar className="w-8 h-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-6"
+          >
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Tasks</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Completed</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.completedTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pending</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.pendingTasks || 0}
+                    </p>
+                  </div>
+                  <Clock className="w-8 h-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Chat Sessions
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalChatSessions || 0}
+                    </p>
+                  </div>
+                  <Calendar className="w-8 h-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-6"
+          >
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Tasks</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Completed</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.completedTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pending</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.pendingTasks || 0}
+                    </p>
+                  </div>
+                  <Clock className="w-8 h-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <GlowingEffect spread={40} glow={true} />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Chat Sessions
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalChatSessions || 0}
+                    </p>
+                  </div>
+                  <Calendar className="w-8 h-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

@@ -1,13 +1,13 @@
 "use client";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MetalButton } from "@/components/ui/glass-button";
 
 import { useRouter } from "next/navigation";
 import { Inter } from "next/font/google";
 import { useState, useEffect } from "react";
-import { TextEffect } from "../ui/motion-primitives/text-effect";
+import { TextEffect } from "@/components/ui/motion-primitives/text-effect";
 import { useSession } from "@/contexts/session-context";
 
 const inter = Inter({
@@ -39,7 +39,7 @@ export default function HeroSection() {
     >
       {/* MUI Container maxWidth="lg" equivalent */}
       <div className="w-full max-w-[1200px] mx-auto px-6">
-        <div className="flex flex-col space-y-6 max-w-[700px] relative z-10 font-['Roboto','-apple-system','BlinkMacSystemFont','Segoe_UI',sans-serif]">
+        <div className="flex flex-col space-y-8 max-w-[700px] relative z-10 font-['Roboto','-apple-system','BlinkMacSystemFont','Segoe_UI',sans-serif]">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -109,48 +109,47 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <div className="flex flex-col sm:flex-row gap-6 mt-2">
+            <div className="flex flex-col sm:flex-row gap-8 mt-6">
               {buttonsLoading ? (
-                <div className="flex flex-col sm:flex-row gap-6">
-                  <Skeleton className="h-14 w-48 bg-white/20 rounded-md" />
-                  <Skeleton className="h-14 w-44 bg-white/15 rounded-md" />
+                <div className="flex flex-col sm:flex-row gap-8">
+                  <Skeleton className="h-16 w-56 bg-white/20 rounded-md" />
+                  <Skeleton className="h-16 w-52 bg-white/15 rounded-md" />
                 </div>
               ) : (
                 <>
                   {user ? (
-                    <Button
+                    <MetalButton
+                      variant="gold"
                       onClick={() => {
                         router.push("/dashboard");
                       }}
-                      className="bg-white text-gold hover:bg-white/90 px-8 py-4 text-[1.1rem] font-semibold hover:-translate-y-[3px] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-0 h-auto tracking-wide"
-                      size="lg"
+                      className="px-10 py-4 text-[1.1rem] font-semibold tracking-wide transition-all duration-300 hover:scale-105"
                     >
                       Go to Dashboard
                       <ArrowRight className="ml-3 h-5 w-5" />
-                    </Button>
+                    </MetalButton>
                   ) : (
                     <>
-                      <Button
+                      <MetalButton
+                        variant="gold"
                         onClick={() => {
                           router.push("/sign-up");
                         }}
-                        className="bg-white text-gold hover:bg-white/90 px-8 py-4 text-[1.1rem] font-semibold hover:-translate-y-[3px] transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-0 h-auto tracking-wide"
-                        size="lg"
+                        className="px-10 py-4 text-[1.1rem] font-semibold tracking-wide transition-all duration-300 hover:scale-105"
                       >
                         Join LegalMind&copy;
                         <ArrowRight className="ml-3 h-5 w-5" />
-                      </Button>
+                      </MetalButton>
 
-                      <Button
-                        variant="outline"
+                      <MetalButton
+                        variant="bronze"
                         onClick={() => {
                           router.push("/sign-in");
                         }}
-                        className="border-white/50 text-white hover:border-white hover:bg-white px-8 py-4 text-[1.1rem] hover:-translate-y-[3px] transition-all duration-300 bg-transparent h-auto font-bold tracking-wide"
-                        size="lg"
+                        className="px-10 py-4 text-[1.1rem] font-semibold tracking-wide transition-all duration-300 hover:scale-105"
                       >
                         Already a Member?
-                      </Button>
+                      </MetalButton>
                     </>
                   )}
                 </>

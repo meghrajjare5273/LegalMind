@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { FloatingNavigation } from "@/components/protected/floating-navigation";
+// import { GLSLHills } from "@/components/protected/glsl-hills";
 
 export const metadata: Metadata = {
   title: {
@@ -27,7 +28,7 @@ export default function DashboardLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <div className="flex min-h-screen  w-full">
+      <div className="flex min-h-screen w-full">
         {children}
         <FloatingNavigation />
       </div>
