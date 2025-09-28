@@ -1,90 +1,37 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { createCachedFunction } from "@/lib/cache-utils";
-import { CACHE_STRATEGIES } from "@/lib/cache-headers";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { CACHE_DURATIONS, CACHE_TAGS } from "@/lib/cache-constants";
 
-interface DashboardStats {
-  totalTodos: number;
-  completedTodos: number;
-  totalChatSessions: number;
-  recentActivity: {
-    type: "todo" | "chat";
-    title: string | null;
+interface DashboardData {
+  Tasks: {
+    id: string;
+    title: string;
+    description?: string | null;
+    completed: boolean;
+    priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+    dueDate: Date | null;
+    reminderTime: Date | null;
     createdAt: Date;
   }[];
+  chatSessions: {
+    id: string;
+    title: string;
+    updatedAt: Date;
+    messages: { content: string }[];
+  }[];
+  stats: {
+    totalTasks: number;
+    completedTasks: number;
+    pendingTasks: number;
+    totalChatSessions: number;
+    completionRate: number;
+  };
 }
 
-// Cached dashboard data function
-const getUserDashboardDataCached = createCachedFunction(
-  async (userId: string): Promise<DashboardStats> => {
-    const [todoStats, completedTodoCount, chatSessionCount, recentActivity] =
-      await Promise.all([
-        // Todo statistics
-        prisma.todo.aggregate({
-          where: { userId },
-          _count: { id: true },
-        }),
-
-        // Completed todos count
-        prisma.todo.count({
-          where: { userId, completed: true },
-        }),
-
-        // Chat sessions count
-        prisma.chatSession.count({
-          where: { userId },
-        }),
-
-        // Recent activity
-        Promise.all([
-          prisma.todo.findMany({
-            where: { userId },
-            select: { title: true, createdAt: true },
-            orderBy: { createdAt: "desc" },
-            take: 5,
-          }),
-          prisma.chatSession.findMany({
-            where: { userId },
-            select: { title: true, createdAt: true },
-            orderBy: { createdAt: "desc" },
-            take: 5,
-          }),
-        ]),
-      ]);
-
-    const [recentTodos, recentChats] = recentActivity;
-    const combinedActivity = [
-      ...recentTodos.map((todo) => ({
-        type: "todo" as const,
-        title: todo.title,
-        createdAt: todo.createdAt,
-      })),
-      ...recentChats.map((chat) => ({
-        type: "chat" as const,
-        title: chat.title,
-        createdAt: chat.createdAt,
-      })),
-    ]
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, 10);
-
-    return {
-      totalTodos: todoStats._count.id,
-      completedTodos: completedTodoCount,
-      totalChatSessions: chatSessionCount,
-      recentActivity: combinedActivity,
-    };
-  },
-  {
-    tags: [CACHE_TAGS.USER_DASHBOARD("PLACEHOLDER"), CACHE_TAGS.DASHBOARD_DATA],
-    revalidate: CACHE_DURATIONS.MEDIUM,
-  }
-);
-
-export async function GET(): Promise<NextResponse> {
+export async function GET(): Promise<
+  NextResponse<DashboardData | { error: string }>
+> {
   try {
     // Authentication check
     const session = await auth.api.getSession({ headers: await headers() });
@@ -92,19 +39,62 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch cached dashboard data
-    const dashboardData = (await getUserDashboardDataCached)(session.user.id);
+    // Fetch data in parallel for better performance
+    const [tasks, chatSessions] = await Promise.all([
+      prisma.todo.findMany({
+        where: { userId: session.user.id },
+        orderBy: [
+          { completed: "asc" },
+          { priority: "desc" },
+          { createdAt: "desc" },
+        ],
+        take: 50, // Limit results for performance
+      }),
+      prisma.chatSession.findMany({
+        where: { userId: session.user.id },
+        include: {
+          messages: {
+            select: { content: true },
+            take: 1,
+            orderBy: { createdAt: "desc" },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 10, // Limit recent sessions
+      }),
+    ]);
 
-    return NextResponse.json(
-      {
-        data: dashboardData,
-        cached: true,
-        timestamp: new Date().toISOString(),
+    // Calculate stats
+    const completedTasks = tasks.filter((task) => task.completed).length;
+    const pendingTasks = tasks.length - completedTasks;
+
+    const dashboardData: DashboardData = {
+      Tasks: tasks,
+      chatSessions: chatSessions.map((session) => ({
+        id: session.id,
+        title: session.title || "Untitled Chat",
+        updatedAt: session.updatedAt,
+        messages: session.messages,
+      })),
+      stats: {
+        totalTasks: tasks.length,
+        completedTasks,
+        pendingTasks,
+        totalChatSessions: chatSessions.length,
+        completionRate:
+          tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0,
       },
-      {
-        headers: CACHE_STRATEGIES.MEDIUM_LIVED,
-      }
+    };
+
+    const response = NextResponse.json(dashboardData);
+
+    // Simple cache headers for better performance [web:25]
+    response.headers.set(
+      "Cache-Control",
+      "private, s-maxage=60, stale-while-revalidate=120"
     );
+
+    return response;
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
     return NextResponse.json(

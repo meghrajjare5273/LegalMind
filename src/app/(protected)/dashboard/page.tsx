@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useSession } from "@/contexts/session-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,10 +34,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { debounce } from "lodash";
 import CardNav from "@/components/react-bits/CardNav";
 
-// Types remain the same
+// Types
 interface Task {
   id: string;
   title: string;
@@ -69,13 +69,11 @@ interface DashboardData {
 
 type TaskPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
-// Optimized Dashboard Component
 export default function DashboardPage() {
   const { user, loading } = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Local state - minimized and optimized
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -85,33 +83,46 @@ export default function DashboardPage() {
     reminderTime: "",
   });
 
-  // Memoized user firstName computation
   const firstName = useMemo(
     () => user?.name?.split(" ")[0] || "Counsel",
     [user?.name]
   );
 
-  // React Query for data fetching with caching (fixed cacheTime -> gcTime)
+  // Simplified data fetching with better error handling
   const {
     data: dashboardData,
     isLoading: isLoadingData,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["dashboard-data", user?.id],
     queryFn: async (): Promise<DashboardData> => {
-      const response = await fetch("/api/dashboard");
-      if (!response.ok) throw new Error("Failed to fetch dashboard data");
-      return response.json() as Promise<DashboardData>;
+      const response = await fetch("/api/dashboard", {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `HTTP error! status: ${response.status}`
+        );
+      }
+      return response.json();
     },
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
+    retry: (failureCount, error: any) => {
+      if (error?.message?.includes("401") || error?.message?.includes("403")) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 
-  // Separate query for notifications with different timing
+  // Notifications query
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications", user?.id],
     queryFn: async (): Promise<Task[]> => {
@@ -121,11 +132,11 @@ export default function DashboardPage() {
       return data.notifications || [];
     },
     enabled: !!user,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 60 * 1000, // 1 minute
     refetchInterval: 2 * 60 * 1000, // Check every 2 minutes
   });
 
-  // Optimized mutations with optimistic updates
+  // Optimistic updates with proper error handling [web:27][web:36]
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: typeof newTask) => {
       const response = await fetch("/api/todos", {
@@ -133,57 +144,65 @@ export default function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: taskData.title,
-          description: taskData.description,
+          description: taskData.description || null,
           priority: taskData.priority,
           dueDate: taskData.dueDate || null,
           reminderTime: taskData.reminderTime || null,
         }),
       });
-      if (!response.ok) throw new Error("Failed to create task");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to create task");
+      }
       return response.json();
     },
     onMutate: async (newTaskData) => {
-      // Optimistic update
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: ["dashboard-data", user?.id],
       });
+
+      // Snapshot the previous value
       const previousData = queryClient.getQueryData<DashboardData>([
         "dashboard-data",
         user?.id,
       ]);
 
-      const optimisticTask: Task = {
-        id: `temp-${Date.now()}`,
-        title: newTaskData.title,
-        description: newTaskData.description,
-        completed: false,
-        priority: newTaskData.priority,
-        dueDate: newTaskData.dueDate
-          ? new Date(newTaskData.dueDate)
-          : undefined,
-        reminderTime: newTaskData.reminderTime
-          ? new Date(newTaskData.reminderTime)
-          : undefined,
-        createdAt: new Date(),
-      };
+      // Optimistically update to the new value
+      if (previousData) {
+        const optimisticTask: Task = {
+          id: `temp-${Date.now()}`,
+          title: newTaskData.title,
+          description: newTaskData.description || undefined,
+          completed: false,
+          priority: newTaskData.priority,
+          dueDate: newTaskData.dueDate
+            ? new Date(newTaskData.dueDate)
+            : undefined,
+          reminderTime: newTaskData.reminderTime
+            ? new Date(newTaskData.reminderTime)
+            : undefined,
+          createdAt: new Date(),
+        };
 
-      queryClient.setQueryData<DashboardData>(
-        ["dashboard-data", user?.id],
-        (old) =>
-          old
-            ? {
-                ...old,
-                Tasks: [optimisticTask, ...old.Tasks],
-                stats: {
-                  ...old.stats,
-                  totalTasks: old.stats.totalTasks + 1,
-                  pendingTasks: old.stats.pendingTasks + 1,
-                },
-              }
-            : old
-      );
+        queryClient.setQueryData<DashboardData>(
+          ["dashboard-data", user?.id],
+          (old) =>
+            old
+              ? {
+                  ...old,
+                  Tasks: [optimisticTask, ...old.Tasks],
+                  stats: {
+                    ...old.stats,
+                    totalTasks: old.stats.totalTasks + 1,
+                    pendingTasks: old.stats.pendingTasks + 1,
+                  },
+                }
+              : old
+        );
+      }
 
-      return { previousData, optimisticTask };
+      return { previousData };
     },
     onError: (err, variables, context) => {
       // Revert optimistic update on error
@@ -195,11 +214,12 @@ export default function DashboardPage() {
       }
       toast({
         title: "Error",
-        description: "Failed to create task",
+        description: err.message || "Failed to create task",
         variant: "destructive",
       });
     },
     onSuccess: () => {
+      // Refetch to get the real data from server
       queryClient.invalidateQueries({ queryKey: ["dashboard-data", user?.id] });
       setNewTask({
         title: "",
@@ -209,7 +229,10 @@ export default function DashboardPage() {
         reminderTime: "",
       });
       setIsCreateDialogOpen(false);
-      toast({ title: "Success", description: "Task created successfully" });
+      toast({
+        title: "Success",
+        description: "Task created successfully",
+      });
     },
   });
 
@@ -226,7 +249,10 @@ export default function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !completed }),
       });
-      if (!response.ok) throw new Error("Failed to update task");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to update task");
+      }
       return response.json();
     },
     onMutate: async ({ taskId, completed }) => {
@@ -271,21 +297,28 @@ export default function DashboardPage() {
       }
       toast({
         title: "Error",
-        description: "Failed to update task",
+        description: err.message || "Failed to update task",
         variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({ title: "Success", description: "Task updated successfully" });
+      toast({
+        title: "Success",
+        description: "Task updated successfully",
+      });
     },
   });
 
   const deleteTaskMutation = useMutation({
     mutationFn: async (taskId: string) => {
-      const response = await fetch(`/api/todos  /${taskId}`, {
+      const response = await fetch(`/api/todos/${taskId}`, {
         method: "DELETE",
       });
-      if (!response.ok) throw new Error("Failed to delete task");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to delete task");
+      }
+      return response.json();
     },
     onMutate: async (taskId) => {
       await queryClient.cancelQueries({
@@ -331,20 +364,30 @@ export default function DashboardPage() {
       }
       toast({
         title: "Error",
-        description: "Failed to delete task",
+        description: err.message || "Failed to delete task",
         variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({ title: "Success", description: "Task deleted successfully" });
+      toast({
+        title: "Success",
+        description: "Task deleted successfully",
+      });
     },
   });
 
-  // Memoized callbacks to prevent unnecessary re-renders
+  // Memoized callbacks
   const handleCreateTask = useCallback(() => {
-    if (!newTask.title.trim()) return;
+    if (!newTask.title.trim()) {
+      toast({
+        title: "Error",
+        description: "Task title is required",
+        variant: "destructive",
+      });
+      return;
+    }
     createTaskMutation.mutate(newTask);
-  }, [newTask, createTaskMutation]);
+  }, [newTask, createTaskMutation, toast]);
 
   const handleToggleTask = useCallback(
     (taskId: string, completed: boolean) => {
@@ -360,24 +403,21 @@ export default function DashboardPage() {
     [deleteTaskMutation]
   );
 
-  // Fixed debounced input handlers
-  const debouncedSetTitle = useMemo(
-    () =>
-      debounce((value: string) => {
-        setNewTask((prev) => ({ ...prev, title: value }));
-      }, 300),
-    []
-  );
+  const getPriorityColor = useCallback((priority: string) => {
+    switch (priority) {
+      case "URGENT":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      case "HIGH":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
+      case "MEDIUM":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+      case "LOW":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+    }
+  }, []);
 
-  const debouncedSetDescription = useMemo(
-    () =>
-      debounce((value: string) => {
-        setNewTask((prev) => ({ ...prev, description: value }));
-      }, 300),
-    []
-  );
-
-  // CardNav configuration
   const navItems = [
     {
       label: "Services",
@@ -388,11 +428,6 @@ export default function DashboardPage() {
           label: "AI Chat",
           href: "/services/chat",
           ariaLabel: "AI Chat Service",
-        },
-        {
-          label: "Document Analysis",
-          href: "/services/analysis",
-          ariaLabel: "Document Analysis Service",
         },
         {
           label: "Contract Review",
@@ -418,62 +453,12 @@ export default function DashboardPage() {
         },
       ],
     },
-    {
-      label: "Resources",
-      bgColor: "#271E37",
-      textColor: "#fff",
-      links: [
-        { label: "Help Center", href: "/help", ariaLabel: "Help Center" },
-        {
-          label: "Legal Guides",
-          href: "/resources/guides",
-          ariaLabel: "Legal Guides",
-        },
-        { label: "API Docs", href: "/docs", ariaLabel: "API Documentation" },
-      ],
-    },
   ];
-
-  // Cleanup debounced functions
-  useEffect(() => {
-    return () => {
-      debouncedSetTitle.cancel();
-      debouncedSetDescription.cancel();
-    };
-  }, [debouncedSetTitle, debouncedSetDescription]);
-
-  // Memoized priority color function
-  const getPriorityColor = useCallback((priority: string) => {
-    switch (priority) {
-      case "URGENT":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-      case "HIGH":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
-      case "MEDIUM":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-      case "LOW":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
-    }
-  }, []);
-
-  // Show notification toasts
-  useEffect(() => {
-    notifications.forEach((task: Task) => {
-      toast({
-        title: "Task Reminder",
-        description: `Don't forget: ${task.title}`,
-        duration: 5000,
-      });
-    });
-  }, [notifications, toast]);
 
   // Loading state
   if (loading || isLoadingData) {
     return (
       <div className="min-h-screen w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12 pt-32">
-        {/* Loading skeleton - matches your existing loading component */}
         <div className="flex flex-col gap-8">
           <div className="h-7 w-48 bg-muted rounded animate-pulse" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -495,7 +480,7 @@ export default function DashboardPage() {
     );
   }
 
-  // Error state
+  // Error state with retry
   if (error) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center">
@@ -504,17 +489,11 @@ export default function DashboardPage() {
             Failed to load dashboard
           </h2>
           <p className="text-muted-foreground mb-4">
-            Please try refreshing the page
+            {error instanceof Error
+              ? error.message
+              : "Please try refreshing the page"}
           </p>
-          <Button
-            onClick={() =>
-              queryClient.invalidateQueries({
-                queryKey: ["dashboard-data", user?.id],
-              })
-            }
-          >
-            Retry
-          </Button>
+          <Button onClick={() => refetch()}>Retry</Button>
         </div>
       </div>
     );
@@ -535,7 +514,7 @@ export default function DashboardPage() {
         />
       </div>
       <div
-        className="min-h-screen w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12 pt-32"
+        className="min-h-screen w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12"
         style={{ paddingTop: "97px" }}
       >
         <div className="flex flex-col gap-8">
@@ -600,11 +579,17 @@ export default function DashboardPage() {
                   <div className="space-y-4">
                     <Input
                       placeholder="Task title"
-                      onChange={(e) => debouncedSetTitle(e.target.value)}
+                      value={newTask.title}
+                      onChange={(e) =>
+                        setNewTask({ ...newTask, title: e.target.value })
+                      }
                     />
                     <Textarea
                       placeholder="Description (optional)"
-                      onChange={(e) => debouncedSetDescription(e.target.value)}
+                      value={newTask.description}
+                      onChange={(e) =>
+                        setNewTask({ ...newTask, description: e.target.value })
+                      }
                     />
                     <Select
                       value={newTask.priority}

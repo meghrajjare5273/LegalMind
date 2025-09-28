@@ -1,8 +1,6 @@
-// src/app/api/todos/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { invalidateUserTodos } from "@/lib/cache-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -22,12 +20,16 @@ export async function PUT(
     const todo = await prisma.todo.update({
       where: { id, userId: session.user.id },
       data: {
-        title,
-        description,
-        completed,
-        priority,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        reminderTime: reminderTime ? new Date(reminderTime) : null,
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(completed !== undefined && { completed }),
+        ...(priority !== undefined && { priority }),
+        ...(dueDate !== undefined && {
+          dueDate: dueDate ? new Date(dueDate) : null,
+        }),
+        ...(reminderTime !== undefined && {
+          reminderTime: reminderTime ? new Date(reminderTime) : null,
+        }),
       },
     });
 
@@ -41,9 +43,6 @@ export async function PUT(
         },
       });
     }
-
-    // Invalidate relevant caches
-    invalidateUserTodos(session.user.id);
 
     return NextResponse.json(todo);
   } catch (error) {
@@ -69,9 +68,6 @@ export async function DELETE(
     await prisma.todo.delete({
       where: { id, userId: session.user.id },
     });
-
-    // Invalidate relevant caches
-    invalidateUserTodos(session.user.id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

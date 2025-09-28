@@ -1,26 +1,6 @@
-// src/app/api/todos/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { unstable_cache } from "next/cache";
-import { invalidateUserTodos } from "@/lib/cache-utils";
-
-const getCachedTodos = unstable_cache(
-  async (userId: string) => {
-    return prisma.todo.findMany({
-      where: { userId },
-      orderBy: [
-        { completed: "asc" },
-        { priority: "desc" },
-        { createdAt: "desc" },
-      ],
-    });
-  },
-  ["todos-list"],
-  {
-    revalidate: 300, // 5 minutes
-  }
-);
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,12 +9,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const todos = await getCachedTodos(session.user.id);
+    const todos = await prisma.todo.findMany({
+      where: { userId: session.user.id },
+      orderBy: [
+        { completed: "asc" },
+        { priority: "desc" },
+        { createdAt: "desc" },
+      ],
+    });
 
     const response = NextResponse.json(todos);
+    // Simple cache for todos - they change frequently so shorter cache
     response.headers.set(
       "Cache-Control",
-      "s-maxage=300, stale-while-revalidate=600"
+      "private, s-maxage=30, stale-while-revalidate=60"
     );
 
     return response;
@@ -57,18 +45,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, description, priority, dueDate, reminderTime } = body;
 
+    if (!title || typeof title !== "string") {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    }
+
     const todo = await prisma.todo.create({
       data: {
-        title,
+        title: title.trim(),
         description,
-        priority,
+        priority: priority || "MEDIUM",
         dueDate: dueDate ? new Date(dueDate) : null,
         reminderTime: reminderTime ? new Date(reminderTime) : null,
         userId: session.user.id,
       },
     });
 
-    // Log activity
+    // Log activity for analytics
     await prisma.userActivity.create({
       data: {
         userId: session.user.id,
@@ -76,9 +68,6 @@ export async function POST(request: NextRequest) {
         metadata: { todoId: todo.id, title: todo.title },
       },
     });
-
-    // Invalidate relevant caches
-    invalidateUserTodos(session.user.id);
 
     return NextResponse.json(todo);
   } catch (error) {
