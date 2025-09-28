@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
+import CardNav from "@/components/react-bits/CardNav";
 
 // Types remain the same
 interface Task {
@@ -127,7 +128,7 @@ export default function DashboardPage() {
   // Optimized mutations with optimistic updates
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: typeof newTask) => {
-      const response = await fetch("/api/Tasks", {
+      const response = await fetch("/api/todos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -220,7 +221,7 @@ export default function DashboardPage() {
       taskId: string;
       completed: boolean;
     }) => {
-      const response = await fetch(`/api/Tasks/${taskId}`, {
+      const response = await fetch(`/api/todos/${taskId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !completed }),
@@ -281,7 +282,7 @@ export default function DashboardPage() {
 
   const deleteTaskMutation = useMutation({
     mutationFn: async (taskId: string) => {
-      const response = await fetch(`/api/Tasks/${taskId}`, {
+      const response = await fetch(`/api/todos  /${taskId}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete task");
@@ -376,6 +377,63 @@ export default function DashboardPage() {
     []
   );
 
+  // CardNav configuration
+  const navItems = [
+    {
+      label: "Services",
+      bgColor: "#0D0716",
+      textColor: "#fff",
+      links: [
+        {
+          label: "AI Chat",
+          href: "/services/chat",
+          ariaLabel: "AI Chat Service",
+        },
+        {
+          label: "Document Analysis",
+          href: "/services/analysis",
+          ariaLabel: "Document Analysis Service",
+        },
+        {
+          label: "Contract Review",
+          href: "/services/contract-review",
+          ariaLabel: "Contract Review Service",
+        },
+      ],
+    },
+    {
+      label: "Dashboard",
+      bgColor: "#170D27",
+      textColor: "#fff",
+      links: [
+        {
+          label: "Overview",
+          href: "/dashboard",
+          ariaLabel: "Dashboard Overview",
+        },
+        {
+          label: "Analytics",
+          href: "/analytics",
+          ariaLabel: "Analytics Dashboard",
+        },
+      ],
+    },
+    {
+      label: "Resources",
+      bgColor: "#271E37",
+      textColor: "#fff",
+      links: [
+        { label: "Help Center", href: "/help", ariaLabel: "Help Center" },
+        {
+          label: "Legal Guides",
+          href: "/resources/guides",
+          ariaLabel: "Legal Guides",
+        },
+        { label: "API Docs", href: "/docs", ariaLabel: "API Documentation" },
+      ],
+    },
+  ];
+
   // Cleanup debounced functions
   useEffect(() => {
     return () => {
@@ -463,349 +521,365 @@ export default function DashboardPage() {
   }
 
   return (
-    <div
-      className="min-h-screen w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12 pt-32"
-      style={{ paddingTop: "92px" }}
-    >
-      <div className="flex flex-col gap-8">
-        {/* Header */}
-        <motion.div
-          layout
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-        >
-          <div className="flex-1">
-            <motion.h1
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="text-3xl font-bold tracking-tight text-foreground"
-            >
-              Welcome back, {firstName}
-            </motion.h1>
-            <motion.p
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-muted-foreground mt-1"
-            >
-              Here&apos;s what&apos;s happening with your legal work today.
-            </motion.p>
-          </div>
-
-          <motion.div layout className="flex items-center gap-3">
-            {notifications.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="relative bg-transparent"
+    <>
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40">
+        <CardNav
+          logo="/logo.svg"
+          logoAlt="LegalMind Logo"
+          items={navItems}
+          baseColor="#fff"
+          menuColor="#000"
+          buttonBgColor="#111"
+          buttonTextColor="#fff"
+          ease="power3.out"
+        />
+      </div>
+      <div
+        className="min-h-screen w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12 pt-32"
+        style={{ paddingTop: "97px" }}
+      >
+        <div className="flex flex-col gap-8">
+          {/* Header */}
+          <motion.div
+            layout
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+          >
+            <div className="flex-1">
+              <motion.h1
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                className="text-3xl font-bold tracking-tight text-foreground"
               >
-                <Bell className="w-4 h-4 mr-2" />
-                Notifications
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs">
-                  {notifications.length}
-                </Badge>
-              </Button>
-            )}
+                Welcome back, {firstName}
+              </motion.h1>
+              <motion.p
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-muted-foreground mt-1"
+              >
+                Here&apos;s what&apos;s happening with your legal work today.
+              </motion.p>
+            </div>
 
-            <Dialog
-              open={isCreateDialogOpen}
-              onOpenChange={setIsCreateDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Task
+            <motion.div layout className="flex items-center gap-3">
+              {notifications.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="relative bg-transparent"
+                >
+                  <Bell className="w-4 h-4 mr-2" />
+                  Notifications
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs">
+                    {notifications.length}
+                  </Badge>
                 </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Task</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Task title"
-                    onChange={(e) => debouncedSetTitle(e.target.value)}
-                  />
-                  <Textarea
-                    placeholder="Description (optional)"
-                    onChange={(e) => debouncedSetDescription(e.target.value)}
-                  />
-                  <Select
-                    value={newTask.priority}
-                    onValueChange={(value: TaskPriority) =>
-                      setNewTask({ ...newTask, priority: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="LOW">Low Priority</SelectItem>
-                      <SelectItem value="MEDIUM">Medium Priority</SelectItem>
-                      <SelectItem value="HIGH">High Priority</SelectItem>
-                      <SelectItem value="URGENT">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium">Due Date</label>
-                      <Input
-                        type="datetime-local"
-                        value={newTask.dueDate}
-                        onChange={(e) =>
-                          setNewTask({ ...newTask, dueDate: e.target.value })
-                        }
-                      />
+              )}
+
+              <Dialog
+                open={isCreateDialogOpen}
+                onOpenChange={setIsCreateDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Task</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Input
+                      placeholder="Task title"
+                      onChange={(e) => debouncedSetTitle(e.target.value)}
+                    />
+                    <Textarea
+                      placeholder="Description (optional)"
+                      onChange={(e) => debouncedSetDescription(e.target.value)}
+                    />
+                    <Select
+                      value={newTask.priority}
+                      onValueChange={(value: TaskPriority) =>
+                        setNewTask({ ...newTask, priority: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="LOW">Low Priority</SelectItem>
+                        <SelectItem value="MEDIUM">Medium Priority</SelectItem>
+                        <SelectItem value="HIGH">High Priority</SelectItem>
+                        <SelectItem value="URGENT">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium">Due Date</label>
+                        <Input
+                          type="datetime-local"
+                          value={newTask.dueDate}
+                          onChange={(e) =>
+                            setNewTask({ ...newTask, dueDate: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Reminder</label>
+                        <Input
+                          type="datetime-local"
+                          value={newTask.reminderTime}
+                          onChange={(e) =>
+                            setNewTask({
+                              ...newTask,
+                              reminderTime: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium">Reminder</label>
-                      <Input
-                        type="datetime-local"
-                        value={newTask.reminderTime}
-                        onChange={(e) =>
-                          setNewTask({
-                            ...newTask,
-                            reminderTime: e.target.value,
-                          })
-                        }
-                      />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsCreateDialogOpen(false)}
+                        disabled={createTaskMutation.isPending}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleCreateTask}
+                        disabled={createTaskMutation.isPending}
+                      >
+                        {createTaskMutation.isPending
+                          ? "Creating..."
+                          : "Create Task"}
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsCreateDialogOpen(false)}
-                      disabled={createTaskMutation.isPending}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleCreateTask}
-                      disabled={createTaskMutation.isPending}
-                    >
-                      {createTaskMutation.isPending
-                        ? "Creating..."
-                        : "Create Task"}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+            </motion.div>
           </motion.div>
-        </motion.div>
 
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-6"
-        >
-          <Card className="relative overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Tasks</p>
-                  <p className="text-2xl font-bold">
-                    {dashboardData?.stats.totalTasks || 0}
-                  </p>
-                </div>
-                <CheckCircle2 className="w-8 h-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold">
-                    {dashboardData?.stats.completedTasks || 0}
-                  </p>
-                </div>
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold">
-                    {dashboardData?.stats.pendingTasks || 0}
-                  </p>
-                </div>
-                <Clock className="w-8 h-8 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Chat Sessions</p>
-                  <p className="text-2xl font-bold">
-                    {dashboardData?.stats.totalChatSessions || 0}
-                  </p>
-                </div>
-                <Calendar className="w-8 h-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Tasks */}
+          {/* Stats Cards */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="lg:col-span-2"
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-6"
           >
             <Card className="relative overflow-hidden">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-xl font-semibold">
-                  Your Tasks
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {!dashboardData?.Tasks || dashboardData.Tasks.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No tasks yet. Create your first one!
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Tasks</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalTasks || 0}
+                    </p>
                   </div>
-                ) : (
-                  dashboardData.Tasks.map((task: Task) => (
-                    <div
-                      key={task.id}
-                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                        task.completed
-                          ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
-                          : "bg-card hover:bg-accent/50"
-                      } ${
-                        toggleTaskMutation.isPending ||
-                        deleteTaskMutation.isPending
-                          ? "opacity-50"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex items-start gap-3 flex-1">
-                        <button
-                          onClick={() =>
-                            handleToggleTask(task.id, task.completed)
-                          }
-                          disabled={toggleTaskMutation.isPending}
-                          className={`w-4 h-4 rounded-full border-2 mt-0.5 transition-colors disabled:cursor-not-allowed ${
-                            task.completed
-                              ? "bg-green-600 border-green-600"
-                              : "border-muted-foreground hover:border-primary"
-                          }`}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4
-                            className={`font-medium text-sm ${
+                  <CheckCircle2 className="w-8 h-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Completed</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.completedTasks || 0}
+                    </p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pending</p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.pendingTasks || 0}
+                    </p>
+                  </div>
+                  <Clock className="w-8 h-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Chat Sessions
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {dashboardData?.stats.totalChatSessions || 0}
+                    </p>
+                  </div>
+                  <Calendar className="w-8 h-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Tasks */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="lg:col-span-2"
+            >
+              <Card className="relative overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-xl font-semibold">
+                    Your Tasks
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {!dashboardData?.Tasks || dashboardData.Tasks.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No tasks yet. Create your first one!
+                    </div>
+                  ) : (
+                    dashboardData.Tasks.map((task: Task) => (
+                      <div
+                        key={task.id}
+                        className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                          task.completed
+                            ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+                            : "bg-card hover:bg-accent/50"
+                        } ${
+                          toggleTaskMutation.isPending ||
+                          deleteTaskMutation.isPending
+                            ? "opacity-50"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-start gap-3 flex-1">
+                          <button
+                            onClick={() =>
+                              handleToggleTask(task.id, task.completed)
+                            }
+                            disabled={toggleTaskMutation.isPending}
+                            className={`w-4 h-4 rounded-full border-2 mt-0.5 transition-colors disabled:cursor-not-allowed ${
                               task.completed
-                                ? "line-through text-muted-foreground"
-                                : "text-card-foreground"
+                                ? "bg-green-600 border-green-600"
+                                : "border-muted-foreground hover:border-primary"
                             }`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4
+                              className={`font-medium text-sm ${
+                                task.completed
+                                  ? "line-through text-muted-foreground"
+                                  : "text-card-foreground"
+                              }`}
+                            >
+                              {task.title}
+                            </h4>
+                            {task.description && (
+                              <p className="text-xs text-muted-foreground mt-1 truncate">
+                                {task.description}
+                              </p>
+                            )}
+                            {task.dueDate && (
+                              <div className="flex items-center gap-1 mt-1">
+                                <Calendar className="w-3 h-3 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(task.dueDate).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            className={getPriorityColor(task.priority)}
+                            variant="secondary"
                           >
-                            {task.title}
+                            {task.priority}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteTask(task.id)}
+                            disabled={deleteTaskMutation.isPending}
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive disabled:cursor-not-allowed"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Recent Chat Sessions */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-col gap-6"
+            >
+              <Card className="relative overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">
+                    Recent Chats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {!dashboardData?.chatSessions ||
+                  dashboardData.chatSessions.length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground text-sm">
+                      No chat sessions yet
+                    </div>
+                  ) : (
+                    dashboardData.chatSessions.map((session: ChatSession) => (
+                      <Link
+                        key={session.id}
+                        href={`/services/chat/${session.id}`}
+                        className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm text-card-foreground truncate">
+                            {session.title || "Untitled Chat"}
                           </h4>
-                          {task.description && (
-                            <p className="text-xs text-muted-foreground mt-1 truncate">
-                              {task.description}
+                          {session.messages[0] && (
+                            <p className="text-xs text-muted-foreground truncate mt-1">
+                              {session.messages[0].content}
                             </p>
                           )}
-                          {task.dueDate && (
-                            <div className="flex items-center gap-1 mt-1">
-                              <Calendar className="w-3 h-3 text-muted-foreground" />
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(task.dueDate).toLocaleDateString()}
-                              </span>
-                            </div>
-                          )}
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {new Date(session.updatedAt).toLocaleDateString()}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          className={getPriorityColor(task.priority)}
-                          variant="secondary"
-                        >
-                          {task.priority}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteTask(task.id)}
-                          disabled={deleteTaskMutation.isPending}
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive disabled:cursor-not-allowed"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Recent Chat Sessions */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-col gap-6"
-          >
-            <Card className="relative overflow-hidden">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">
-                  Recent Chats
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {!dashboardData?.chatSessions ||
-                dashboardData.chatSessions.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground text-sm">
-                    No chat sessions yet
-                  </div>
-                ) : (
-                  dashboardData.chatSessions.map((session: ChatSession) => (
-                    <Link
-                      key={session.id}
-                      href={`/services/chat/${session.id}`}
-                      className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm text-card-foreground truncate">
-                          {session.title || "Untitled Chat"}
-                        </h4>
-                        {session.messages[0] && (
-                          <p className="text-xs text-muted-foreground truncate mt-1">
-                            {session.messages[0].content}
-                          </p>
-                        )}
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {new Date(session.updatedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+                      </Link>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

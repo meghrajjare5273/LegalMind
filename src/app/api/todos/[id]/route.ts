@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { invalidateUserTodos } from "@/lib/cache-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -10,7 +11,6 @@ export async function PUT(
   try {
     const { id } = await params;
     const session = await auth.api.getSession({ headers: request.headers });
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -20,10 +20,7 @@ export async function PUT(
       body;
 
     const todo = await prisma.todo.update({
-      where: {
-        id,
-        userId: session.user.id, // Ensure user owns this todo
-      },
+      where: { id, userId: session.user.id },
       data: {
         title,
         description,
@@ -45,7 +42,10 @@ export async function PUT(
       });
     }
 
-    return NextResponse.json({ todo });
+    // Invalidate relevant caches
+    invalidateUserTodos(session.user.id);
+
+    return NextResponse.json(todo);
   } catch (error) {
     console.error("Error updating todo:", error);
     return NextResponse.json(
@@ -62,17 +62,16 @@ export async function DELETE(
   try {
     const { id } = await params;
     const session = await auth.api.getSession({ headers: request.headers });
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await prisma.todo.delete({
-      where: {
-        id,
-        userId: session.user.id,
-      },
+      where: { id, userId: session.user.id },
     });
+
+    // Invalidate relevant caches
+    invalidateUserTodos(session.user.id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
