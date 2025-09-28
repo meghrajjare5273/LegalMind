@@ -6,7 +6,6 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import OpenAI from "openai";
-import { invalidateUserChatSessions } from "@/lib/cache-utils";
 
 // Initialize Pinecone and Google Generative AI clients
 const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY as string });
@@ -526,7 +525,7 @@ export async function POST(request: NextRequest) {
 
       // If this is a new session (no sessionId provided), return JSON for redirect
       if (!sessionId) {
-        invalidateUserChatSessions(session.user.id);
+        // invalidateUserChatSessions(session.user.id);
         return NextResponse.json({
           response,
           sessionId: chatSession.id,
@@ -613,7 +612,7 @@ export async function POST(request: NextRequest) {
             }
           },
         });
-        invalidateUserChatSessions(session.user.id);
+        // invalidateUserChatSessions(session.user.id);
 
         return new NextResponse(readableStream, {
           headers: {
