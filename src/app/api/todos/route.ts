@@ -2,25 +2,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
+import { invalidateUserTodos } from "@/lib/cache-utils";
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const todos = await prisma.todo.findMany({
-      where: { userId: session.user.id },
+const getCachedTodos = unstable_cache(
+  async (userId: string) => {
+    return prisma.todo.findMany({
+      where: { userId },
       orderBy: [
         { completed: "asc" },
         { priority: "desc" },
         { createdAt: "desc" },
       ],
     });
+  },
+  ["todos-list"],
+  {
+    revalidate: 300, // 5 minutes
+  }
+);
 
-    return NextResponse.json({ todos });
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const todos = await getCachedTodos(session.user.id);
+
+    const response = NextResponse.json(todos);
+    response.headers.set(
+      "Cache-Control",
+      "s-maxage=300, stale-while-revalidate=600"
+    );
+
+    return response;
   } catch (error) {
     console.error("Error fetching todos:", error);
     return NextResponse.json(
@@ -33,7 +50,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -61,7 +77,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ todo });
+    // Invalidate relevant caches
+    invalidateUserTodos(session.user.id);
+
+    return NextResponse.json(todo);
   } catch (error) {
     console.error("Error creating todo:", error);
     return NextResponse.json(

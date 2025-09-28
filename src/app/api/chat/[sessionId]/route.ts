@@ -1,10 +1,36 @@
+// src/app/api/chat/[sessionId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
-import { unstable_cache, revalidateTag } from "next/cache";
+import { unstable_cache } from "next/cache";
+import {
+  invalidateUserChatSessions,
+  invalidateChatSession,
+} from "@/lib/cache-utils";
 
-// Get specific chat session with messages
+const getSessionCached = unstable_cache(
+  async (sessionId: string, userId: string) => {
+    return prisma.chatSession.findFirst({
+      where: { id: sessionId, userId },
+      include: {
+        messages: {
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+  },
+  ["chat-session"],
+  {
+    // tags must be a static string[] according to unstable_cache types;
+    // dynamic per-call tagging isn't supported here, so keep a static tag.
+    tags: [
+      "chat-sessions",
+    ],
+    revalidate: 180,
+  }
+);
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
@@ -15,28 +41,10 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { sessionId } = await params;
     const userId = session.user.id;
-    const sessionId = (await params).sessionId;
 
-    const getSessionCached = unstable_cache(
-      async () => {
-        return prisma.chatSession.findFirst({
-          where: { id: sessionId, userId },
-          include: { messages: { orderBy: { createdAt: "asc" } } },
-        });
-      },
-      [`chat-session:${sessionId}`],
-      {
-        revalidate: 180,
-        tags: [
-          "chat-sessions",
-          `chat-sessions:${userId}`,
-          `chat-session:${sessionId}`,
-        ],
-      }
-    );
-
-    const chatSession = await getSessionCached();
+    const chatSession = await getSessionCached(sessionId, userId);
 
     if (!chatSession) {
       return NextResponse.json(
@@ -45,7 +53,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ session: chatSession });
+    const response = NextResponse.json({ session: chatSession });
+    response.headers.set(
+      "Cache-Control",
+      "s-maxage=180, stale-while-revalidate=360"
+    );
+
+    return response;
   } catch (error) {
     console.error("Error fetching chat session:", error);
     return NextResponse.json(
@@ -55,7 +69,6 @@ export async function GET(
   }
 }
 
-// Delete chat session
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
@@ -66,17 +79,16 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { sessionId } = await params;
     const userId = session.user.id;
-    const sessionId = (await params).sessionId;
 
     await prisma.chatSession.deleteMany({
       where: { id: sessionId, userId },
     });
 
-    // Invalidate list + detail caches
-    revalidateTag("chat-sessions");
-    revalidateTag(`chat-sessions:${userId}`);
-    revalidateTag(`chat-session:${sessionId}`);
+    // Invalidate relevant caches
+    invalidateUserChatSessions(userId);
+    invalidateChatSession(userId, sessionId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
