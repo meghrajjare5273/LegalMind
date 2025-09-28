@@ -1,129 +1,112 @@
-// src/app/api/dashboard/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { unstable_cache } from "next/cache";
+import { createCachedFunction } from "@/lib/cache-utils";
+import { CACHE_STRATEGIES } from "@/lib/cache-headers";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { CACHE_DURATIONS, CACHE_TAGS } from "@/lib/cache-constants";
 
-// Individual cached functions with user-specific keys
-const getCachedTodos = unstable_cache(
-  async (userId: string) => {
-    return prisma.todo.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    });
-  },
-  ["dashboard-todos"],
-  {
-    tags: ["dashboard-todos", "dashboard-data"],
-    revalidate: 300, // 5 minutes
-  }
-);
+interface DashboardStats {
+  totalTodos: number;
+  completedTodos: number;
+  totalChatSessions: number;
+  recentActivity: {
+    type: "todo" | "chat";
+    title: string | null;
+    createdAt: Date;
+  }[];
+}
 
-const getCachedChatSessions = unstable_cache(
-  async (userId: string) => {
-    return prisma.chatSession.findMany({
-      where: { userId },
-      orderBy: { updatedAt: "desc" },
-      take: 10,
-      include: {
-        messages: {
-          take: 1,
-          orderBy: { createdAt: "desc" },
-        },
-      },
-    });
-  },
-  ["dashboard-chat-sessions"],
-  {
-    tags: ["dashboard-chat-sessions", "dashboard-data"],
-    revalidate: 180, // 3 minutes
-  }
-);
-
-const getCachedTodoStats = unstable_cache(
-  async (userId: string) => {
-    const [totalTodos, completedTodos] = await Promise.all([
-      prisma.todo.count({ where: { userId } }),
-      prisma.todo.count({ where: { userId, completed: true } }),
-    ]);
-    return { totalTodos, completedTodos };
-  },
-  ["dashboard-todo-stats"],
-  {
-    tags: ["dashboard-todo-stats", "dashboard-data"],
-    revalidate: 300, // 5 minutes
-  }
-);
-
-const getCachedChatStats = unstable_cache(
-  async (userId: string) => {
-    return prisma.chatSession.count({ where: { userId } });
-  },
-  ["dashboard-chat-stats"],
-  {
-    tags: ["dashboard-chat-stats", "dashboard-data"],
-    revalidate: 600, // 10 minutes
-  }
-);
-
-// Main cached dashboard function
-const getCachedDashboardData = unstable_cache(
-  async (userId: string) => {
-    const [todos, chatSessions, todoStats, totalChatSessions] =
+// Cached dashboard data function
+const getUserDashboardDataCached = createCachedFunction(
+  async (userId: string): Promise<DashboardStats> => {
+    const [todoStats, completedTodoCount, chatSessionCount, recentActivity] =
       await Promise.all([
-        getCachedTodos(userId),
-        getCachedChatSessions(userId),
-        getCachedTodoStats(userId),
-        getCachedChatStats(userId),
+        // Todo statistics
+        prisma.todo.aggregate({
+          where: { userId },
+          _count: { id: true },
+        }),
+
+        // Completed todos count
+        prisma.todo.count({
+          where: { userId, completed: true },
+        }),
+
+        // Chat sessions count
+        prisma.chatSession.count({
+          where: { userId },
+        }),
+
+        // Recent activity
+        Promise.all([
+          prisma.todo.findMany({
+            where: { userId },
+            select: { title: true, createdAt: true },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+          }),
+          prisma.chatSession.findMany({
+            where: { userId },
+            select: { title: true, createdAt: true },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+          }),
+        ]),
       ]);
 
-    const { totalTodos, completedTodos } = todoStats;
-
-    const stats = {
-      totalTasks: totalTodos,
-      completedTasks: completedTodos,
-      pendingTasks: totalTodos - completedTodos,
-      totalChatSessions,
-      completionRate:
-        totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0,
-    };
+    const [recentTodos, recentChats] = recentActivity;
+    const combinedActivity = [
+      ...recentTodos.map((todo) => ({
+        type: "todo" as const,
+        title: todo.title,
+        createdAt: todo.createdAt,
+      })),
+      ...recentChats.map((chat) => ({
+        type: "chat" as const,
+        title: chat.title,
+        createdAt: chat.createdAt,
+      })),
+    ]
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 10);
 
     return {
-      Tasks: todos,
-      chatSessions,
-      stats,
+      totalTodos: todoStats._count.id,
+      completedTodos: completedTodoCount,
+      totalChatSessions: chatSessionCount,
+      recentActivity: combinedActivity,
     };
   },
-  ["dashboard-complete"],
   {
-    tags: ["dashboard-complete", "dashboard-data"],
-    revalidate: 180, // 3 minutes
+    tags: [CACHE_TAGS.USER_DASHBOARD("PLACEHOLDER"), CACHE_TAGS.DASHBOARD_DATA],
+    revalidate: CACHE_DURATIONS.MEDIUM,
   }
 );
 
-export async function GET(request: NextRequest) {
+export async function GET(): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) {
+    // Authentication check
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    // Fetch cached dashboard data
+    const dashboardData = (await getUserDashboardDataCached)(session.user.id);
 
-    // Get cached dashboard data with user-specific key
-    const dashboardData = await getCachedDashboardData(userId);
-
-    // Add cache headers for client-side caching
-    const response = NextResponse.json(dashboardData);
-    response.headers.set(
-      "Cache-Control",
-      "s-maxage=180, stale-while-revalidate=300"
+    return NextResponse.json(
+      {
+        data: dashboardData,
+        cached: true,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        headers: CACHE_STRATEGIES.MEDIUM_LIVED,
+      }
     );
-
-    return response;
   } catch (error) {
-    console.error("Error fetching dashboard data:", error);
+    console.error("Failed to fetch dashboard data:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

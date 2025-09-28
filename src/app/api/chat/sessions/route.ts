@@ -1,50 +1,88 @@
-// src/app/api/chat/sessions/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import {
+  createCachedFunction,
+  invalidateUserChatSessions,
+} from "@/lib/cache-utils";
+import { CACHE_STRATEGIES } from "@/lib/cache-headers";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import prisma from "@/lib/prisma";
-import { unstable_cache } from "next/cache";
-import { invalidateUserChatSessions } from "@/lib/cache-utils";
+import { CACHE_DURATIONS, CACHE_TAGS } from "@/lib/cache-constants";
 
-const getUserSessionsCached = unstable_cache(
-  async (userId: string) => {
-    return prisma.chatSession.findMany({
+// Type definitions
+interface ChatSessionResponse {
+  id: string;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+  messageCount?: number;
+}
+
+interface CreateChatSessionRequest {
+  title: string;
+}
+
+// Cached function for fetching user chat sessions
+const getUserChatSessionsCached = createCachedFunction(
+  async (userId: string): Promise<ChatSessionResponse[]> => {
+    const sessions = await prisma.chatSession.findMany({
       where: { userId },
       orderBy: { updatedAt: "desc" },
-      include: {
-        messages: {
-          orderBy: { createdAt: "asc" },
-          take: 1,
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: { messages: true },
         },
-        _count: { select: { messages: true } },
       },
+      take: 50, // Limit to recent sessions for performance
     });
+
+    return sessions.map((session) => ({
+      id: session.id,
+      title: session.title as string,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt,
+      messageCount: session._count.messages,
+    }));
   },
-  ["chat-sessions-by-user"],
   {
-    tags: ((userId: string) => ["chat-sessions", `chat-sessions-${userId}`]) as unknown as string[],
-    revalidate: 180, // 3 minutes
+    tags: [
+      CACHE_TAGS.USER_CHAT_SESSIONS("PLACEHOLDER"),
+      CACHE_TAGS.CHAT_SESSIONS_GLOBAL,
+    ],
+    revalidate: CACHE_DURATIONS.MEDIUM,
   }
 );
 
-export async function GET() {
+// GET: Fetch user's chat sessions
+export async function GET(): Promise<NextResponse> {
   try {
+    // Authentication check
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const chatSessions = await getUserSessionsCached(session.user.id);
+    // Fetch cached chat sessions
+    const chatSessions = await (
+      await getUserChatSessionsCached
+    )(session.user.id);
 
-    const response = NextResponse.json({ sessions: chatSessions });
-    response.headers.set(
-      "Cache-Control",
-      "s-maxage=180, stale-while-revalidate=360"
+    return NextResponse.json(
+      {
+        sessions: chatSessions,
+        total: chatSessions.length,
+        cached: true,
+      },
+      {
+        headers: CACHE_STRATEGIES.MEDIUM_LIVED,
+      }
     );
-
-    return response;
   } catch (error) {
-    console.error("Error fetching chat sessions:", error);
+    console.error("Failed to fetch chat sessions:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -52,40 +90,50 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+// POST: Create new chat session
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    // Authentication check
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
-    const { title, firstMessage } = await request.json();
+    // Validate request body
+    const body = (await request.json()) as CreateChatSessionRequest;
+    if (!body.title || typeof body.title !== "string") {
+      return NextResponse.json(
+        { error: "Title is required and must be a string" },
+        { status: 400 }
+      );
+    }
 
-    const chatSession = await prisma.chatSession.create({
+    // Create new chat session
+    const newSession = await prisma.chatSession.create({
       data: {
-        title: title || "New Chat",
-        userId,
+        title: body.title.trim(),
+        userId: session.user.id,
+      },
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
-    if (firstMessage) {
-      await prisma.chatMessage.create({
-        data: {
-          sessionId: chatSession.id,
-          role: "user",
-          content: firstMessage,
-          tokenCount: Math.ceil(firstMessage.length / 4),
-        },
-      });
-    }
+    // Invalidate relevant caches
+    await invalidateUserChatSessions(session.user.id);
 
-    // Invalidate chat session caches
-    invalidateUserChatSessions(userId);
-
-    return NextResponse.json({ sessionId: chatSession.id, success: true });
+    return NextResponse.json(
+      {
+        session: newSession,
+        message: "Chat session created successfully",
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error("Error creating chat session:", error);
+    console.error("Failed to create chat session:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

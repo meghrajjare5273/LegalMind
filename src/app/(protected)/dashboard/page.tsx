@@ -683,7 +683,7 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Total Tasks</p>
                     <p className="text-2xl font-bold">
-                      {dashboardData?.stats.totalTasks || 0}
+                      {dashboardData?.stats?.totalTasks || 0}
                     </p>
                   </div>
                   <CheckCircle2 className="w-8 h-8 text-blue-600" />
@@ -697,7 +697,7 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Completed</p>
                     <p className="text-2xl font-bold">
-                      {dashboardData?.stats.completedTasks || 0}
+                      {dashboardData?.stats?.completedTasks || 0}
                     </p>
                   </div>
                   <CheckCircle2 className="w-8 h-8 text-green-600" />
@@ -711,7 +711,7 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Pending</p>
                     <p className="text-2xl font-bold">
-                      {dashboardData?.stats.pendingTasks || 0}
+                      {dashboardData?.stats?.pendingTasks || 0}
                     </p>
                   </div>
                   <Clock className="w-8 h-8 text-orange-600" />
@@ -727,7 +727,7 @@ export default function DashboardPage() {
                       Chat Sessions
                     </p>
                     <p className="text-2xl font-bold">
-                      {dashboardData?.stats.totalChatSessions || 0}
+                      {dashboardData?.stats?.totalChatSessions || 0}
                     </p>
                   </div>
                   <Calendar className="w-8 h-8 text-purple-600" />
