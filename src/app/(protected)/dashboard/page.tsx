@@ -511,6 +511,7 @@ export default function DashboardPage() {
           buttonBgColor="#111"
           buttonTextColor="#fff"
           ease="power3.out"
+          user={user!}
         />
       </div>
       <div

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { invalidateUserData } from "@/lib/cache-helpers";
 
 export async function GET(
   request: NextRequest,
@@ -39,12 +40,9 @@ export async function GET(
       );
     }
 
-    const response = NextResponse.json({ session: chatSession });
-
-    // Cache individual chat sessions briefly since they update frequently
-    response.headers.set(
-      "Cache-Control",
-      "private, s-maxage=30, stale-while-revalidate=60"
+    const response = NextResponse.json(
+      { session: chatSession },
+      { headers: { "Cache-Control": "no-store" } }
     );
 
     return response;
@@ -81,6 +79,7 @@ export async function DELETE(
         { status: 404 }
       );
     }
+    await invalidateUserData(session.user.id, `/api/chat/${sessionId}`);
 
     return NextResponse.json(
       { message: "Chat session deleted successfully" },

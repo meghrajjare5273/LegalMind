@@ -88,13 +88,13 @@ export async function GET(): Promise<
 
     const response = NextResponse.json(dashboardData);
 
-    // Simple cache headers for better performance [web:25]
-    response.headers.set(
-      "Cache-Control",
-      "private, s-maxage=60, stale-while-revalidate=120"
-    );
+      // Simple cache headers for better performance [web:25]
+      response.headers.set(
+        "Cache-Control",
+        "private, s-maxage=60, stale-while-revalidate=120"
+      );
 
-    return response;
+      return response;
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
     return NextResponse.json(

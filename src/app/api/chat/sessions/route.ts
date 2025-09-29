@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { invalidateUserData } from "@/lib/cache-helpers";
 
 export async function GET(): Promise<NextResponse> {
   try {
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         updatedAt: true,
       },
     });
+    await invalidateUserData(session.user.id, "api/chat/sessions");
 
     return NextResponse.json(
       {

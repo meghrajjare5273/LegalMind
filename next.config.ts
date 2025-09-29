@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     optimizeCss: true,
+    staleTimes: { dynamic: 30, static: 300 },
   },
 
   compress: true,
