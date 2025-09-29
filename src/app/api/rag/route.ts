@@ -6,19 +6,24 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import OpenAI from "openai";
+import Groq from "groq-sdk";
 
 // Initialize Pinecone and Google Generative AI clients
 const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY as string });
 const index = pc.Index(process.env.PINECONE_INDEX_NAME as string);
 const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
 const namespace = process.env.PUBLIC_PINECONE_NAMESPACE as string;
-const client = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY as string,
-  defaultHeaders: {
-    "HTTP-Referer": process.env.PRODUCTION_URL!, // Optional. Site URL for rankings on openrouter.ai.
-    "X-Title": process.env.PRODUCTION_NAME!, // Optional. Site title for rankings on openrouter.ai.
-  },
+// const client = new OpenAI({
+//   baseURL: "https://openrouter.ai/api/v1",
+//   apiKey: process.env.OPENROUTER_API_KEY as string,
+//   defaultHeaders: {
+//     "HTTP-Referer": process.env.PRODUCTION_URL!, // Optional. Site URL for rankings on openrouter.ai.
+//     "X-Title": process.env.PRODUCTION_NAME!, // Optional. Site title for rankings on openrouter.ai.
+//   },
+// });
+
+const client = new Groq({
+  apiKey: process.env.GROQ_CLOUD_API as string,
 });
 
 // Token counting utility
@@ -78,6 +83,7 @@ async function getQueryVector(query: string): Promise<number[]> {
     if (response.embeddings && response.embeddings.length > 0) {
       const embedding = response.embeddings[0];
       if (embedding && embedding.values) {
+        console.log(embedding.values);
         return embedding.values;
       }
     }
@@ -176,7 +182,7 @@ Provide a comprehensive, well-structured response with clean, professional forma
 readability over visual elements`;
 
     const stream = await client.chat.completions.create({
-      model: "openai/gpt-oss-20b:free",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",
@@ -189,10 +195,10 @@ readability over visual elements`;
       ],
       temperature: 0.4,
       max_tokens: 5000,
-      web_search_options: {
-        search_context_size: "low",
-      },
-      reasoning_effort: "low",
+      // web_search_options: {
+      //   search_context_size: "low",
+      // },
+      // reasoning_effort: "low",
       stream: true,
     });
 
@@ -265,7 +271,7 @@ Provide a comprehensive, well-structured response with clean, professional forma
 readability over visual elements`;
 
     const response = await client.chat.completions.create({
-      model: "openai/gpt-oss-20b:free",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",
@@ -278,10 +284,6 @@ readability over visual elements`;
       ],
       temperature: 0.4,
       max_tokens: 5000,
-      web_search_options: {
-        search_context_size: "low",
-      },
-      reasoning_effort: "low",
       stream: false,
     });
 

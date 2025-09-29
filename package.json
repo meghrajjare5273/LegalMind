@@ -39,6 +39,7 @@
     "critters": "^0.0.23",
     "d3": "^7.9.0",
     "framer-motion": "^12.23.22",
+    "groq-sdk": "^0.33.0",
     "gsap": "^3.13.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.544.0",
