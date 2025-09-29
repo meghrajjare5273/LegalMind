@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { invalidateUserData } from "@/lib/cache-helpers";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,12 +19,10 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    const response = NextResponse.json(todos);
+    const response = NextResponse.json(todos, {
+      headers: { "Cache-Control": "no-store" },
+    });
     // Simple cache for todos - they change frequently so shorter cache
-    response.headers.set(
-      "Cache-Control",
-      "private, s-maxage=30, stale-while-revalidate=60"
-    );
 
     return response;
   } catch (error) {
@@ -69,6 +68,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await invalidateUserData(session.user.id, "/api/todos");
     return NextResponse.json(todo);
   } catch (error) {
     console.error("Error creating todo:", error);

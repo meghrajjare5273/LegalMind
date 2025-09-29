@@ -1,35 +1,67 @@
 "use client";
 
 import ContractReview from "@/components/protected/contract/ContractReview";
+import CardNav from "@/components/react-bits/CardNav";
+import { useSession } from "@/contexts/session-context";
 
 export default function ContractReviewPage() {
+  const { user, loading } = useSession();
+  const navItems = [
+    {
+      label: "Services",
+      bgColor: "#0D0716",
+      textColor: "#fff",
+      links: [
+        {
+          label: "AI Chat",
+          href: "/services/chat",
+          ariaLabel: "AI Chat Service",
+        },
+        {
+          label: "Contract Review",
+          href: "/services/contract-review",
+          ariaLabel: "Contract Review Service",
+        },
+      ],
+    },
+    {
+      label: "Dashboard",
+      bgColor: "#170D27",
+      textColor: "#fff",
+      links: [
+        {
+          label: "Overview",
+          href: "/dashboard",
+          ariaLabel: "Dashboard Overview",
+        },
+        {
+          label: "Analytics",
+          href: "/analytics",
+          ariaLabel: "Analytics Dashboard",
+        },
+      ],
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm px-6 md:px-8">
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-lg font-semibold text-foreground">
-              Contract Review
-            </h1>
-            <div className="text-sm text-muted-foreground">/ Analysis</div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <button className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground hover:bg-muted/80 transition-colors">
-              ?
-            </button>
-            <button className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground hover:bg-muted/80 transition-colors">
-              ⚙
-            </button>
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-medium text-primary-foreground">
-              U
-            </div>
-          </div>
-        </div>
-      </header>
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40">
+        <CardNav
+          logo="/logo.svg"
+          logoAlt="LegalMind Logo"
+          items={navItems}
+          baseColor="#fff"
+          menuColor="#000"
+          buttonBgColor="#111"
+          buttonTextColor="#fff"
+          ease="power3.out"
+          user={user!}
+        />
+      </div>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 md:px-8 py-6">
+      <main className="flex-1 px-6 md:px-8 py-6" style={{ paddingTop: "95px" }}>
         <ContractReview />
       </main>
 
