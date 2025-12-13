@@ -72,10 +72,10 @@ export default function Insights() {
           {articles.map((article, index) => (
             <div key={index} className="insight-card group cursor-pointer">
               <div className="relative aspect-[4/3] w-full overflow-hidden mb-6 bg-gray-900">
-                <Image
+                <img
                   src={article.image}
                   alt={article.title}
-                  fill
+                  // fill= "true"
                   className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100"
                 />
               </div>

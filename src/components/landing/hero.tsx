@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLHeadingElement>(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -37,21 +37,21 @@ export default function Hero() {
           className="text-[10vw] md:text-[7.5vw] leading-[0.9] font-medium tracking-tighter uppercase"
         >
           <div className="overflow-hidden hero-line">
-            <div className="hero-line-inner">We Are</div>
+            <div className="hero-line-inner">Accessible &</div>
           </div>
           <div className="overflow-hidden hero-line">
-            <div className="hero-line-inner">Brand</div>
+            <div className="hero-line-inner">Precise Legal</div>
           </div>
           <div className="overflow-hidden hero-line">
-            <div className="hero-line-inner">Transformation</div>
+            <div className="hero-line-inner">Guidance Made</div>
           </div>
           <div className="overflow-hidden hero-line">
-            <div className="hero-line-inner">Navigators</div>
+            <div className="hero-line-inner">Conversational</div>
           </div>
         </h1>
 
         <div className="mt-12 opacity-70 font-mono text-xs md:text-sm tracking-wide uppercase animate-pulse">
-          Scroll to explore
+          Scroll to explore LegalMind
         </div>
       </div>
     </section>

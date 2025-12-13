@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Atlantiser | Brand Transformation Navigators",
+  title: "LegalMind",
   description: "Digital-first branding agency building and scaling next-gen brands.",
 };
 
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="antialiased scroll-smooth">
+    <html lang="en" className="antialiased">
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans bg-white text-black selection:bg-black selection:text-white`}
       >
