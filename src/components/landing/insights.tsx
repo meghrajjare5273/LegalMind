@@ -56,11 +56,11 @@ export default function Insights() {
   return (
     <section
       ref={containerRef}
-      className="bg-[#0a0a0a] text-white py-24 px-6 md:px-12 border-t border-white/5"
+      className="bg-accent text-accent-foreground py-24 px-6 md:px-12 border-t border-border/5"
     >
       <div className="max-w-[1400px] mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start mb-16">
-          <div className="font-mono text-xs uppercase tracking-widest text-gray-500 mb-4 md:mb-0">
+          <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4 md:mb-0">
             Insights
           </div>
           <h2 className="text-3xl md:text-5xl font-medium tracking-tight leading-tight max-w-sm">
@@ -79,7 +79,7 @@ export default function Insights() {
                   className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-80 group-hover:opacity-100"
                 />
               </div>
-              <div className="flex items-center gap-4 text-xs font-mono text-gray-500 mb-3">
+              <div className="flex items-center gap-4 text-xs font-mono text-accent-foreground mb-3">
                 <span className="uppercase border border-white/10 px-2 py-1 rounded">
                   {article.tag}
                 </span>

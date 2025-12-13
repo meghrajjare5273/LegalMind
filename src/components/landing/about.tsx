@@ -44,7 +44,7 @@ export default function About() {
   return (
     <section
       ref={sectionRef}
-      className="relative bg-[#0a0a0a] text-white py-32 px-6 md:px-12 z-10"
+      className="relative bg-card text-card-foreground py-32 px-6 md:px-12 z-10"
     >
       <div className="max-w-5xl mx-auto flex flex-col items-center">
         <span className="text-sm text-gray-400 mb-6 font-medium">
