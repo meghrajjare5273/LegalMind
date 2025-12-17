@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={[
           geistSans.variable,
           geistMono.variable,
-          'font-sans  bg-background text-foreground selection:bg-primary selection:text-primary-foreground',
+          'font-sans  bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-hidden',
         ].join(' ')}
       >
         <ThemeProvider >{children}</ThemeProvider>
