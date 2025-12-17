@@ -9,50 +9,87 @@ const Hero = () => {
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        ".animate-fade-up",
+      const tl = gsap.timeline();
+      
+      // Headline mask reveal
+      tl.fromTo(
+        ".headline-reveal",
+        { 
+          clipPath: "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)",
+          opacity: 0
+        },
+        { 
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          opacity: 1,
+          duration: 1.2,
+          ease: "power3.out"
+        }
+      )
+      // Subheading
+      .fromTo(
+        ".subheading-reveal",
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
+        "-=0.6"
+      )
+      // Buttons
+      .fromTo(
+        ".cta-reveal",
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" },
+        "-=0.4"
       );
     }, containerRef);
+    
     return () => ctx.revert();
   }, []);
 
   return (
-    <section className="relative w-full px-4 pt-28 md:pt-40 pb-12 md:pb-20 text-black">
-      <div ref={containerRef} className="relative z-10 mx-auto w-full max-w-[1440px]">
+    <section className="relative w-full px-6 md:px-8 pt-32 md:pt-48 pb-16 md:pb-24 text-black bg-white">
+      <div ref={containerRef} className="relative z-10 mx-auto w-full max-w-360">
         <div className="text-center">
-          <div className="mb-4 break-words 2xl:max-w-[1880px] md:max-w-[1128px] mx-auto animate-fade-up opacity-0">
-            <h1 className="text-[40px] lg:text-[72px] leading-[1.1] tracking-[-0.02em] font-medium text-[#17171c]">
-              Your next breakthrough,<br />
+          {/* Headline */}
+          <div className="mb-6 md:mb-8 mx-auto max-w-282 2xl:max-w-470">
+            <h1 className="headline-reveal text-[44px] md:text-[56px] lg:text-[80px] leading-[1.05] tracking-tight font-medium text-[#17171c] inline-block">
+              Your next breakthrough,
+              <br />
               powered by AI
             </h1>
           </div>
-          <div className="mx-auto flex justify-center items-center animate-fade-up opacity-0">
-            <div className="break-words mb-6 lg:mb-10 lg:w-[655px]">
-              <p className="text-[16px] lg:text-[18px] text-[#17171c] leading-relaxed">
-                Cohere is where powerful AI meets practical business solutions — so you can work smarter.
+          
+          {/* Subheading */}
+          <div className="mx-auto flex justify-center items-center">
+            <div className="subheading-reveal mb-8 lg:mb-12 max-w-163.75">
+              <p className="text-[16px] md:text-[18px] text-[#17171c] leading-relaxed opacity-90">
+                LegalMind is where powerful AI meets practical legal solutions — 
+                so you can work smarter with precision and trust.
               </p>
             </div>
           </div>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-center items-center animate-fade-up opacity-0">
+          
+          {/* CTAs */}
+          <div className="cta-reveal flex flex-col gap-4 sm:flex-row sm:items-center justify-center items-center">
             {/* Primary Button */}
-            <div className="group relative z-10 inline-block">
-              <div className="absolute inset-0 -z-10 -m-0.5 rounded-full bg-gradient-to-r from-[#FF7759] to-[#C39CFB] opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+            <div className="group relative inline-block">
+              <div className="absolute inset-0 -z-10 -m-px rounded-full bg-linear-to-r from-[#FF7759] to-[#C39CFB] opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
               <Link
-                className="relative flex w-fit items-center justify-center bg-[#212121] text-[#FFFFFF] rounded-full py-3 px-6 outline-none"
                 href="/contact-sales"
+                className="relative flex w-fit items-center justify-center bg-[#212121] text-[#FFFFFF] rounded-full py-3.5 px-7 text-[16px] md:text-[18px] font-normal tracking-[-0.01em] transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#C39CFB] focus:ring-offset-2"
               >
-                <span className="text-[16px] lg:text-[18px]">Request a demo</span>
+                Request a demo
               </Link>
             </div>
+            
             {/* Secondary Button */}
-            <div className="group relative z-10 inline-block">
+            <div className="group relative inline-block">
               <Link
-                className="relative flex w-fit items-center justify-center bg-transparent text-[#17171c] pb-1.5 bg-gradient-to-r bg-[length:100%_1px] bg-bottom bg-no-repeat from-[#212121] to-[#212121]"
                 href="/products"
+                className="relative flex w-fit items-center justify-center bg-transparent text-[#17171c] py-3.5 px-1 text-[16px] md:text-[18px] font-normal tracking-[-0.01em] transition-colors duration-300 group-hover:text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#C39CFB] focus:ring-offset-2"
               >
-                <span className="text-[16px] lg:text-[18px]">Explore products</span>
+                <span className="relative">
+                  Explore products
+                  <span className="absolute bottom-0 left-0 w-full h-px bg-[#17171c] transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
+                </span>
               </Link>
             </div>
           </div>

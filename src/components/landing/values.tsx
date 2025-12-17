@@ -40,14 +40,14 @@ const ValueProps = () => {
 
   return (
     <section ref={ref} className="relative w-full px-4 lg:px-10 pt-12 md:pt-20 pb-16 md:pb-36 text-black">
-      <div className="relative z-10 mx-auto w-full max-w-[1440px]">
+      <div className="relative z-10 mx-auto w-full max-w-360">
         <div className="text-center mb-10 fade-up-item">
             <h3 className="text-[28px] lg:text-[48px] leading-tight font-medium">Safe. Flexible. Built for business.</h3>
         </div>
         <div className="flex flex-col md:flex-row w-full gap-y-9 md:gap-x-5">
             {items.map((item, i) => (
                 <div key={i} className="w-full fade-up-item">
-                    <img src={item.icon} width="100" height="100" alt={`${item.title} Icon`} className="pb-6 max-w-[100px]" />
+                    <img src={item.icon} width="100" height="100" alt={`${item.title} Icon`} className="pb-6 max-w-25" />
                     <div className="flex flex-col gap-4 md:pr-6">
                         <p className="text-[20px] lg:text-[24px] font-medium">{item.title}</p>
                         <p className="text-[16px] leading-relaxed text-[#17171c]">{item.desc}</p>

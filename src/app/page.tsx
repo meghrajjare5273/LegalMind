@@ -6,10 +6,11 @@ import NorthSection from "@/components/landing/dark-features";
 import IndustryCarousel from "@/components/landing/carousel";
 import Testimonial from "@/components/landing/testimonials";
 import Footer from "@/components/landing/footer";
+import CTA from "@/components/landing/cta";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between">
+    <main className="flex min-h-screen flex-col justify-between ">
       <Navbar />
       <Hero />
       <SplitFeature />
@@ -18,7 +19,7 @@ export default function Home() {
       <IndustryCarousel />
       
       {/* Developer Section (Similar to North Section structure) */}
-      <section className="w-full text-[#FFFFFF] pl-4 lg:pl-10 xl:relative xl:flex xl:h-screen xl:max-h-[950px] xl:min-h-[800px] xl:items-end relative bg-[#2E2E2E] overflow-hidden">
+      {/* <section className="w-full text-[#FFFFFF] pl-4 lg:pl-10 xl:relative xl:flex xl:h-screen xl:max-h-[950px] xl:min-h-[800px] xl:items-end relative bg-[#2E2E2E] overflow-hidden">
          <div className="absolute top-0 left-0 h-full w-full">
             <img src="https://cdn.sanity.io/images/rjtqmwfu/web3-prod/cdf855c00ccc227a009e31da07e9b4caacc42add-2880x1680.png" className="hidden lg:block w-full h-full object-cover" />
          </div>
@@ -35,9 +36,10 @@ export default function Home() {
                 <img src="https://cdn.sanity.io/images/rjtqmwfu/web3-prod/53bdb371305538ab5186498794ab355070909fae-1440x1360.png" className="w-full max-h-[680px] object-contain" />
             </div>
          </div>
-      </section>
+      </section> */}
 
       <Testimonial />
+      <CTA/>
       <Footer />
     </main>
   );
