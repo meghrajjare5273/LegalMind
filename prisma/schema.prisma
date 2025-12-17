@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -7,11 +8,43 @@ datasource db {
   provider = "postgresql"
 }
 
-model account {
+model User {
+  id            String    @id 
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
   id                    String    @id
   accountId             String
   providerId            String
   userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -19,112 +52,31 @@ model account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
-  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
 }
 
-model chat_message {
-  id           String       @id
-  sessionId    String
-  role         MessageRole
-  content      String
-  tokenCount   Int?
-  metadata     Json?
-  createdAt    DateTime     @default(now())
-  chat_session chat_session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-}
-
-model chat_session {
-  id           String         @id
-  title        String?
-  userId       String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime
-  chat_message chat_message[]
-  user         user           @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model todo {
-  id           String    @id
-  title        String
-  description  String?
-  completed    Boolean   @default(false)
-  priority     Priority  @default(MEDIUM)
-  dueDate      DateTime?
-  reminderTime DateTime?
-  notified     Boolean   @default(false)
-  userId       String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime
-  user         user      @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model user {
-  id               String            @id
-  name             String
-  email            String            @unique
-  emailVerified    Boolean
-  image            String?
-  createdAt        DateTime
-  updatedAt        DateTime
-  account          account[]
-  chat_session     chat_session[]
-  session          session[]
-  todo             todo[]
-  user_activity    user_activity[]
-  user_preferences user_preferences?
-}
-
-model user_activity {
-  id        String   @id
-  userId    String
-  action    String
-  metadata  Json?
-  createdAt DateTime @default(now())
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model user_preferences {
-  id                 String  @id
-  userId             String  @unique
-  emailNotifications Boolean @default(true)
-  pushNotifications  Boolean @default(true)
-  theme              String  @default("system")
-  timezone           String  @default("UTC")
-  user               user    @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model verification {
-  id         String    @id
+model Verification {
+  id         String   @id
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
 
-enum MessageRole {
-  user
-  assistant
-  system
-}
+model Jwks {
+  id         String    @id
+  publicKey  String
+  privateKey String
+  createdAt  DateTime
+  expiresAt  DateTime?
 
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
+  @@map("jwks")
 }

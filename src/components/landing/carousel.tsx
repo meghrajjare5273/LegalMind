@@ -1,4 +1,4 @@
-// components/IndustryCarousel.tsx
+// src/components/landing/carousel.tsx
 'use client';
 
 import React, { useRef, useLayoutEffect } from 'react';
@@ -126,96 +126,120 @@ const IndustryCarousel = () => {
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      if (!sectionRef.current || !containerRef.current || !trackRef.current) return;
+      const track = trackRef.current;
+      const section = sectionRef.current;
+      
+      if (!track || !section) return;
 
-      // Calculate track width
-      const cardWidth = 420; // lg:w-[420px]
-      const gap = 20; // gap-5
-      const totalWidth = industries.length * (cardWidth + gap);
+      // Helper to calculate exact horizontal scroll distance
+      // We read scrollWidth (real content width) - innerWidth (viewport)
+      const getScrollAmount = () => {
+        const amount = track.scrollWidth - window.innerWidth;
+        // Safety check: if content fits on screen, amount is negative or 0.
+        // In that case, we treat it as 0 to avoid bugs.
+        return amount > 0 ? amount : 0;
+      };
 
-      // Set track width
-      gsap.set(trackRef.current, { width: totalWidth });
-
-      // Create horizontal scroll animation
-      const scrollTween = gsap.to(trackRef.current, {
-        x: () => -(totalWidth - window.innerWidth),
-        ease: "none"
+      // Create the main tween
+      const tween = gsap.to(track, {
+        x: () => -getScrollAmount(),
+        ease: "none",
       });
 
-      // ScrollTrigger for horizontal scroll
-            ScrollTrigger.create({
-              id: "horizontal-carousel",
-              trigger: sectionRef.current,
-              start: "top top",
-              end: () => `+=${totalWidth}`,
-              pin: true,
-              scrub: 1,
-              animation: scrollTween,
-              onUpdate: (self) => {
-                // Parallax effects based on scroll position
-                const cards = gsap.utils.toArray<HTMLElement>(".carousel-card");
-                cards.forEach((card, index) => {
-                  const rect = card.getBoundingClientRect();
-                  const centerX = rect.left + rect.width / 2;
-                  const distanceFromCenter = (centerX - window.innerWidth / 2) / window.innerWidth;
-                  const absDistance = Math.abs(distanceFromCenter);
-                  
-                  // Scale and opacity based on distance from center
-                  const scale = gsap.utils.clamp(0.8, 1, 1 - absDistance * 0.2);
-                  const opacity = gsap.utils.clamp(0.3, 1, 1 - absDistance * 0.5);
-                  
-                  gsap.to(card, {
-                    scale: scale,
-                    opacity: opacity,
-                    filter: `blur(${absDistance * 2}px)`,
-                    duration: 0.3,
-                    ease: "power2.out",
-                    overwrite: true
-                  });
+      // Initialize ScrollTrigger
+      const st = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        // The vertical scroll distance ('end') should match the horizontal distance
+        // This creates a 1:1 "natural" feel (1px down = 1px right)
+        end: () => `+=${getScrollAmount()}`,
+        pin: true,
+        scrub: 1, // High scrub creates smooth weight; use 'true' for instant lock
+        animation: tween,
+        invalidateOnRefresh: true, // IMPORTANT: Recalculates sizes on window resize
+        onUpdate: (self) => {
+             // --- Parallax Logic (unchanged from your original) ---
+             const cards = gsap.utils.toArray<HTMLElement>(".carousel-card");
+             cards.forEach((card) => {
+               const rect = card.getBoundingClientRect();
+               const centerX = rect.left + rect.width / 2;
+               const distanceFromCenter = (centerX - window.innerWidth / 2) / window.innerWidth;
+               const absDistance = Math.abs(distanceFromCenter);
+               
+               const scale = gsap.utils.clamp(0.8, 1, 1 - absDistance * 0.2);
+               const opacity = gsap.utils.clamp(0.3, 1, 1 - absDistance * 0.5);
+               
+               gsap.to(card, {
+                 scale: scale,
+                 opacity: opacity,
+                 filter: `blur(${absDistance * 2}px)`,
+                 duration: 0.3,
+                 ease: "power2.out",
+                 overwrite: true
+               });
+   
+               const image = card.querySelector("img");
+               if (image) {
+                 gsap.to(image, {
+                   x: -distanceFromCenter * 30,
+                   scale: 1 + absDistance * 0.1,
+                   duration: 0.3,
+                   ease: "power2.out",
+                   overwrite: true
+                 });
+               }
+             });
+        }
+      });
+
+      // Draggable Integration
+      // We must keep the Draggable bounds in sync with the dynamic width
+      const draggable = Draggable.create(track, {
+        type: "x",
+        inertia: true,
+        dragResistance: 0.2,
+        // Bounds use numeric values (not functions) for TypeScript compatibility
+        bounds: { 
+          minX: -getScrollAmount(), 
+          maxX: 0 
+        },
+        onDrag: function() {
+           const maxScroll = getScrollAmount();
+           if (maxScroll <= 0) return;
+           
+           // Calculate progress (0 to 1)
+           const progress = Math.abs(this.x) / maxScroll;
+           
+           // Force the ScrollTrigger to match this progress
+           const stInstance = ScrollTrigger.getById(st.vars.id as string);
+           if (stInstance) {
+             // map progress 0-1 to ScrollTrigger start-end
+             const totalScroll = stInstance.end - stInstance.start;
+             stInstance.scroll(stInstance.start + (progress * totalScroll));
+           }
+        },
+        onThrowUpdate: function() {
+            const maxScroll = getScrollAmount();
+            if (maxScroll <= 0) return;
+            
+            const progress = Math.abs(this.x) / maxScroll;
+            const stInstance = ScrollTrigger.getById(st.vars.id as string);
+            if (stInstance) {
+                const totalScroll = stInstance.end - stInstance.start;
+                stInstance.scroll(stInstance.start + (progress * totalScroll));
+            }
+        }
+      })[0];
       
-                  // Image parallax
-                  const image = card.querySelector("img");
-                  if (image) {
-                    gsap.to(image, {
-                      x: -distanceFromCenter * 30,
-                      scale: 1 + absDistance * 0.1,
-                      duration: 0.3,
-                      ease: "power2.out",
-                      overwrite: true
-                    });
-                  }
-                });
-              }
-            });
+      // Update Draggable bounds explicitly on refresh 
+      // (ScrollTrigger calls refresh on resize automatically)
+      ScrollTrigger.addEventListener("refresh", () => {
+          if (draggable) draggable.applyBounds({
+              minX: -getScrollAmount(),
+              maxX: 0
+          });
+      });
 
-      // Draggable for touch/mouse drag
-            const draggable = Draggable.create(trackRef.current, {
-              type: "x",
-              bounds: { minX: -(totalWidth - window.innerWidth), maxX: 0 },
-              inertia: true,
-              dragResistance: 0.2,
-              onDrag: function() {
-                // Sync ScrollTrigger progress with draggable position
-                const progress = Math.abs(this.x) / (totalWidth - window.innerWidth);
-                const st = ScrollTrigger.getById("horizontal-carousel");
-                if (st) {
-                  const end = typeof st.end === "number" ? st.end : (typeof st.start === "number" ? st.start : 0);
-                  st.scroll(progress * end);
-                }
-              },
-              onThrowUpdate: function() {
-                const progress = Math.abs(this.x) / (totalWidth - window.innerWidth);
-                const st = ScrollTrigger.getById("horizontal-carousel");
-                if (st) {
-                  const end = typeof st.end === "number" ? st.end : (typeof st.start === "number" ? st.start : 0);
-                  st.scroll(progress * end);
-                }
-              }
-            })[0];
-
-      return () => {
-        draggable.kill();
-      };
     }, sectionRef);
 
     return () => ctx.revert();
@@ -238,11 +262,13 @@ const IndustryCarousel = () => {
           </div>
           
           <div className="relative w-full h-[420px] overflow-hidden">
+            {/* Remove fixed width: 'fit-content' is correct here.
+               The JavaScript will measure this natural width.
+            */}
             <div 
               ref={trackRef}
-              className="absolute top-0 left-0 flex gap-5 px-4 lg:px-10 h-full"
+              className="absolute top-0 left-0 flex gap-5 px-4 lg:px-10 h-full w-max"
               style={{ 
-                width: 'fit-content',
                 willChange: 'transform'
               }}
             >

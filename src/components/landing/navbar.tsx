@@ -1,188 +1,319 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, ArrowRight } from "lucide-react";
 
-const NavLink = ({ label, href }: { label: string; href: string }) => (
-  <li className="group/listItem pointer-events-auto h-full flex items-center">
-    <Link href={href} className="relative py-4 px-1">
-      <p className="text-[14px] font-medium text-foreground transition-colors hover:text-primary">
-        {label}
-      </p>
-      <div className="absolute bottom-3 left-0 h-0.5 w-0 bg-linear-to-r from-[#FF7759] to-[#C39CFB] transition-all duration-300 group-hover/listItem:w-full"></div>
-    </Link>
-  </li>
-);
+// ==========================================
+// CONFIGURATION & TYPES
+// ==========================================
 
-const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+type DropdownType = "products" | "learn" | "resources" | null;
+
+interface NavItemProps {
+  label: string;
+  isActive: boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  children: React.ReactNode;
+}
+
+interface ProductCardProps {
+  title: string;
+  description: string;
+  imageUrl: string;
+  href?: string;
+}
+
+// const NAVBAR_HEIGHT = 72;
+const NAVBAR_CONFIG = {
+  colors: {
+    bg: "#ffffff",
+    activeBg: "#ffffff",
+    border: "rgba(0, 0, 0, 0.12)",
+    highlight: "#896629",
+  },
+} as const;
+
+// ==========================================
+// MAIN NAVBAR COMPONENT
+// ==========================================
+
+export default function Navbar() {
+  const [activeDropdown, setActiveDropdown] = useState<DropdownType>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  const handleDropdownOpen = (dropdown: DropdownType) => setActiveDropdown(dropdown);
+  const handleDropdownClose = () => setActiveDropdown(null);
+
+  const navBackground = activeDropdown 
+    ? NAVBAR_CONFIG.colors.activeBg 
+    : NAVBAR_CONFIG.colors.bg;
+
+  return (
+    <nav 
+      ref={navRef}
+      className="fixed top-0 left-0 w-full z-[1000] transition-colors duration-300"
+      style={{ 
+        backgroundColor: navBackground,
+        boxShadow: `0 1px 0 0 ${NAVBAR_CONFIG.colors.border}` 
+      }}
+    >
+      <div className="flex items-center justify-between h-[72px] px-6 lg:px-12 max-w-[1440px] mx-auto">
+        
+        {/* Left: Logo & Navigation */}
+        <div className="flex items-center gap-10 h-full">
+          <Link href="/" className="flex-shrink-0">
+            <LogoIcon className="w-[100px] h-[45px] text-black hover:text-[#896629] transition-colors" />
+          </Link>
+
+          <ul className="hidden lg:flex items-center gap-6 h-full text-[15px] font-medium">
+            <NavItem 
+              label="Products" 
+              isActive={activeDropdown === 'products'} 
+              onMouseEnter={() => handleDropdownOpen('products')}
+              onMouseLeave={handleDropdownClose}
+            >
+              <ProductsMegaMenu />
+            </NavItem>
+
+            <NavItem 
+              label="Learn" 
+              isActive={activeDropdown === 'learn'} 
+              onMouseEnter={() => handleDropdownOpen('learn')}
+              onMouseLeave={handleDropdownClose}
+            >
+              <LearnMegaMenu />
+            </NavItem>
+
+            <li className="hover:text-[#896629] transition-colors">
+              <Link href="/trust">Trust</Link>
+            </li>
+            <li className="hover:text-[#896629] transition-colors">
+              <Link href="/refer">Refer & Save</Link>
+            </li>
+            
+            <div className="h-6 w-[1px] bg-black/10 mx-2" />
+            
+            <NavItem 
+              label="Resources" 
+              isActive={activeDropdown === 'resources'} 
+              onMouseEnter={() => handleDropdownOpen('resources')}
+              onMouseLeave={handleDropdownClose}
+            >
+              <AdvisorResourcesMenu />
+            </NavItem>
+          </ul>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-4">
+          <Link 
+            href="/login" 
+            className="hidden sm:block text-[14px] font-medium hover:text-[#896629] transition-colors"
+          >
+            Log in
+          </Link>
+          <Link 
+            href="/enroll" 
+            className="bg-black text-white px-5 py-2.5 rounded-full text-[14px] font-semibold hover:bg-[#896629] transition-all"
+          >
+            Get started
+          </Link>
+          
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden flex flex-col gap-1.5 p-2"
+            aria-label="Toggle mobile menu"
+          >
+            <div className="w-6 h-[1.5px] bg-black" />
+            <div className="w-6 h-[1.5px] bg-black" />
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// ==========================================
+// NAVIGATION COMPONENTS
+// ==========================================
+
+function NavItem({ label, isActive, onMouseEnter, onMouseLeave, children }: NavItemProps) {
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const dropdown = dropdownRef.current;
+    if (!dropdown) return;
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-      gsap.fromTo(
-        mobileMenuRef.current,
-        { x: "100%" },
-        { x: "0%", duration: 0.4, ease: "power3.out" }
-      );
-      gsap.fromTo(
-        ".mobile-nav-item",
-        { opacity: 0, x: 20 },
-        { opacity: 1, x: 0, duration: 0.4, stagger: 0.05, delay: 0.2 }
-      );
+    if (isActive) {
+      gsap.to(dropdown, {
+        opacity: 1,
+        y: 0,
+        display: 'block',
+        duration: 0.3,
+        ease: "power2.out"
+      });
     } else {
-      document.body.style.overflow = "unset";
+      gsap.to(dropdown, {
+        opacity: 0,
+        y: -10,
+        display: 'none',
+        duration: 0.2,
+        ease: "power2.in"
+      });
     }
-  }, [isMobileMenuOpen]);
+  }, [isActive]);
 
-  const navLinks = [
-    { label: "Features", href: "#features" },
-    { label: "Use Cases", href: "#use-cases" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Resources", href: "/resources" },
-    { label: "API", href: "/api" },
+  return (
+    <li 
+      className="h-full flex items-center group cursor-pointer"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="flex items-center gap-1 group-hover:text-[#896629] transition-colors">
+        {label}
+        <ChevronDown 
+          className={`w-4 h-4 transition-transform duration-300 ${
+            isActive ? 'rotate-180' : ''
+          }`} 
+        />
+      </div>
+
+      <div 
+        ref={dropdownRef}
+        className="absolute top-[72px] left-0 w-full bg-white border-t border-black/5 shadow-xl! hidden opacity-0"
+      >
+        {children}
+      </div>
+    </li>
+  );
+}
+
+// ==========================================
+// MEGA MENU COMPONENTS
+// ==========================================
+
+function ProductsMegaMenu() {
+  const products: ProductCardProps[] = [
+    {
+      title: "Exchange Fund",
+      description: "Diversify your large stock position by pooling it with other investors.",
+      imageUrl: "https://cdn.prod.website-files.com/655a158485a10c0b88c01948/69208f13585fd1679d49349d_nav-exchange-fund.jpg",
+    },
+    {
+      title: "Collar Advance",
+      description: "Borrow against stocks at rates lower than a standard mortgage rate.",
+      imageUrl: "https://cdn.prod.website-files.com/655a158485a10c0b88c01948/69208f13b6d47dbeaa2b4b0e_nav-collar-advance.jpg",
+    },
+    {
+      title: "Stock Lending",
+      description: "Earn passive income with minimal risk. Highest fee rebate in the industry.",
+      imageUrl: "https://cdn.prod.website-files.com/655a158485a10c0b88c01948/69208f13525b37cd5610ef01_nav-stock-lending.jpg",
+    },
   ];
 
   return (
-    <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled
-            ? "bg-background/80 backdrop-blur-lg border-b border-border shadow-sm"
-            : "bg-transparent"
-        }`}
-      >
-        <div className="mx-auto max-w-[1440px] px-4 lg:px-10">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="text-[24px]">
-                <svg width="120" height="40" viewBox="0 0 412 97" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M38.25 69.375H0V2.90625L16.3125 2.85938V54.1875H42.6094L38.25 69.375ZM77.25 34.6406C75.4062 33.5781 73.4375 33.0469 71.3438 33.0469C69.25 33.0469 67.2812 33.5781 65.4375 34.6406C64.3125 35.3281 63.2188 36.2969 62.1562 37.5469H80.5312C79.4688 36.2969 78.375 35.3281 77.25 34.6406ZM89.7656 26.7188C92.2344 29 94.1719 31.7344 95.5781 34.9219C96.9844 38.0781 97.6875 41.4531 97.6875 45.0469V45.4688C97.6875 45.625 97.6719 45.7969 97.6406 45.9844L97.5469 46.7812H91.7344V46.875H59.4844C59.8594 49.5 61 51.7656 62.9062 53.6719C65.3125 56.0469 68.125 57.2344 71.3438 57.2344C74.5938 57.2344 77.4062 56.0469 79.7812 53.6719L79.875 53.5781L80.0156 53.3906L80.1562 53.25L80.25 53.1094L88.3125 64.6406C86 66.5156 83.6562 67.9375 81.2812 68.9062C78.0938 70.1562 74.7812 70.7812 71.3438 70.7812C66.6875 70.7812 62.3594 69.6719 58.3594 67.4531C54.2656 65.2031 51.0312 62.125 48.6562 58.2188C46.2188 54.3125 45 49.9219 45 45.0469C45 41.3906 45.7031 38.0156 47.1094 34.9219C48.5156 31.7969 50.4531 29.0781 52.9219 26.7656C55.4219 24.3906 58.2344 22.5938 61.3594 21.375C64.5781 20.125 67.9062 19.5 71.3438 19.5C74.7812 19.5 78.0938 20.125 81.2812 21.375C84.4375 22.5938 87.2656 24.375 89.7656 26.7188ZM114.75 45.2344C114.75 48.5781 115.969 51.4375 118.406 53.8125C120.875 56.2188 123.719 57.4219 126.938 57.4219C130.188 57.4219 133.047 56.2188 135.516 53.8125C137.953 51.4375 139.172 48.5781 139.172 45.2344C139.172 43.1094 138.609 41.1094 137.484 39.2344C136.359 37.3594 134.859 35.8906 132.984 34.8281C131.078 33.7656 129.062 33.2344 126.938 33.2344C124.812 33.2344 122.828 33.7656 120.984 34.8281C119.109 35.8906 117.594 37.3594 116.438 39.2344C115.312 41.1094 114.75 43.1094 114.75 45.2344ZM138.938 21.75C147.906 25.5938 152.391 33.5156 152.391 45.5156L152.344 70.9219V74.3906C152.344 80.5469 150.156 85.8125 145.781 90.1875C143.75 92.2188 141.031 93.8281 137.625 95.0156C134.438 96.1406 131.281 96.7031 128.156 96.7031H125.531C118.406 96.5469 112.734 94.375 108.516 90.1875C105.672 87.2812 103.953 84.7344 103.359 82.5469L117.656 74.25C117.812 76.7188 118.797 78.8125 120.609 80.5312C122.422 82.25 124.578 83.1094 127.078 83.1094C129.047 83.1094 130.844 82.5469 132.469 81.4219C134.062 80.3281 135.203 78.9219 135.891 77.2031L135.938 77.0156L136.031 76.7812C136.094 76.5625 136.156 76.3438 136.219 76.125C136.344 75.75 136.422 75.375 136.453 75V74.8594L136.5 74.7188L136.547 74.5312V74.25H136.594V69.3281L136.219 69.5156L135.844 69.6562C132.719 70.9375 129.438 71.5781 126 71.5781C121.438 71.5781 117.172 70.4375 113.203 68.1562C109.234 65.9375 106.047 62.8281 103.641 58.8281C101.234 54.8281 100.031 50.375 100.031 45.4688C100.031 41.75 100.734 38.3125 102.141 35.1562C103.484 32.0312 105.391 29.25 107.859 26.8125C110.266 24.5 113.047 22.7031 116.203 21.4219C119.391 20.1406 122.656 19.5 126 19.5C131.812 19.5 136.125 20.25 138.938 21.75ZM176.109 34.6406C174.172 35.7344 172.625 37.2031 171.469 39.0469C170.312 40.8906 169.734 42.9062 169.734 45.0938C169.734 48.4062 170.984 51.2656 173.484 53.6719C175.953 56.0469 178.875 57.2344 182.25 57.2344C185.656 57.2344 188.594 56.0469 191.062 53.6719C193.562 51.2656 194.812 48.4062 194.812 45.0938C194.812 42.9062 194.234 40.8906 193.078 39.0469C191.922 37.2031 190.375 35.7344 188.438 34.6406C186.531 33.5781 184.469 33.0469 182.25 33.0469C180.094 33.0469 178.047 33.5781 176.109 34.6406ZM194.859 69.375V67.9688C193.859 68.4062 193.125 68.7031 192.656 68.8594C189.344 70.1406 185.875 70.7812 182.25 70.7812C177.469 70.7812 172.953 69.6719 168.703 67.4531C164.453 65.2031 161.078 62.1406 158.578 58.2656C156.047 54.3281 154.781 49.9375 154.781 45.0938C154.781 41.4375 155.516 38.0312 156.984 34.875C158.453 31.75 160.469 29.0312 163.031 26.7188C165.562 24.4062 168.5 22.6406 171.844 21.4219C175.188 20.1406 178.656 19.5 182.25 19.5C185.812 19.5 189.281 20.125 192.656 21.375C196.031 22.625 198.969 24.4062 201.469 26.7188C204.094 29.0938 206.125 31.8125 207.562 34.875C209.031 38.0312 209.766 41.4375 209.766 45.0938L209.719 69.5156L194.859 69.375ZM212.156 2.85938L227.109 2.8125V69.2812L212.156 69.4688V2.85938Z" fill="black"/>
-                  <path d="M259.875 27.9844L291.469 2.01562V69.4219L273.844 69.375V37.9688L259.875 51.3281L246.891 38.4844L246.844 69.4219H229.5V2.01562L259.875 27.9844ZM309.328 21.4219V69.4688H294.375V21.4688L309.328 21.4219ZM309.375 7.82812C309.375 9.32812 309.031 10.6562 308.344 11.8125C307.656 12.9688 306.719 13.9062 305.531 14.625C304.344 15.3438 303.031 15.7031 301.594 15.7031C300.156 15.7031 298.859 15.3594 297.703 14.6719C296.516 13.9531 295.578 13 294.891 11.8125C294.172 10.5625 293.812 9.23438 293.812 7.82812C293.812 6.39062 294.156 5.07812 294.844 3.89062C295.594 2.67188 296.547 1.71875 297.703 1.03125C298.859 0.34375 300.156 0 301.594 0C303.031 0 304.344 0.34375 305.531 1.03125C306.688 1.71875 307.625 2.67188 308.344 3.89062C309.031 5.07812 309.375 6.39062 309.375 7.82812ZM333.281 33.0469H332.438C328.625 33.2031 326.719 35.8594 326.719 41.0156V69.375H311.719V41.0156C311.719 27.3594 318.625 20.1875 332.438 19.5H333.281C347.094 20.1875 354 27.3594 354 41.0156V69.375H339V41.0156C339 35.8594 337.094 33.2031 333.281 33.0469ZM396.375 45.1406C396.375 42.9531 395.797 40.9531 394.641 39.1406C393.484 37.2969 391.938 35.8281 390 34.7344C388.094 33.6406 386.047 33.0938 383.859 33.0938C381.672 33.0938 379.609 33.6406 377.672 34.7344C375.734 35.8281 374.188 37.2969 373.031 39.1406C371.875 40.9531 371.297 42.9531 371.297 45.1406C371.297 48.4844 372.547 51.3594 375.047 53.7656C377.516 56.1719 380.453 57.375 383.859 57.375C387.234 57.375 390.156 56.1719 392.625 53.7656C395.125 51.3594 396.375 48.4844 396.375 45.1406ZM411.328 45.4688C411.297 50.2188 410.031 54.5156 407.531 58.3594C405.031 62.2656 401.656 65.3281 397.406 67.5469C393.156 69.7969 388.641 70.9219 383.859 70.9219C380.203 70.9219 376.734 70.2812 373.453 69C370.203 67.8125 367.25 66.0156 364.594 63.6094C361.969 61.2031 359.938 58.4531 358.5 55.3594C357.062 52.2656 356.344 48.8594 356.344 45.1406C356.344 41.5156 357.078 38.125 358.547 34.9688C359.984 31.8438 362 29.1094 364.594 26.7656C367.219 24.3906 370.172 22.5938 373.453 21.375C376.828 20.1562 380.297 19.5469 383.859 19.5469C387.391 19.5469 390.844 20.1562 394.219 21.375L395.297 21.8438L396.375 22.3125V2.53125L411.328 2.57812V45.4688Z" style={{ fill: "#513E29", fillOpacity: 0.5}}/>
-                </svg>
-              </div>
-            </Link>
+    <div className="max-w-[1440px] mx-auto p-12 grid grid-cols-3 gap-6">
+      {products.map((product) => (
+        <ProductCard key={product.title} {...product} />
+      ))}
+    </div>
+  );
+}
 
-            {/* Desktop Navigation */}
-            <ul className="hidden md:flex items-center gap-8 h-full">
-              {navLinks.map((link) => (
-                <NavLink key={link.label} {...link} />
-              ))}
-            </ul>
-
-            {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-4">
-              <Link
-                href="/sign-in"
-                className="text-[14px] font-medium text-foreground hover:text-primary transition-colors"
-              >
-                Sign in
-              </Link>
-              <div className="group relative inline-block">
-                <div className="absolute inset-0 -m-0.5 rounded-full bg-linear-to-r from-[#FF7759] to-[#C39CFB] opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                <Link
-                  href="/sign-up"
-                  className="relative flex items-center justify-center bg-primary text-primary-foreground rounded-full py-2 px-5 text-[14px] font-medium transition-transform hover:scale-105"
-                >
-                  Start free trial
-                </Link>
-              </div>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-accent rounded-lg transition-colors"
-              aria-label="Toggle menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-          </div>
+function ProductCard({ title, description, imageUrl, href = "#" }: ProductCardProps) {
+  return (
+    <Link 
+      href={href} 
+      className="group block bg-[#f8f5f1] rounded-xl overflow-hidden hover:bg-[#ece9e1] transition-colors p-6"
+    >
+      <div className="flex flex-col justify-between h-full">
+        <div>
+          <h4 className="text-xl font-semibold mb-2">{title}</h4>
+          <p className="text-[#737373] text-sm leading-relaxed">{description}</p>
         </div>
-      </nav>
+        <img 
+          src={imageUrl} 
+          className="mt-8 rounded-lg w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" 
+          alt={title} 
+        />
+      </div>
+    </Link>
+  );
+}
 
-      {/* Mobile Menu */}
-      <div
-        ref={mobileMenuRef}
-        className={`fixed top-0 right-0 bottom-0 w-full max-w-sm bg-background z-[60] transform translate-x-full md:hidden shadow-2xl ${
-          isMobileMenuOpen ? "" : "pointer-events-none"
-        }`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-6 border-b border-border">
-            <div className="text-[20px] font-bold bg-linear-to-r from-primary to-[#C39CFB] bg-clip-text text-transparent">
-              LegalMind
-            </div>
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="p-2 hover:bg-accent rounded-lg transition-colors"
-              aria-label="Close menu"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+function LearnMegaMenu() {
+  const articles = [
+    "What’s an Exchange Fund?",
+    "How do exchange funds work?",
+    "Optimize tax drag",
+  ];
 
-          <div className="flex-1 overflow-y-auto p-6">
-            <ul className="space-y-1">
-              {navLinks.map((link) => (
-                <li key={link.label} className="mobile-nav-item opacity-0">
-                  <Link
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block py-3 px-4 text-[16px] font-medium text-foreground hover:bg-accent rounded-lg transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-8 space-y-3 mobile-nav-item opacity-0">
-              <Link
-                href="/sign-in"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block w-full py-3 px-4 text-center text-[16px] font-medium border border-border rounded-full hover:bg-accent transition-colors"
-              >
-                Sign in
-              </Link>
-              <div className="group relative">
-                <div className="absolute inset-0 -m-0.5 rounded-full bg-linear-to-r from-[#FF7759] to-[#C39CFB] opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                <Link
-                  href="/sign-up"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="relative block w-full py-3 px-4 text-center bg-primary text-primary-foreground rounded-full text-[16px] font-medium"
-                >
-                  Start free trial
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+  return (
+    <div className="max-w-[1440px] mx-auto p-12 flex gap-12">
+      <div className="w-1/3 border-r border-black/5 pr-12">
+        <h4 className="text-xl font-semibold mb-4">The Cache Companion</h4>
+        <p className="text-[#737373] mb-6">
+          Expert insights and practical strategies for concentrated stocks.
+        </p>
+        <img 
+          src="https://cdn.prod.website-files.com/655a158485a10c0b88c01948/691cff3fdd86338fd4652152_nav-companion.svg" 
+          className="w-full" 
+          alt="Cache Companion" 
+        />
       </div>
 
-      {/* Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          onClick={() => setIsMobileMenuOpen(false)}
-          className="fixed inset-0 bg-black/50 z-[55] md:hidden"
-        />
-      )}
-    </>
+      <div className="flex-1">
+        <h5 className="text-sm font-bold text-[#8c8c8c] uppercase tracking-widest mb-6">
+          Top Articles
+        </h5>
+        <nav className="space-y-4">
+          {articles.map((article) => (
+            <Link 
+              key={article} 
+              href="#" 
+              className="flex items-center justify-between p-4 rounded-lg hover:bg-[#f4f1eb] transition-colors group"
+            >
+              <span className="font-medium">{article}</span>
+              <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </div>
   );
-};
+}
 
-export default Navbar;
+function AdvisorResourcesMenu() {
+  return (
+    <div className="p-12 text-center text-gray-400">
+      Advisor Resources Content
+    </div>
+  );
+}
+
+// ==========================================
+// UTILITY COMPONENTS
+// ==========================================
+
+function LogoIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      className={className} 
+      viewBox="0 0 336 150" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Company Logo"
+    >
+      <path 
+        fillRule="evenodd" 
+        clipRule="evenodd" 
+        d="M100 0H50V50H0V100H50V150H100V100H50V50H100V0ZM183.761 84.278C182.592 88.9114 180.05 92.6901 176.136 95.614C172.223 98.493 167.342 99.9325 161.494 99.9325C154.072 99.9325 148.134 97.5933 143.68 92.915C139.227 88.2366 137 82.2537 137 74.9663C137 67.7238 139.249 61.7634 143.748 57.085C148.246 52.3617 154.184 50 161.561 50C167.409 50 172.178 51.3945 175.866 54.1835C179.6 56.9276 182.232 60.7512 183.761 65.6545H175.664C174.359 62.6856 172.583 60.4813 170.333 59.0418C168.084 57.6023 165.16 56.8826 161.561 56.8826C156.568 56.8826 152.587 58.6145 149.618 62.0783C146.649 65.4971 145.165 69.7931 145.165 74.9663C145.165 80.1395 146.649 84.4579 149.618 87.9217C152.587 91.3405 156.568 93.0499 161.561 93.0499C168.804 93.0499 173.505 90.126 175.664 84.278H183.761Z" 
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
