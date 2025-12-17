@@ -1,111 +1,18 @@
-// components/atlantiser/About.tsx
-"use client";
-
-import React, { useLayoutEffect, useRef } from "react";
-import Link from "next/link";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowRight } from "lucide-react";
-
-gsap.registerPlugin(ScrollTrigger);
-
-export default function About() {
-  const sectionRef = useRef<HTMLElement | null>(null);
-
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".about-text", {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 70%",
-        },
-        y: 50,
-        opacity: 0,
-        duration: 1,
-        ease: "power3.out",
-      });
-
-      gsap.from(".partner-logo", {
-        scrollTrigger: {
-          trigger: ".logo-grid",
-          start: "top 85%",
-        },
-        y: 20,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.05,
-        ease: "power2.out",
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  return (
-    <section
-      ref={sectionRef}
-      className="relative bg-card text-card-foreground py-32 px-6 md:px-12 z-10"
-    >
-      <div className="max-w-5xl mx-auto flex flex-col items-center">
-        <span className="text-sm text-gray-400 mb-6 font-medium">
-          Since 2016
-        </span>
-
-        <h2 className="about-text text-3xl md:text-5xl md:leading-[1.1] text-center font-medium tracking-tight mb-8">
-          Atlantiser® is a digital-first branding agency that specializes in
-          building and scaling next-gen{" "}
-          <span className="underline decoration-1 underline-offset-4 decoration-gray-500 hover:text-gray-300 transition-colors cursor-pointer">
-            brands
-          </span>{" "}
-          and{" "}
-          <span className="underline decoration-1 underline-offset-4 decoration-gray-500 hover:text-gray-300 transition-colors cursor-pointer">
-            digital-experiences
-          </span>
-          .
-        </h2>
-
-        <p className="about-text text-lg md:text-xl text-gray-400 text-center max-w-2xl mb-20 leading-relaxed">
-          Transforming visions into brands that stand out, inspire, and excel in
-          a crowded digital-first world
-        </p>
-
-        <div className="w-full">
-          <div className="text-xs font-mono uppercase text-gray-600 text-center mb-8 tracking-widest">
-            Awards & Recognitions
-          </div>
-          <div className="logo-grid grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-            {[
-              "Clutch",
-              "Awwwards",
-              "CSSDA",
-              "FWA",
-              "RedDot",
-              "Strategyzer",
-              "IDEO",
-              "Future London",
-              "Section",
-              "Business Made Simple",
-            ].map((brand, i) => (
-              <div key={i} className="partner-logo flex items-center justify-center h-8">
-                <span className="text-xs font-bold font-mono tracking-tighter">
-                  {brand}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-24">
-          <Link href="#" className="group flex items-center gap-4 text-white">
-            <div className="w-12 h-12 border border-white/20 rounded-full flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors duration-300">
-              <ArrowRight size={16} />
+{/* <section className="w-full text-[#FFFFFF] pl-4 lg:pl-10 xl:relative xl:flex xl:h-screen xl:max-h-[950px] xl:min-h-[800px] xl:items-end relative bg-[#2E2E2E] overflow-hidden">
+         <div className="absolute top-0 left-0 h-full w-full">
+            <img src="https://cdn.sanity.io/images/rjtqmwfu/web3-prod/cdf855c00ccc227a009e31da07e9b4caacc42add-2880x1680.png" className="hidden lg:block w-full h-full object-cover" />
+         </div>
+         <div className="relative z-10 max-w-[1440px] mx-auto w-full h-full flex flex-col md:flex-row items-end">
+            <div className="w-full md:w-1/2 mb-14">
+                <h3 className="text-[28px] lg:text-[48px] font-medium mb-4">Developer resources</h3>
+                <p className="text-[16px] lg:text-[18px] mb-10 max-w-[555px]">Find everything you need to start building, from API access to deep technical docs, and try our models in the Playground.</p>
+                <div className="flex gap-6 items-center">
+                    <a href="/developers" className="bg-[#FFFFFF] text-[#212121] rounded-full py-3 px-6 text-[16px]">Let's go</a>
+                    <a href="#" className="flex items-center gap-2 hover:gap-3 transition-all">Get an API key <span>↗</span></a>
+                </div>
             </div>
-            <span className="text-sm font-mono uppercase tracking-widest">
-              About Us
-            </span>
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
+            <div className="w-full md:w-1/2">
+                <img src="https://cdn.sanity.io/images/rjtqmwfu/web3-prod/53bdb371305538ab5186498794ab355070909fae-1440x1360.png" className="w-full max-h-[680px] object-contain" />
+            </div>
+         </div>
+      </section> */}

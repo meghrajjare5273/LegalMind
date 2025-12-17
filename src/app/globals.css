@@ -162,6 +162,25 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* max-width: 100%; */
+    /* overflow-x: hidden; */
   }
+
+  /* Prevent horizontal scroll */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar utility */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
 
 }
