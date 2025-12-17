@@ -11,16 +11,16 @@ const Hero = () => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline();
       
-      // Headline mask reveal
+      // Headline Slide Up & Fade
       tl.fromTo(
         ".headline-reveal",
         { 
-          clipPath: "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)",
-          opacity: 0
+          opacity: 0,
+          y: 50, // Start 50px lower
         },
         { 
-          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
           opacity: 1,
+          y: 0,
           duration: 1.2,
           ease: "power3.out"
         }
@@ -28,16 +28,16 @@ const Hero = () => {
       // Subheading
       .fromTo(
         ".subheading-reveal",
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
-        "-=0.6"
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 1, ease: "power2.out" },
+        "-=0.8" // Overlap slightly with headline
       )
       // Buttons
       .fromTo(
         ".cta-reveal",
-        { opacity: 0, y: 15 },
-        { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" },
-        "-=0.4"
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.15, ease: "power2.out" },
+        "-=0.6"
       );
     }, containerRef);
     
@@ -45,24 +45,22 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative w-full px-6 md:px-8 pt-32 md:pt-48 pb-16 md:pb-24 text-black bg-white">
+    <section className="relative w-full px-6 md:px-8 pt-32 md:pt-48 pb-16 md:pb-24 text-black bg-white dark:bg-background dark:text-foreground">
       <div ref={containerRef} className="relative z-10 mx-auto w-full max-w-360">
         <div className="text-center">
           {/* Headline */}
-          <div className="mb-6 md:mb-8 mx-auto max-w-282 2xl:max-w-470">
-            <h1 className="headline-reveal text-[44px] md:text-[56px] lg:text-[80px] leading-[1.05] tracking-tight font-medium text-[#17171c] inline-block">
-              Your next breakthrough,
-              <br />
-              powered by AI
+          <div className="mb-6 md:mb-8 mx-auto max-w-4xl">
+            <h1 className="headline-reveal text-[44px] md:text-[56px] lg:text-[80px] leading-[1.1] tracking-tight font-medium text-[#17171c] dark:text-foreground inline-block">
+              Legal Intelligence, <br/> Reimagined.
             </h1>
           </div>
           
           {/* Subheading */}
           <div className="mx-auto flex justify-center items-center">
-            <div className="subheading-reveal mb-8 lg:mb-12 max-w-163.75">
-              <p className="text-[16px] md:text-[18px] text-[#17171c] leading-relaxed opacity-90">
-                LegalMind is where powerful AI meets practical legal solutions — 
-                so you can work smarter with precision and trust.
+            <div className="subheading-reveal mb-8 lg:mb-12 max-w-2xl">
+              <p className="text-[16px] md:text-[20px] text-[#17171c]/80 dark:text-muted-foreground leading-relaxed">
+                Experience the synergy of advanced AI and legal expertise. 
+                Automate the mundane, focus on strategy, and deliver results with precision.
               </p>
             </div>
           </div>
@@ -73,22 +71,22 @@ const Hero = () => {
             <div className="group relative inline-block">
               <div className="absolute inset-0 -z-10 -m-px rounded-full bg-linear-to-r from-[#FF7759] to-[#C39CFB] opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
               <Link
-                href="/contact-sales"
-                className="relative flex w-fit items-center justify-center bg-[#212121] text-[#FFFFFF] rounded-full py-3.5 px-7 text-[16px] md:text-[18px] font-normal tracking-[-0.01em] transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#C39CFB] focus:ring-offset-2"
+                href="/sign-up"
+                className="relative flex w-fit items-center justify-center bg-[#212121] text-[#FFFFFF] dark:bg-primary dark:text-primary-foreground rounded-full py-3.5 px-8 text-[16px] md:text-[18px] font-normal tracking-[-0.01em] transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#C39CFB] focus:ring-offset-2"
               >
-                Request a demo
+                Sign Up
               </Link>
             </div>
             
             {/* Secondary Button */}
             <div className="group relative inline-block">
               <Link
-                href="/products"
-                className="relative flex w-fit items-center justify-center bg-transparent text-[#17171c] py-3.5 px-1 text-[16px] md:text-[18px] font-normal tracking-[-0.01em] transition-colors duration-300 group-hover:text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#C39CFB] focus:ring-offset-2"
+                href="/features"
+                className="relative flex w-fit items-center justify-center bg-transparent text-[#17171c] dark:text-foreground py-3.5 px-4 text-[16px] md:text-[18px] font-normal tracking-[-0.01em] transition-colors duration-300 group-hover:text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#C39CFB] focus:ring-offset-2"
               >
                 <span className="relative">
-                  Explore products
-                  <span className="absolute bottom-0 left-0 w-full h-px bg-[#17171c] transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
+                  Explore features
+                  <span className="absolute bottom-0 left-0 w-full h-px bg-[#17171c] dark:bg-foreground transform origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
                 </span>
               </Link>
             </div>

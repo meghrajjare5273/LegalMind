@@ -10,16 +10,20 @@ export default function CTA() {
         const ctx = gsap.context(() => {
             const tl = gsap.timeline();
 
+            // Replaced clipPath with Opacity + Scale + Y-axis movement
             tl.fromTo(
                 ".cta-reveal",
                 {
-                    clipPath: "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)",
                     opacity: 0,
+                    scale: 0.95,
+                    y: 40,
                 },
                 {
-                    clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
                     opacity: 1,
-                    duration: 1.2,
+                    scale: 1,
+                    y: 0,
+                    duration: 1,
+                    stagger: 0.1,
                     ease: "power3.out",
                 }
             )
