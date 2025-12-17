@@ -1,96 +1,73 @@
-// components/atlantiser/Footer.tsx
+import React from "react";
 import Link from "next/link";
 
-export default function Footer() {
+const Footer = () => {
   return (
-    <footer className="bg-[#0a0a0a] text-white pt-24 pb-12 px-6 md:px-12">
-      <div className="max-w-[1400px] mx-auto flex flex-col items-center">
-        <div className="text-center mb-32">
-          <Link
-            href="#"
-            className="bg-white text-black text-2xl md:text-4xl px-12 py-6 rounded-full inline-flex items-center gap-4 hover:scale-105 transition-transform duration-300 ease-out"
-          >
-            <span>Let&apos;s work together</span>
-          </Link>
-        </div>
-
-        <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-12 border-t border-white/10 pt-16 mb-24">
-          <div className="md:col-span-1">
-            <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
-              Atlantiser® is a digital-first branding agency that specializes in
-              building and scaling next-gen brands and digital experiences.
-            </p>
-          </div>
-
-          <div>
-            <div className="font-mono text-xs uppercase text-gray-500 mb-6">
-              Company
+    <footer role="contentinfo" className="relative overflow-hidden bg-[#FF7759]">
+        {/* Top CTA Section */}
+        <section className="relative px-4 lg:px-10 pt-12 md:pt-20 pb-12 md:pb-20 flex w-full flex-col items-center justify-center min-h-[500px]">
+            <div className="absolute top-0 left-0 h-full w-full z-0">
+                <img src="https://cdn.sanity.io/images/rjtqmwfu/web3-prod/e67ccb653850e15bdd2772c7a21ddf8890b1e595-2880x1200.png" className="h-full w-full object-cover" alt="bg" />
             </div>
-            <ul className="space-y-3 text-sm font-medium">
-              {["About", "Services", "Work", "Membership", "Contact"].map((l) => (
-                <li key={l}>
-                  <a href="#" className="hover:text-gray-400 transition-colors">
-                    {l}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <div className="font-mono text-xs uppercase text-gray-500 mb-6">
-              Learn
+            <div className="relative z-10 text-center">
+                <h2 className="text-[32px] lg:text-[60px] font-medium leading-tight mb-8">Ready to put AI to work?</h2>
+                <div className="group relative z-10 inline-block">
+                    <div className="absolute inset-0 -z-10 -m-0.5 rounded-full bg-gradient-to-r from-[#FF7759] to-[#C39CFB] opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    <Link
+                        className="relative flex w-fit items-center justify-center bg-[#212121] text-[#FFFFFF] rounded-full py-3 px-6 outline-none"
+                        href="/contact-sales"
+                    >
+                        <span className="text-[16px] lg:text-[18px]">Request a demo</span>
+                    </Link>
+                </div>
             </div>
-            <ul className="space-y-3 text-sm font-medium">
-              {["Insights", "Careers", "Partners", "Tech Stack", "Ethics Policy"].map(
-                (l) => (
-                  <li key={l}>
-                    <a href="#" className="hover:text-gray-400 transition-colors">
-                      {l}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
+        </section>
 
-          <div>
-            <div className="font-mono text-xs uppercase text-gray-500 mb-6">
-              Expertise
+        {/* Links Section */}
+        <section className="relative w-full px-4 lg:px-10 pt-20 pb-20 bg-[#212121] text-white">
+            <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between">
+                <div className="mb-14 md:mb-0 md:max-w-[325px]">
+                    <p className="text-[18px] bg-clip-text text-transparent bg-gradient-to-r from-[#FF7759] to-[#C39CFB]">AI moves fast</p>
+                    <p className="text-[18px] mb-9">We’ll keep you up to date with the latest.</p>
+                    {/* Simplified Form */}
+                    <div className="flex border-b border-[#828282] pb-2">
+                        <input type="email" placeholder="Email Address" className="bg-transparent w-full outline-none" />
+                        <button className="text-[#828282]">
+                            <svg width="16" height="17" viewBox="0 0 16 17" fill="none"><path d="M13.8 8.8L7.8 2.8..." fill="currentColor"/></svg> {/* Simplified SVG */}
+                            →
+                        </button>
+                    </div>
+                </div>
+
+                <div className="hidden md:flex gap-10">
+                    <ul className="min-w-[150px]">
+                        <li className="mb-4 font-medium"><Link href="/products">Products →</Link></li>
+                        <li className="mb-3 text-[14px] text-[#FFFFFF] opacity-80 hover:opacity-100"><Link href="/north">North</Link></li>
+                        <li className="mb-3 text-[14px] text-[#FFFFFF] opacity-80 hover:opacity-100"><Link href="/command">Command</Link></li>
+                    </ul>
+                    <ul className="min-w-[150px]">
+                        <li className="mb-4 font-medium text-[#828282]">Company</li>
+                        <li className="mb-3 text-[14px] text-[#FFFFFF] opacity-80 hover:opacity-100"><Link href="/about">About</Link></li>
+                        <li className="mb-3 text-[14px] text-[#FFFFFF] opacity-80 hover:opacity-100"><Link href="/careers">Careers</Link></li>
+                    </ul>
+                </div>
             </div>
-            <ul className="space-y-3 text-sm font-medium">
-              {[
-                "Brand Strategy",
-                "Brand Identity",
-                "Website",
-                "Digital Product",
-                "E-Commerce",
-              ].map((l) => (
-                <li key={l}>
-                  <a href="#" className="hover:text-gray-400 transition-colors">
-                    {l}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="w-full flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 font-mono border-t border-white/5 pt-8">
-          <div>© 2016-2025 ATLANTISER MEDIATECH PVT. LTD.</div>
-          <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#">SITEMAP</a>
-            <a href="#">TERMS</a>
-            <a href="#">PRIVACY</a>
-          </div>
-        </div>
-
-        <div className="w-full mt-24 flex justify-center overflow-hidden">
-          <h1 className="text-[18vw] leading-none font-bold tracking-tighter text-white select-none pointer-events-none">
-            Atlantiser®
-          </h1>
-        </div>
-      </div>
+            
+            <div className="max-w-[1440px] mx-auto mt-20 flex justify-between items-end border-t border-[#828282] pt-6">
+                <div className="flex gap-4">
+                    {/* Social Icons Placeholders */}
+                    <div className="w-5 h-5 bg-white opacity-50"></div>
+                    <div className="w-5 h-5 bg-white opacity-50"></div>
+                </div>
+                <div className="flex gap-6 text-[12px] opacity-80">
+                    <p>Cohere © 2025</p>
+                    <Link href="/privacy">Privacy</Link>
+                    <Link href="/terms">Terms</Link>
+                </div>
+            </div>
+        </section>
     </footer>
   );
-}
+};
+
+export default Footer;
